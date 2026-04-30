@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "NeuroChain",
+    "slug": "neurochain",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFF8F0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTabletMode": true,
+      "bundleIdentifier": "com.neurochain.app"
+    },
+    "android": {
+      "package": "com.neurochain.app"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow NeuroChain to access your camera for therapy games."
+        }
+      ]
+    ]
+  }
+}
