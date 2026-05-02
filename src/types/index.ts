@@ -33,9 +33,9 @@ export interface Child {
 export interface Assessment {
   id: string;
   child_id: string;
-  test_type: 'MCHAT'; // M-CHAT-R/F
-  raw_answers: boolean[];
-  risk_score: number; // 0-20
+  test_type: 'MCHAT' | 'CSBS_ITC' | 'QCHAT10' | 'CAST';
+  raw_answers: Array<boolean | number>;
+  risk_score: number;
   risk_level: RiskLevel;
   created_at: string;
   updated_at: string;
@@ -53,6 +53,33 @@ export interface Game {
   created_at: string;
 }
 
+/**
+ * On-device behavioral metrics captured by the Vision Engine during Premium sessions.
+ * Stored in activities_log.ai_vision_metrics (JSONB).
+ * All values are derived from expo-camera face detection — no data leaves the device.
+ */
+export interface AIVisionMetrics {
+  /** Dominant affect state at session start (first 15% of frames) */
+  affect_start?: 'calm' | 'neutral' | 'tense' | 'distressed' | 'unknown';
+  /** Dominant affect state at session end (last 15% of frames) */
+  affect_end?: 'calm' | 'neutral' | 'tense' | 'distressed' | 'unknown';
+  /** Percentage of frames where child's face was oriented toward screen (0–100) */
+  gaze_on_screen_percentage?: number;
+  /** Percentage of frames where face was detected in camera frame (0–100) */
+  face_present_percentage?: number;
+  /** Composite attention score: 40% face presence + 40% gaze + 20% eye openness (0–100) */
+  engagement_score?: number;
+  /** Total face-detection frames sampled (for clinical audit trail) */
+  total_frames_sampled?: number;
+  /** Waiting Game: avg ms from audio prompt to 1.5 s sustained gaze */
+  average_time_to_eye_contact_ms?: number;
+  /** Waiting Game: individual bid latencies in ms (-1 = timeout/no gaze) */
+  bid_latencies_array?: number[];
+  /** Legacy field — kept for backward compat with older sessions */
+  tracking_enabled?: boolean;
+  [key: string]: any;
+}
+
 export interface ActivityLog {
   id: string;
   child_id: string;
@@ -63,12 +90,7 @@ export interface ActivityLog {
   level_reached?: number;
   duration_seconds?: number;
   game_specific_metrics?: Record<string, any>;
-  ai_vision_metrics?: {
-    average_time_to_eye_contact_ms?: number;
-    successful_eye_contacts?: number;
-    engagement_score?: number;
-    [key: string]: any;
-  };
+  ai_vision_metrics?: AIVisionMetrics;
   created_at: string;
 }
 
@@ -94,11 +116,13 @@ export interface Appointment {
   specialist_id: string;
   parent_id: string;
   child_id: string;
-  appointment_date: string;
-  appointment_time: string;
-  session_type: 'IN_PERSON' | 'TELEHEALTH';
+  scheduled_at: string;
+  session_type?: 'INITIAL' | 'FOLLOW_UP';
   status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
-  amount_bdt: number;
+  amount_paid_bdt?: number;
+  discount_applied_pct?: number;
+  payment_gateway?: 'STRIPE' | 'SSLCOMMERZ';
+  payment_reference?: string;
   created_at: string;
   updated_at: string;
 }

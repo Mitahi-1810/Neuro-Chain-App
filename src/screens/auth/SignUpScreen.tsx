@@ -12,18 +12,88 @@ import {
   Platform,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors } from '../../utils/colors';
+import { colors, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
+import { Mascot } from '../../components/Mascot';
 import { useAuthStore } from '../../store/store';
 import { LanguageToggle } from '../../components/LanguageToggle';
 import { useI18n } from '../../i18n/useI18n';
 
 interface Props {
   navigation: any;
+  route?: any;
 }
 
-const SignUpScreen: React.FC<Props> = ({ navigation }) => {
+const SignUpField: React.FC<{
+  field: string;
+  label: string;
+  placeholder: string;
+  icon: any;
+  value: string;
+  onChange: (s: string) => void;
+  secureToggle?: boolean;
+  isVisible?: boolean;
+  onToggle?: () => void;
+  autoCapitalize?: 'none' | 'words';
+  keyboardType?: any;
+  focusedField: string | null;
+  setFocusedField: (field: string | null) => void;
+}> = ({
+  field,
+  label,
+  placeholder,
+  icon,
+  value,
+  onChange,
+  secureToggle,
+  isVisible,
+  onToggle,
+  autoCapitalize,
+  keyboardType,
+  focusedField,
+  setFocusedField,
+}) => {
+  const isFocused = focusedField === field;
+  return (
+    <View style={styles.inputGroup}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={[styles.inputWrapper, isFocused && styles.inputWrapperFocused]}>
+        <MaterialCommunityIcons
+          name={icon}
+          size={20}
+          color={isFocused ? colors.primary : colors.darkGrey}
+          style={{ marginRight: 12 }}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor={colors.darkGrey}
+          secureTextEntry={secureToggle ? !isVisible : false}
+          value={value}
+          onChangeText={onChange}
+          onFocus={() => setFocusedField(field)}
+          onBlur={() => setFocusedField(null)}
+          autoCapitalize={autoCapitalize}
+          keyboardType={keyboardType}
+        />
+        {secureToggle && (
+          <TouchableOpacity onPress={onToggle} style={{ padding: 6 }}>
+            <MaterialCommunityIcons
+              name={isVisible ? 'eye-outline' : 'eye-off-outline'}
+              size={20}
+              color={colors.darkGrey}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+};
+
+const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useI18n();
+  const role = (route?.params?.role as 'PARENT' | 'CAREGIVER') || 'PARENT';
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,41 +101,51 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState<string | null>(null);
 
   const { signup } = useAuthStore();
+
+  const passwordStrength = () => {
+    if (password.length === 0) return 0;
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/\d/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
+  };
 
   const validateInputs = (): boolean => {
     if (!fullName || fullName.trim().length < 2) {
       Alert.alert('Invalid Name', 'Please enter your full name.');
       return false;
     }
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
       Alert.alert('Invalid Email', 'Please enter a valid email address.');
       return false;
     }
-
-    if (!password || password.length < 6) {
-      Alert.alert('Weak Password', 'Password must be at least 6 characters.');
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    if (!password || password.length < 8 || !hasUppercase || !hasNumber) {
+      Alert.alert(
+        'Weak Password',
+        'Password must be at least 8 characters and include an uppercase letter and a number.'
+      );
       return false;
     }
-
     if (password !== confirmPassword) {
       Alert.alert('Mismatch', 'Passwords do not match.');
       return false;
     }
-
     return true;
   };
 
   const handleSignUp = async () => {
     if (!validateInputs()) return;
-
     setLoading(true);
     try {
-      await signup(email, password, fullName);
-      // RootNavigator will handle the transition automatically
+      await signup(email, password, fullName, role);
     } catch (error: any) {
       let errorMessage = error.message || 'Check your internet or if email exists.';
       if (errorMessage.includes('rate limit')) {
@@ -77,137 +157,116 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
+  const strength = passwordStrength();
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        enabled={Platform.OS === 'ios'}
         style={{ flex: 1 }}
       >
-        <ScrollView 
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="none"
         >
           <View style={styles.topRow}>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
               style={styles.backButton}
             >
-              <MaterialCommunityIcons
-                name="arrow-left"
-                size={24}
-                color={colors.textDark}
-              />
+              <MaterialCommunityIcons name="arrow-left" size={20} color={colors.textDark} />
             </TouchableOpacity>
             <LanguageToggle compact />
           </View>
 
           <View style={styles.headerContainer}>
-            <Text style={styles.title}>{t('signup_title')}</Text>
-            <Text style={styles.subtitle}>{t('signup_subtitle')}</Text>
+            <Mascot kind="rocket" size="lg" />
+            <Text style={styles.eyebrow}>let's get started</Text>
+            <Text style={styles.title}>Create your{'\n'}NeuroChain account.</Text>
+            <Text style={styles.subtitle}>It takes 30 seconds. Cancel anytime.</Text>
           </View>
 
           <View style={styles.formContainer}>
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('signup_full_name_label')}</Text>
-              <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={20}
-                  color={colors.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('signup_full_name_placeholder')}
-                  placeholderTextColor={colors.darkGrey}
-                  value={fullName}
-                  onChangeText={setFullName}
-                />
-              </View>
-            </View>
+            <SignUpField
+              field="fullName"
+              label={t('signup_full_name_label')}
+              placeholder={t('signup_full_name_placeholder')}
+              icon="account-outline"
+              value={fullName}
+              onChange={setFullName}
+              autoCapitalize="words"
+              focusedField={focused}
+              setFocusedField={setFocused}
+            />
+            <SignUpField
+              field="email"
+              label={t('signup_email_label')}
+              placeholder={t('signup_email_placeholder')}
+              icon="email-outline"
+              value={email}
+              onChange={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              focusedField={focused}
+              setFocusedField={setFocused}
+            />
+            <SignUpField
+              field="password"
+              label={t('signup_password_label')}
+              placeholder="••••••••"
+              icon="lock-outline"
+              value={password}
+              onChange={setPassword}
+              secureToggle
+              isVisible={showPassword}
+              onToggle={() => setShowPassword(!showPassword)}
+              focusedField={focused}
+              setFocusedField={setFocused}
+            />
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('signup_email_label')}</Text>
-              <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons
-                  name="email-outline"
-                  size={20}
-                  color={colors.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('signup_email_placeholder')}
-                  placeholderTextColor={colors.darkGrey}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                />
-              </View>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('signup_password_label')}</Text>
-              <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons
-                  name="lock-outline"
-                  size={20}
-                  color={colors.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.darkGrey}
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
-                  style={styles.eyeIcon}
-                >
-                  <MaterialCommunityIcons
-                    name={showPassword ? 'eye' : 'eye-off'}
-                    size={20}
-                    color={colors.primary}
+            {/* Strength meter */}
+            {password.length > 0 && (
+              <View style={styles.strengthRow}>
+                {[0, 1, 2, 3].map((i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.strengthBar,
+                      {
+                        backgroundColor:
+                          i < strength
+                            ? strength <= 1
+                              ? colors.danger
+                              : strength <= 2
+                              ? colors.warning
+                              : colors.success
+                            : colors.border,
+                      },
+                    ]}
                   />
-                </TouchableOpacity>
+                ))}
+                <Text style={styles.strengthText}>
+                  {strength <= 1 ? 'Weak' : strength <= 2 ? 'Okay' : strength === 3 ? 'Strong' : 'Excellent'}
+                </Text>
               </View>
-            </View>
+            )}
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>
-                {t('signup_confirm_password_label')}
-              </Text>
-              <View style={styles.inputWrapper}>
-                <MaterialCommunityIcons
-                  name="lock-check-outline"
-                  size={20}
-                  color={colors.primary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="••••••••"
-                  placeholderTextColor={colors.darkGrey}
-                  secureTextEntry={!showConfirmPassword}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                />
-                <TouchableOpacity
-                  onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                  style={styles.eyeIcon}
-                >
-                  <MaterialCommunityIcons
-                    name={showConfirmPassword ? 'eye' : 'eye-off'}
-                    size={20}
-                    color={colors.primary}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+            <SignUpField
+              field="confirmPassword"
+              label={t('signup_confirm_password_label')}
+              placeholder="••••••••"
+              icon="lock-check-outline"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              secureToggle
+              isVisible={showConfirmPassword}
+              onToggle={() => setShowConfirmPassword(!showConfirmPassword)}
+              focusedField={focused}
+              setFocusedField={setFocused}
+            />
 
             <CrayonButton
               label={t('signup_create_account')}
@@ -219,35 +278,25 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
             />
           </View>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>{t('signup_or_sign_up_with')}</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons
-                name="google"
-                size={24}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <MaterialCommunityIcons
-                name="apple"
-                size={24}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          </View>
-
           <View style={styles.loginContainer}>
             <Text style={styles.loginText}>{t('signup_have_account')} </Text>
             <TouchableOpacity onPress={() => navigation.replace('Login')}>
               <Text style={styles.loginLink}>{t('signup_sign_in')}</Text>
             </TouchableOpacity>
           </View>
+
+          {role === 'PARENT' && (
+            <TouchableOpacity
+              style={styles.specialistLink}
+              onPress={() => navigation.navigate('SpecialistSignUp')}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.specialistLinkText}>
+                Are you a healthcare professional?{' '}
+                <Text style={styles.specialistLinkAccent}>Create specialist account</Text>
+              </Text>
+            </TouchableOpacity>
+          )}
 
           <Text style={styles.termsText}>{t('signup_terms')}</Text>
         </ScrollView>
@@ -257,156 +306,129 @@ const SignUpScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.cream,
-  },
+  container: { flex: 1, backgroundColor: colors.cream },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingTop: 12,
+    paddingBottom: 24,
   },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 22,
   },
   backButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: colors.lightGrey,
+    backgroundColor: colors.white,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.mediumGrey,
+    borderColor: colors.border,
+    ...shadow.sm,
   },
   headerContainer: {
-    marginBottom: 32,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: colors.textDark,
-    marginBottom: 12,
-    fontFamily: 'Poppins',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textWarmBrown,
-    fontFamily: 'Inter',
-    lineHeight: 24,
-  },
-  formContainer: {
     marginBottom: 24,
   },
-  inputGroup: {
-    marginBottom: 20,
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.primary,
+    marginTop: 14,
+    marginBottom: 8,
   },
+  title: {
+    ...typography.h1,
+    fontSize: 28,
+    lineHeight: 34,
+    marginBottom: 8,
+  },
+  subtitle: {
+    ...typography.bodyLg,
+    color: colors.textMuted,
+  },
+  formContainer: { marginBottom: 18 },
+  inputGroup: { marginBottom: 16 },
   label: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.textDark,
-    marginBottom: 10,
-    fontFamily: 'Inter',
-    letterSpacing: 0.3,
+    ...typography.label,
+    marginBottom: 8,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.lightGrey,
-    borderRadius: 16,
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
     paddingHorizontal: 16,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    height: 56,
+    ...shadow.sm,
   },
-  inputIcon: {
-    marginRight: 12,
+  inputWrapperFocused: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 12,
   },
   input: {
     flex: 1,
-    height: 56,
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textDark,
     fontFamily: 'Inter',
   },
-  eyeIcon: {
-    padding: 8,
+  strengthRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: -8,
+    marginBottom: 12,
+  },
+  strengthBar: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+  },
+  strengthText: {
+    ...typography.badge,
+    color: colors.textMuted,
+    marginLeft: 6,
+    minWidth: 64,
+    textAlign: 'right',
   },
   signupButton: {
     marginTop: 16,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 32,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.mediumGrey,
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14,
-    color: colors.darkGrey,
-    fontFamily: 'Inter',
-    fontWeight: '600',
-  },
-  socialButtonsContainer: {
-    flexDirection: 'row',
-    gap: 16,
-    justifyContent: 'center',
-    marginBottom: 32,
-  },
-  socialButton: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.mediumGrey,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
   },
   loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    paddingTop: 24,
+    paddingTop: 18,
     borderTopWidth: 1,
-    borderTopColor: colors.mediumGrey,
-    marginBottom: 16,
+    borderTopColor: colors.border,
+    marginBottom: 12,
   },
   loginText: {
+    ...typography.body,
     fontSize: 14,
-    color: colors.textWarmBrown,
-    fontFamily: 'Inter',
+    color: colors.textMuted,
   },
   loginLink: {
+    ...typography.h4,
     fontSize: 14,
     color: colors.primary,
-    fontWeight: '800',
-    fontFamily: 'Inter',
   },
+  specialistLink: { alignItems: 'center', paddingVertical: 10 },
+  specialistLinkText: { ...typography.body, fontSize: 13, color: colors.textMuted },
+  specialistLinkAccent: { color: colors.primary, fontWeight: '700' },
+
   termsText: {
+    ...typography.caption,
     fontSize: 12,
-    color: colors.darkGrey,
     textAlign: 'center',
-    fontFamily: 'Inter',
-    marginBottom: 20,
   },
 });
 
 export default SignUpScreen;
-

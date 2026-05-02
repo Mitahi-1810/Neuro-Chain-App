@@ -1,49 +1,75 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, Text } from 'react-native';
+import { View, StyleSheet, Text, Image } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSequence,
+  withDelay,
   Easing,
 } from 'react-native-reanimated';
 import { colors } from '../../utils/colors';
-import { RootStackParamList } from '../../navigation';
+import { typography } from '../../utils/typography';
+import { Mascot } from '../../components/Mascot';
 
-type SplashScreenNavigationProp = any; // RootStackScreenProps<'Splash'>['navigation'];
-
-interface Props {
-  navigation: SplashScreenNavigationProp;
-}
-
-const SplashScreen: React.FC<Props> = ({ navigation }) => {
-  const opacity = useSharedValue(0);
+const SplashScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const logoScale = useSharedValue(0.8);
+  const logoOpacity = useSharedValue(0);
+  const tagOpacity = useSharedValue(0);
 
   useEffect(() => {
-    opacity.value = withTiming(1, {
-      duration: 800,
-      easing: Easing.inOut(Easing.ease),
-    });
+    logoOpacity.value = withTiming(1, { duration: 500, easing: Easing.out(Easing.cubic) });
+    logoScale.value = withSequence(
+      withTiming(1.06, { duration: 420, easing: Easing.out(Easing.cubic) }),
+      withTiming(1, { duration: 280 }),
+    );
+    tagOpacity.value = withDelay(
+      280,
+      withTiming(1, { duration: 500, easing: Easing.out(Easing.cubic) }),
+    );
 
     const timer = setTimeout(() => {
       navigation.replace('Welcome');
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
+  const logoStyle = useAnimatedStyle(() => ({
+    opacity: logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
+  }));
+
+  const tagStyle = useAnimatedStyle(() => ({
+    opacity: tagOpacity.value,
+    transform: [{ translateY: 10 - tagOpacity.value * 10 }],
   }));
 
   return (
     <View style={styles.container}>
-      <Animated.View style={animatedStyle}>
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>NC</Text>
-          </View>
-          <Text style={styles.appName}>NeuroChain</Text>
-          <Text style={styles.tagline}>Early Support Starts Here</Text>
+      <View style={styles.bgBlobOne} />
+      <View style={styles.bgBlobTwo} />
+
+      <View style={styles.mascotRow}>
+        <Mascot kind="star" size="sm" />
+        <Mascot kind="heart" size="sm" />
+        <Mascot kind="sun" size="sm" />
+      </View>
+
+      <Animated.View style={[styles.logoCard, logoStyle]}>
+        <Image
+          source={require('../../../Neuro_logo.png')}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+      </Animated.View>
+
+      <Animated.View style={tagStyle}>
+        <Text style={styles.tagline}>Early Support Starts Here</Text>
+        <View style={styles.dotRow}>
+          <View style={[styles.dot, { backgroundColor: colors.primary }]} />
+          <View style={[styles.dot, { backgroundColor: colors.secondary }]} />
+          <View style={[styles.dot, { backgroundColor: colors.pink }]} />
         </View>
       </Animated.View>
     </View>
@@ -56,42 +82,66 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cream,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
   },
-  logoContainer: {
-    alignItems: 'center',
+  bgBlobOne: {
+    position: 'absolute',
+    top: -120,
+    right: -80,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: colors.primaryLight,
   },
-  logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+  bgBlobTwo: {
+    position: 'absolute',
+    bottom: -100,
+    left: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: colors.secondaryLight,
   },
-  logoText: {
-    fontSize: 48,
-    fontWeight: '800',
-    color: colors.textLight,
-    fontFamily: 'Poppins',
+  mascotRow: {
+    flexDirection: 'row',
+    gap: 14,
+    marginBottom: 28,
   },
-  appName: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.textDark,
-    marginTop: 16,
-    fontFamily: 'Poppins',
+  logoCard: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 28,
+    paddingVertical: 22,
+    borderRadius: 32,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
+    elevation: 10,
+  },
+  logoImage: {
+    width: 240,
+    height: 96,
   },
   tagline: {
-    fontSize: 14,
-    color: colors.textWarmBrown,
-    marginTop: 8,
-    fontFamily: 'Inter',
+    ...typography.body,
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textBody,
+    marginTop: 28,
+    textAlign: 'center',
+  },
+  dotRow: {
+    flexDirection: 'row',
+    gap: 6,
+    justifyContent: 'center',
+    marginTop: 14,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
 });
 

@@ -64,7 +64,148 @@ export const initDatabase = async () => {
       sync_status INTEGER DEFAULT 0,
       FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS specialists (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      full_name TEXT,
+      medical_reg_number TEXT,
+      specialty TEXT,
+      clinic_name TEXT,
+      city TEXT,
+      consultation_fee_bdt INTEGER,
+      languages TEXT, -- JSON
+      bio TEXT,
+      profile_photo_url TEXT,
+      bank_account_encrypted TEXT,
+      status TEXT CHECK(status IN ('PENDING', 'ACTIVE', 'INACTIVE')),
+      is_verified INTEGER DEFAULT 0,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS appointments (
+      id TEXT PRIMARY KEY,
+      parent_id TEXT,
+      specialist_id TEXT,
+      child_id TEXT,
+      scheduled_at TEXT,
+      session_type TEXT,
+      status TEXT CHECK(status IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED')),
+      amount_paid_bdt REAL,
+      discount_applied_pct REAL DEFAULT 0,
+      payment_gateway TEXT,
+      payment_reference TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (parent_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE,
+      FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS clinical_soap_notes (
+      id TEXT PRIMARY KEY,
+      appointment_id TEXT,
+      ai_generated_json TEXT, -- JSON
+      specialist_edited_json TEXT, -- JSON
+      is_signed INTEGER DEFAULT 0,
+      signed_at TEXT,
+      signed_by TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+      FOREIGN KEY (signed_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS specialist_blocked_slots (
+      id TEXT PRIMARY KEY,
+      specialist_id TEXT,
+      slot_start TEXT,
+      slot_end TEXT,
+      reason TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE
+    );
   `);
   
   console.log('Database initialized successfully.');
+};
+
+export const ensureSpecialistSchema = async () => {
+  const database = await getDatabase();
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS specialists (
+      id TEXT PRIMARY KEY,
+      user_id TEXT,
+      full_name TEXT,
+      medical_reg_number TEXT,
+      specialty TEXT,
+      clinic_name TEXT,
+      city TEXT,
+      consultation_fee_bdt INTEGER,
+      languages TEXT,
+      bio TEXT,
+      profile_photo_url TEXT,
+      bank_account_encrypted TEXT,
+      status TEXT CHECK(status IN ('PENDING', 'ACTIVE', 'INACTIVE')),
+      is_verified INTEGER DEFAULT 0,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS appointments (
+      id TEXT PRIMARY KEY,
+      parent_id TEXT,
+      specialist_id TEXT,
+      child_id TEXT,
+      scheduled_at TEXT,
+      session_type TEXT,
+      status TEXT CHECK(status IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED')),
+      amount_paid_bdt REAL,
+      discount_applied_pct REAL DEFAULT 0,
+      payment_gateway TEXT,
+      payment_reference TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (parent_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE,
+      FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS clinical_soap_notes (
+      id TEXT PRIMARY KEY,
+      appointment_id TEXT,
+      ai_generated_json TEXT,
+      specialist_edited_json TEXT,
+      is_signed INTEGER DEFAULT 0,
+      signed_at TEXT,
+      signed_by TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE,
+      FOREIGN KEY (signed_by) REFERENCES users(id) ON DELETE SET NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS specialist_blocked_slots (
+      id TEXT PRIMARY KEY,
+      specialist_id TEXT,
+      slot_start TEXT,
+      slot_end TEXT,
+      reason TEXT,
+      created_at TEXT,
+      updated_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE
+    );
+  `);
 };

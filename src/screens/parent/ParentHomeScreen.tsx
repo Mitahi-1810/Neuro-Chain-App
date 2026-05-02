@@ -7,13 +7,14 @@ import {
   SafeAreaView,
   TouchableOpacity,
   FlatList,
-  Image,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors, tiers } from '../../utils/colors';
+import { colors, tiers, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
-import { WarmProgressRing } from '../../components/WarmProgressRing';
+import { Mascot } from '../../components/Mascot';
+import { AvatarBubble, SectionTitle, StatPill } from '../../components/Decorations';
 import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
 import { LanguageToggle } from '../../components/LanguageToggle';
 import { useI18n } from '../../i18n/useI18n';
@@ -36,200 +37,354 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   }, [activeChild, refreshDailyPlan]);
 
   const tier = user?.tier_level || 'FREE';
-  const todayCompletionPercent = 0; // Mock: could be (todaysSessions.length / totalDailyGames) * 100
-  const tierColor = tiers[tier.toLowerCase() as keyof typeof tiers]?.color || colors.primary;
-  const tierLabel = t(`tier_${tier.toLowerCase() as 'free' | 'basic' | 'premium'}`);
+  const tierKey = tier.toLowerCase() as 'free' | 'basic' | 'premium';
+  const tierColor = tiers[tierKey]?.color || colors.primary;
+  const tierLabel = t(`tier_${tierKey}`);
+  const totalPlan = dailyPlan.length || 3;
+  const progressPercent = Math.min(
+    100,
+    Math.round((todaysSessions.length / totalPlan) * 100),
+  );
 
-  const renderFreeTierHome = () => (
-    <View>
-      <View style={styles.section}>
-  <Text style={styles.sectionTitle}>{t('home_quick_actions')}</Text>
-        <View style={styles.quickActionsGrid}>
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.primary }]}
-            onPress={() => navigation.navigate('AutismScreener')}
-          >
-            <MaterialCommunityIcons
-              name="clipboard-list"
-              size={32}
-              color={colors.primary}
-            />
-            <Text style={styles.actionTitle}>{t('home_screen_my_child')}</Text>
-            <Text style={styles.actionDesc}>{t('home_screen_mchat')}</Text>
-          </TouchableOpacity>
+  const greetingTime = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+  };
 
-          <TouchableOpacity
-            style={[styles.actionCard, { borderColor: colors.secondary }]}
-            onPress={() => navigation.navigate('Games')}
-          >
-            <MaterialCommunityIcons
-              name="lock"
-              size={32}
-              color={colors.secondary}
-            />
-            <Text style={styles.actionTitle}>{t('home_explore_games')}</Text>
-            <Text style={styles.actionDesc}>{t('home_preview')}</Text>
+  /* ───────── HEADER ───────── */
+  const Header = () => (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        <View style={styles.profileRow}>
+          <AvatarBubble
+            initial={activeChild?.first_name?.charAt(0) || user?.full_name?.charAt(0) || '?'}
+            size={48}
+            bg={colors.secondary}
+            ring={colors.secondaryLight}
+          />
+          <View>
+            <Text style={styles.headerHello}>{greetingTime()},</Text>
+            <Text style={styles.headerName}>
+              {activeChild?.first_name || user?.full_name?.split(' ')[0] || 'Parent'}
+            </Text>
+          </View>
+        </View>
+        <View style={styles.headerRight}>
+          <LanguageToggle compact />
+          <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textDark} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.section}>
-  <Text style={styles.sectionTitle}>{t('home_meet_specialists')}</Text>
-        <CrayonCard
-          style={styles.specialistTeaser}
-          backgroundColor={colors.accentLight}
-        >
-          <Text style={styles.teaserText}>{t('home_specialists_teaser')}</Text>
-          <CrayonButton
-            label={t('home_learn_more')}
-            onPress={() => navigation.navigate('SubscriptionUpgrade')}
-            variant="outline"
-            size="small"
-            style={{ marginTop: 12 }}
-          />
-        </CrayonCard>
+      <View style={styles.tierBar}>
+        <View style={[styles.tierChip, { backgroundColor: tierColor + '18' }]}>
+          <Text style={{ fontSize: 12 }}>👑</Text>
+          <Text style={[styles.tierChipText, { color: tierColor }]}>{tierLabel} plan</Text>
+        </View>
+        <View style={styles.streakChip}>
+          <Text style={{ fontSize: 14 }}>🔥</Text>
+          <Text style={styles.streakChipText}>
+            {streakData.current_streak} day streak
+          </Text>
+        </View>
       </View>
     </View>
   );
 
-  const renderBasicTierHome = () => (
-    <View>
-      <View style={styles.section}>
-  <Text style={styles.sectionTitle}>{t('home_todays_plan')}</Text>
-        {dailyPlan.length === 0 ? (
-          <CrayonCard
-            style={styles.emptyStateCard}
-            backgroundColor={colors.lightGrey}
-          >
-            <MaterialCommunityIcons
-              name="calendar-blank"
-              size={48}
-              color={colors.primary}
-              style={{ marginBottom: 12 }}
-            />
-            <Text style={styles.emptyStateTitle}>{t('home_no_games_title')}</Text>
-            <Text style={styles.emptyStateDesc}>{t('home_no_games_desc')}</Text>
+  /* ───────── HERO CARD ───────── */
+  const HeroCard = () => {
+    const nextGame = dailyPlan.find(
+      (g) => !todaysSessions.some((s) => s.game_id === g.id),
+    );
+    const ctaLabel = tier === 'FREE'
+      ? 'Start free screening'
+      : nextGame
+      ? 'Continue today\'s plan'
+      : 'Browse games';
+    const onCta = () => {
+      if (tier === 'FREE') return navigation.navigate('AutismScreener');
+      if (nextGame) return navigation.navigate('GameRunner', { gameId: nextGame.id });
+      navigation.navigate('Games');
+    };
+
+    return (
+      <CrayonCard variant="primary" padding={22} style={styles.hero}>
+        <View style={styles.heroRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.heroEyebrow}>
+              {tier === 'FREE' ? 'first step' : 'today'}
+            </Text>
+            <Text style={styles.heroTitle}>
+              {tier === 'FREE'
+                ? "Let's check in on\nyour little one."
+                : nextGame
+                ? `Let's play\n${nextGame.name}!`
+                : "You're all caught up!"}
+            </Text>
+            <Text style={styles.heroDesc}>
+              {tier === 'FREE'
+                ? 'A quick, age-based autism screening to start your journey.'
+                : nextGame
+                ? `${nextGame.target_skill} · ${nextGame.duration_minutes} min`
+                : 'Great work today. Explore more games or check the plan tomorrow.'}
+            </Text>
             <CrayonButton
-              label={t('home_browse_games')}
-              onPress={() => navigation.navigate('Games')}
+              label={ctaLabel}
+              onPress={onCta}
+              variant="secondary"
+              size="medium"
+              style={{ marginTop: 14, alignSelf: 'flex-start' }}
+              iconRight={
+                <MaterialCommunityIcons name="arrow-right" size={18} color={colors.textDark} />
+              }
+            />
+          </View>
+          <Mascot
+            kind={tier === 'FREE' ? 'puzzle' : nextGame ? 'rocket' : 'star'}
+            size="xl"
+            tint="rgba(255,255,255,0.18)"
+          />
+        </View>
+      </CrayonCard>
+    );
+  };
+
+  /* ───────── TODAY PROGRESS ───────── */
+  const TodayProgress = () => (
+    <CrayonCard variant="default" padding={18} style={{ marginBottom: 18 }}>
+      <View style={styles.progressHeader}>
+        <View>
+          <Text style={styles.progressEyebrow}>today's progress</Text>
+          <Text style={styles.progressValue}>
+            {progressPercent}% <Text style={styles.progressValueMuted}>complete</Text>
+          </Text>
+        </View>
+        <View style={styles.progressMetric}>
+          <Text style={styles.progressMetricValue}>
+            {todaysSessions.length}/{totalPlan}
+          </Text>
+          <Text style={styles.progressMetricLabel}>sessions</Text>
+        </View>
+      </View>
+      <View style={styles.progressBar}>
+        <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+      </View>
+    </CrayonCard>
+  );
+
+  /* ───────── STAT TILES ───────── */
+  const Stats = () => (
+    <View style={styles.statRow}>
+      <StatPill
+        emoji="🔥"
+        label="Streak"
+        value={`${streakData.current_streak}d`}
+        iconBg={colors.secondaryLight}
+        iconColor={colors.secondaryDark}
+      />
+      <StatPill
+        emoji="🎮"
+        label="Games"
+        value={streakData.total_games_played}
+        iconBg={colors.primaryLight}
+        iconColor={colors.primary}
+      />
+      <StatPill
+        emoji="⭐"
+        label="Points"
+        value={streakData.total_games_played * 12}
+        iconBg={colors.accentLight}
+        iconColor={colors.accentDark}
+      />
+    </View>
+  );
+
+  /* ───────── FREE TIER BLOCK ───────── */
+  const FreeTier = () => (
+    <View>
+      <SectionTitle title="Quick actions" />
+      <View style={styles.quickGrid}>
+        <TouchableOpacity
+          style={[styles.quickCard, styles.quickCardPurple]}
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('AutismScreener')}
+        >
+          <Mascot kind="puzzle" size="md" tint={colors.white} />
+          <Text style={[styles.quickTitle, { color: colors.white }]}>Screen my child</Text>
+          <Text style={[styles.quickDesc, { color: colors.primaryLight }]}>
+            Age-appropriate screening in your language
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.quickCard, styles.quickCardYellow]}
+          activeOpacity={0.9}
+          onPress={() => navigation.navigate('Games')}
+        >
+          <Mascot kind="controller" size="md" tint={colors.white} />
+          <Text style={[styles.quickTitle, { color: colors.textDark }]}>Preview games</Text>
+          <Text style={[styles.quickDesc, { color: colors.textBody }]}>
+            See what's inside before unlocking
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <SectionTitle
+        title="Meet specialists"
+        action={{ label: 'See all', onPress: () => navigation.navigate('SubscriptionUpgrade') }}
+      />
+      <CrayonCard variant="teal" padding={20} style={{ marginBottom: 18 }}>
+        <View style={styles.specRow}>
+          <Mascot kind="heart" size="lg" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.specTitle}>Talk to a developmental specialist</Text>
+            <Text style={styles.specDesc}>
+              Bangla & English-speaking pediatric specialists, on your schedule.
+            </Text>
+            <CrayonButton
+              label="Learn more"
+              onPress={() => navigation.navigate('SubscriptionUpgrade')}
+              variant="dark"
+              size="small"
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
+            />
+          </View>
+        </View>
+      </CrayonCard>
+    </View>
+  );
+
+  /* ───────── BASIC / PREMIUM PLAN BLOCK ───────── */
+  const PaidTier = () => (
+    <View>
+      <SectionTitle
+        title="Today's plan"
+        action={{ label: 'See all', onPress: () => navigation.navigate('Games') }}
+      />
+      {dailyPlan.length === 0 ? (
+        <CrayonCard padding={28} style={{ alignItems: 'center', marginBottom: 18 }}>
+          <Mascot kind="cloud" size="lg" />
+          <Text style={[styles.specTitle, { textAlign: 'center', marginTop: 14 }]}>
+            No plan today
+          </Text>
+          <Text style={[styles.specDesc, { textAlign: 'center' }]}>
+            Set up your child's profile and we'll auto-generate one.
+          </Text>
+          <CrayonButton
+            label="Browse games"
+            onPress={() => navigation.navigate('Games')}
+            variant="primary"
+            size="medium"
+            style={{ marginTop: 14 }}
+          />
+        </CrayonCard>
+      ) : (
+        <FlatList
+          scrollEnabled={false}
+          data={dailyPlan}
+          keyExtractor={(item) => item.id}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          renderItem={({ item, index }) => {
+            const isCompleted = todaysSessions.some((s) => s.game_id === item.id);
+            const palette = [colors.primary, colors.secondary, colors.pink, colors.accent, colors.sky];
+            const accent = palette[index % palette.length];
+            return (
+              <TouchableOpacity
+                activeOpacity={0.92}
+                onPress={() => !isCompleted && navigation.navigate('GameRunner', { gameId: item.id })}
+                style={styles.planCard}
+              >
+                <View style={[styles.planIcon, { backgroundColor: accent + '22' }]}>
+                  <Text style={{ fontSize: 24 }}>
+                    {['🎯', '🌈', '🧩', '🎵', '✨'][index % 5]}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.planName}>{item.name}</Text>
+                  <Text style={styles.planMeta}>
+                    {item.target_skill} · {item.duration_minutes} min
+                  </Text>
+                </View>
+                {isCompleted ? (
+                  <View style={styles.planDone}>
+                    <MaterialCommunityIcons name="check" size={18} color={colors.success} />
+                  </View>
+                ) : (
+                  <View style={styles.planPlayBtn}>
+                    <MaterialCommunityIcons name="play" size={18} color={colors.white} />
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          }}
+        />
+      )}
+
+      <View style={{ height: 22 }} />
+      <SectionTitle title="This week at a glance" />
+      <CrayonCard variant="sun" padding={20} style={{ marginBottom: 18 }}>
+        <View style={styles.weekRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.weekEyebrow}>you did</Text>
+            <Text style={styles.weekValue}>
+              {streakData.current_streak} streak{streakData.current_streak === 1 ? '' : 's'}
+            </Text>
+            <Text style={styles.weekDesc}>
+              Keep going — most kids see growth around the 7-day mark.
+            </Text>
+          </View>
+          <Mascot kind="medal" size="lg" tint="rgba(255,255,255,0.4)" />
+        </View>
+      </CrayonCard>
+
+      {/* AI Check-Up — available to all paid tiers */}
+      <CrayonCard padding={20} style={{ marginBottom: 18, borderColor: colors.primary + '30', borderWidth: 1.5 }}>
+        <View style={styles.specRow}>
+          <Mascot kind="brain" size="md" />
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <Text style={styles.specTitle}>AI Behavioral Check</Text>
+              <View style={{ backgroundColor: colors.primaryLight, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 }}>
+                <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, fontFamily: 'Poppins' }}>2 MIN</Text>
+              </View>
+            </View>
+            <Text style={styles.specDesc}>
+              Use your camera to measure eye contact, engagement, and mood. Fully on-device — no video stored.
+            </Text>
+            <CrayonButton
+              label="Start AI Check-Up"
+              onPress={() => navigation.navigate('AIScreening', { riskLevel: 'MODERATE' })}
               variant="primary"
               size="small"
-              style={{ marginTop: 12 }}
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
+              iconRight={<MaterialCommunityIcons name="brain" size={16} color={colors.white} />}
             />
-          </CrayonCard>
-        ) : (
-          <FlatList
-            scrollEnabled={false}
-            data={dailyPlan}
-            renderItem={({ item }) => {
-              const isCompleted = todaysSessions.some(
-                (session) => session.game_id === item.id
-              );
-              return (
-                <CrayonCard style={styles.gameCard}>
-                  <View style={styles.gameCardContent}>
-                    <View style={styles.gameInfo}>
-                      <Text style={styles.gameName}>{item.name}</Text>
-                      <Text style={styles.gameSkill}>{item.target_skill}</Text>
-                      <Text style={styles.gameDuration}>
-                        {item.duration_minutes} min
-                      </Text>
-                      {tier === 'PREMIUM' && item.requires_camera && (
-                        <View style={styles.aiBadge}>
-                          <Text style={styles.aiBadgeText}>AI Active</Text>
-                        </View>
-                      )}
-                    </View>
-                    <View style={styles.gameStatus}>
-                      {isCompleted ? (
-                        <MaterialCommunityIcons
-                          name="check-circle"
-                          size={24}
-                          color={colors.success}
-                        />
-                      ) : (
-                        <CrayonButton
-                          label={t('game_play')}
-                          onPress={() => navigation.navigate('GameRunner')}
-                          variant="primary"
-                          size="small"
-                        />
-                      )}
-                    </View>
-                  </View>
-                </CrayonCard>
-              );
-            }}
-            keyExtractor={(item) => item.id}
-          />
-        )}
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.metricsGrid}>
-          <CrayonCard style={styles.metricCard}>
-            <MaterialCommunityIcons
-              name="fire"
-              size={28}
-              color={colors.secondary}
-            />
-            <Text style={styles.metricValue}>{streakData.current_streak}</Text>
-            <Text style={styles.metricLabel}>{t('home_day_streak')}</Text>
-          </CrayonCard>
-
-          <CrayonCard style={styles.metricCard}>
-            <MaterialCommunityIcons
-              name="gamepad-variant"
-              size={28}
-              color={colors.primary}
-            />
-            <Text style={styles.metricValue}>
-              {streakData.total_games_played}
-            </Text>
-            <Text style={styles.metricLabel}>{t('home_games_played')}</Text>
-          </CrayonCard>
+          </View>
         </View>
-      </View>
+      </CrayonCard>
 
-      <View style={styles.section}>
-  <Text style={styles.sectionTitle}>{t('home_weekly_progress')}</Text>
-        <CrayonCard style={styles.chartPlaceholder}>
-          <MaterialCommunityIcons
-            name="chart-line"
-            size={48}
-            color={colors.primary}
-            style={{ marginBottom: 8 }}
-          />
-          <Text style={styles.chartTitle}>{t('home_weekly_chart_title')}</Text>
-          <Text style={styles.chartDesc}>{t('home_weekly_chart_desc')}</Text>
-        </CrayonCard>
-      </View>
-    </View>
-  );
-
-  const renderPremiumTierHome = () => (
-    <View>
-      {/* Same as Basic + Additional Premium features */}
-      {renderBasicTierHome()}
-      <View style={styles.section}>
-  <Text style={styles.sectionTitle}>{t('home_premium_features')}</Text>
-        <CrayonCard
-          style={styles.premiumCard}
-          backgroundColor={colors.accentLight}
-        >
-          <MaterialCommunityIcons
-            name="crown"
-            size={40}
-            color={colors.secondary}
-          />
-          <Text style={styles.premiumTitle}>{t('home_ai_insights_title')}</Text>
-          <Text style={styles.premiumDesc}>{t('home_ai_insights_desc')}</Text>
-          <View style={styles.roiContainer}>
-            <Text style={styles.roiLabel}>{t('home_roi_label')}</Text>
-            <Text style={styles.roiValue}>{t('home_roi_value', { value: 25 })}</Text>
+      {tier === 'PREMIUM' && (
+        <CrayonCard variant="sky" padding={20} style={{ marginBottom: 18 }}>
+          <View style={styles.specRow}>
+            <Mascot kind="brain" size="md" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.specTitle}>AI insights ready</Text>
+              <Text style={styles.specDesc}>
+                Tap to see this week's GPT-4 generated progress summary.
+              </Text>
+              <CrayonButton
+                label="Open insights"
+                onPress={() => navigation.navigate('Insights')}
+                variant="primary"
+                size="small"
+                style={{ marginTop: 12, alignSelf: 'flex-start' }}
+              />
+            </View>
           </View>
         </CrayonCard>
-      </View>
+      )}
     </View>
   );
 
@@ -237,92 +392,31 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={tier === 'FREE' ? styles.scrollContentFree : undefined}
+        contentContainerStyle={styles.scroll}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <View style={styles.childInfo}>
-              <View style={styles.childAvatar}>
-                <Text style={styles.avatarText}>
-                  {activeChild?.first_name?.charAt(0).toUpperCase() || '?'}
-                </Text>
-              </View>
-              <View>
-                <Text style={styles.childName}>
-                    {activeChild?.first_name || t('home_child_default_name')}
-                </Text>
-                <Text style={[styles.tierBadge, { color: tierColor }]}
-                >
-                    {t('home_tier_label', { tier: tierLabel })}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.headerActions}>
-              <LanguageToggle compact />
-              <TouchableOpacity style={styles.notificationBell}>
-                <MaterialCommunityIcons
-                  name="bell-outline"
-                  size={24}
-                  color={colors.primary}
-                />
-                <View style={styles.bellBadge} />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          <View style={styles.streakContainer}>
-            <MaterialCommunityIcons
-              name="fire"
-              size={20}
-              color={colors.secondary}
-            />
-            <Text style={styles.streakText}>
-              {t('home_streak_text', { count: streakData.current_streak })}
-            </Text>
-          </View>
-        </View>
-
-        {/* Tier-specific content */}
-        <View style={styles.content}>
-          {tier === 'FREE' && renderFreeTierHome()}
-          {tier === 'BASIC' && renderBasicTierHome()}
-          {tier === 'PREMIUM' && renderPremiumTierHome()}
+        <Header />
+        <View style={styles.body}>
+          <HeroCard />
+          <TodayProgress />
+          <Stats />
+          <View style={{ height: 24 }} />
+          {tier === 'FREE' ? <FreeTier /> : <PaidTier />}
         </View>
       </ScrollView>
 
-      {tier === 'FREE' && (
-        <View style={styles.bottomBannerWrapper}>
-          <TouchableOpacity
-            style={styles.bottomBanner}
-            onPress={() => navigation.navigate('SubscriptionUpgrade')}
-          >
-            <View style={styles.bannerText}>
-              <Text style={styles.bannerTitle}>{t('home_unlock_title')}</Text>
-              <Text style={styles.bannerPrice}>{t('home_unlock_price')}</Text>
-            </View>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={20}
-              color={colors.textLight}
-            />
-          </TouchableOpacity>
-        </View>
-      )}
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.cream,
-  },
+  container: { flex: 1, backgroundColor: colors.cream },
+  scroll: { paddingBottom: 140 },
+
+  /* Header */
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingTop: 12,
+    paddingBottom: 6,
   },
   headerTop: {
     flexDirection: 'row',
@@ -330,274 +424,274 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  headerActions: {
+  profileRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerHello: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+  headerName: {
+    ...typography.h2,
+    fontSize: 20,
+  },
+  headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
   },
-  childInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  childAvatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarText: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: colors.white,
-    fontFamily: 'Poppins',
-  },
-  childName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.textDark,
-    fontFamily: 'Poppins',
-  },
-  tierBadge: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginTop: 3,
-    fontFamily: 'Inter',
-  },
-  notificationBell: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  bellBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: colors.white,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
+    ...shadow.sm,
   },
-  bellBadge: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 9,
-    height: 9,
-    borderRadius: 5,
-    backgroundColor: colors.danger,
+  /* Tier bar */
+  tierBar: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 4,
   },
-  streakContainer: {
+  tierChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  tierChipText: {
+    ...typography.badge,
+    fontSize: 11,
+    textTransform: 'none',
+    letterSpacing: 0.2,
+  },
+  streakChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: radius.full,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: colors.surfaceWarm,
+    borderWidth: 1,
+    borderColor: '#F8E2A4',
+  },
+  streakChipText: {
+    ...typography.badge,
+    fontSize: 11,
+    color: colors.secondaryDark,
+    textTransform: 'none',
+    letterSpacing: 0.2,
+  },
+
+  /* Body */
+  body: {
+    paddingHorizontal: 24,
+    paddingTop: 16,
+  },
+
+  /* Hero */
+  hero: {
+    marginBottom: 18,
+  },
+  heroRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  streakText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textDark,
-    fontFamily: 'Poppins',
+  heroEyebrow: {
+    ...typography.eyebrow,
+    color: colors.secondary,
+    marginBottom: 8,
   },
-  content: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+  heroTitle: {
+    ...typography.h1,
+    fontSize: 26,
+    lineHeight: 32,
+    color: colors.white,
   },
-  scrollContentFree: {
-    paddingBottom: 120,
+  heroDesc: {
+    ...typography.body,
+    color: colors.primaryLight,
+    marginTop: 8,
   },
-  bottomBannerWrapper: {
-    position: 'absolute',
-    left: 20,
-    right: 20,
-    bottom: 16,
-  },
-  bottomBanner: {
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  bannerContent: {
+
+  /* Progress */
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 12,
   },
-  bannerText: {
-    flex: 1,
+  progressEyebrow: {
+    ...typography.eyebrow,
+    color: colors.textMuted,
   },
-  bannerTitle: {
+  progressValue: {
+    ...typography.h2,
+    fontSize: 28,
+    marginTop: 4,
+    color: colors.primary,
+  },
+  progressValueMuted: {
     fontSize: 16,
-    fontWeight: '700',
-    color: colors.textLight,
+    color: colors.textMuted,
+    fontWeight: '600',
+  },
+  progressMetric: {
+    alignItems: 'flex-end',
+  },
+  progressMetricValue: {
+    ...typography.h3,
+    fontSize: 18,
+  },
+  progressMetricLabel: {
+    ...typography.caption,
+  },
+  progressBar: {
+    height: 10,
+    backgroundColor: colors.lightGrey,
+    borderRadius: 5,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: colors.primary,
+    borderRadius: 5,
+  },
+
+  /* Stats */
+  statRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
+  /* Quick grid */
+  quickGrid: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 20,
+  },
+  quickCard: {
+    flex: 1,
+    borderRadius: radius.xl,
+    padding: 18,
+    minHeight: 170,
+    justifyContent: 'space-between',
+  },
+  quickCardPurple: {
+    backgroundColor: colors.primary,
+    ...shadow.primary,
+  },
+  quickCardYellow: {
+    backgroundColor: colors.secondary,
+    ...shadow.yellow,
+  },
+  quickTitle: {
+    ...typography.h3,
+    fontSize: 16,
+    marginTop: 12,
+  },
+  quickDesc: {
+    ...typography.body,
+    fontSize: 12,
+    marginTop: 4,
+  },
+
+  /* Specialist card */
+  specRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  specTitle: {
+    ...typography.h3,
+    fontSize: 16,
     marginBottom: 4,
-    fontFamily: 'Poppins',
   },
-  bannerPrice: {
-    fontSize: 14,
-    color: colors.textLight,
-    fontFamily: 'Inter',
+  specDesc: {
+    ...typography.body,
+    color: colors.textBody,
+    fontSize: 13,
   },
-  bannerCTA: {
+
+  /* Plan cards */
+  planCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: 14,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  planIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  planName: {
+    ...typography.h3,
+    fontSize: 15,
+  },
+  planMeta: {
+    ...typography.caption,
+    marginTop: 2,
+  },
+  planPlayBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: colors.primary,
+    alignItems: 'center',
     justifyContent: 'center',
+    ...shadow.primary,
+  },
+  planDone: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.successLight,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  section: { marginBottom: 24 },
-  sectionTitle: {
-    fontSize: 18, fontWeight: '800', color: colors.textDark,
-    marginBottom: 14, fontFamily: 'Poppins', letterSpacing: -0.2,
-  },
-  quickActionsGrid: { flexDirection: 'row', gap: 12 },
-  actionCard: {
-    flex: 1, borderWidth: 1.5, borderRadius: 18,
-    padding: 18, backgroundColor: colors.white, alignItems: 'center',
-    shadowColor: colors.textDark, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
-  },
-  actionTitle: {
-    fontSize: 14, fontWeight: '700', color: colors.textDark,
-    marginTop: 10, textAlign: 'center', fontFamily: 'Poppins',
-  },
-  actionDesc: {
-    fontSize: 12, color: colors.textMuted, marginTop: 4,
-    textAlign: 'center', fontFamily: 'Inter',
-  },
-  specialistTeaser: { padding: 20, alignItems: 'center' },
-  teaserText: {
-    fontSize: 14, color: colors.textBody, textAlign: 'center', fontFamily: 'Inter',
-  },
-  emptyStateCard: { padding: 32, alignItems: 'center' },
-  emptyStateTitle: {
-    fontSize: 17, fontWeight: '700', color: colors.textDark,
-    marginBottom: 8, fontFamily: 'Poppins',
-  },
-  emptyStateDesc: {
-    fontSize: 14, color: colors.textMuted, textAlign: 'center',
-    marginBottom: 12, fontFamily: 'Inter',
-  },
-  gameCard: {
-    marginBottom: 12,
-    padding: 16,
-  },
-  gameCardContent: {
+
+  /* Week card */
+  weekRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  gameInfo: {
-    flex: 1,
-  },
-  gameName: {
-    fontSize: 16,
-    fontWeight: '700',
+  weekEyebrow: {
+    ...typography.eyebrow,
     color: colors.textDark,
-    fontFamily: 'Poppins',
+    opacity: 0.7,
   },
-  gameSkill: {
-    fontSize: 12,
-    color: colors.darkGrey,
+  weekValue: {
+    ...typography.h1,
+    fontSize: 30,
     marginTop: 4,
-    fontFamily: 'Inter',
-  },
-  gameDuration: {
-    fontSize: 12,
-    color: colors.textWarmBrown,
-    marginTop: 4,
-    fontFamily: 'Inter',
-  },
-  aiBadge: {
-    marginTop: 6,
-    alignSelf: 'flex-start',
-    backgroundColor: colors.accentLight,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  aiBadgeText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: colors.secondary,
-    fontFamily: 'Inter',
-  },
-  gameStatus: {
-    marginLeft: 12,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  metricCard: {
-    flex: 1,
-    padding: 16,
-    alignItems: 'center',
-  },
-  metricValue: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.primary,
-    marginTop: 8,
-    fontFamily: 'Poppins',
-  },
-  metricLabel: {
-    fontSize: 12,
-    color: colors.textWarmBrown,
-    marginTop: 4,
-    textAlign: 'center',
-    fontFamily: 'Inter',
-  },
-  chartPlaceholder: {
-    padding: 32,
-    alignItems: 'center',
-  },
-  chartTitle: {
-    fontSize: 16,
-    fontWeight: '700',
+    marginBottom: 6,
     color: colors.textDark,
-    marginBottom: 4,
-    fontFamily: 'Poppins',
   },
-  chartDesc: {
-    fontSize: 12,
-    color: colors.darkGrey,
-    textAlign: 'center',
-    fontFamily: 'Inter',
+  weekDesc: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textBody,
+    paddingRight: 30,
   },
-  premiumCard: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  premiumTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: colors.textDark,
-    marginTop: 12,
-    fontFamily: 'Poppins',
-  },
-  premiumDesc: {
-    fontSize: 14,
-    color: colors.textWarmBrown,
-    textAlign: 'center',
-    marginTop: 8,
-    marginBottom: 16,
-    fontFamily: 'Inter',
-  },
-  roiContainer: {
-    alignItems: 'center',
-  },
-  roiLabel: {
-    fontSize: 12,
-    color: colors.darkGrey,
-    fontFamily: 'Inter',
-  },
-  roiValue: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.secondary,
-    fontFamily: 'Poppins',
-  },
+
 });
 
 export default ParentHomeScreen;

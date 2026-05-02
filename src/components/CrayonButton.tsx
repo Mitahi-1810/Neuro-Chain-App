@@ -13,11 +13,12 @@ import { colors, radius, shadow } from '../utils/colors';
 interface CrayonButtonProps {
   onPress: () => void;
   label: string;
-  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'outline' | 'ghost' | 'dark';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
+  iconRight?: React.ReactNode;
   fullWidth?: boolean;
   style?: StyleProp<ViewStyle>;
 }
@@ -30,22 +31,24 @@ export const CrayonButton: React.FC<CrayonButtonProps> = ({
   disabled = false,
   loading = false,
   icon,
+  iconRight,
   fullWidth = false,
   style,
 }) => {
   const variantStyles = {
-    primary:   { bg: colors.primary,   text: colors.white,       border: colors.primary   },
-    secondary: { bg: colors.secondary, text: colors.white,       border: colors.secondary },
-    success:   { bg: colors.success,   text: colors.white,       border: colors.success   },
-    danger:    { bg: colors.danger,    text: colors.white,       border: colors.danger    },
-    outline:   { bg: 'transparent',    text: colors.primary,     border: colors.primary   },
-    ghost:     { bg: colors.primaryLight, text: colors.primary,  border: 'transparent'    },
+    primary:   { bg: colors.primary,      text: colors.white,    border: colors.primary,   shadow: shadow.primary },
+    secondary: { bg: colors.secondary,    text: colors.textDark, border: colors.secondary, shadow: shadow.yellow  },
+    dark:      { bg: colors.textDark,     text: colors.white,    border: colors.textDark,  shadow: shadow.md      },
+    success:   { bg: colors.success,      text: colors.white,    border: colors.success,   shadow: shadow.md      },
+    danger:    { bg: colors.danger,       text: colors.white,    border: colors.danger,    shadow: shadow.md      },
+    outline:   { bg: colors.white,        text: colors.primary,  border: colors.primary,   shadow: shadow.sm      },
+    ghost:     { bg: colors.primaryLight, text: colors.primary,  border: 'transparent',    shadow: shadow.sm      },
   };
 
   const sizeStyles = {
-    small:  { height: 40,  fontSize: 13, paddingH: 20, radius: radius.full },
-    medium: { height: 52,  fontSize: 15, paddingH: 28, radius: radius.full },
-    large:  { height: 60,  fontSize: 16, paddingH: 36, radius: radius.full },
+    small:  { height: 40,  fontSize: 13, paddingH: 18, radius: radius.full },
+    medium: { height: 52,  fontSize: 15, paddingH: 26, radius: radius.full },
+    large:  { height: 60,  fontSize: 16, paddingH: 30, radius: radius.full },
   };
 
   const current = variantStyles[variant];
@@ -62,7 +65,7 @@ export const CrayonButton: React.FC<CrayonButtonProps> = ({
       opacity: disabled ? 0.5 : 1,
       borderColor: current.border,
       borderWidth: variant === 'outline' ? 1.5 : 0,
-      ...(variant === 'primary' ? shadow.md : {}),
+      ...current.shadow,
     },
     style,
   ];
@@ -72,10 +75,10 @@ export const CrayonButton: React.FC<CrayonButtonProps> = ({
       style={containerStyle}
       onPress={onPress}
       disabled={disabled || loading}
-      activeOpacity={0.75}
+      activeOpacity={0.85}
     >
       <View style={styles.content}>
-        {icon && <View style={styles.icon}>{icon}</View>}
+        {icon && <View style={styles.iconLeft}>{icon}</View>}
         {loading ? (
           <ActivityIndicator color={current.text} size="small" />
         ) : (
@@ -83,6 +86,7 @@ export const CrayonButton: React.FC<CrayonButtonProps> = ({
             {label}
           </Text>
         )}
+        {iconRight && !loading && <View style={styles.iconRight}>{iconRight}</View>}
       </View>
     </TouchableOpacity>
   );
@@ -98,10 +102,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: { marginRight: 8 },
+  iconLeft: { marginRight: 8 },
+  iconRight: { marginLeft: 8 },
   text: {
     fontWeight: '700',
-    fontFamily: 'Poppins',
+    fontFamily: 'Poppins-Bold',
     letterSpacing: 0.2,
   },
 });

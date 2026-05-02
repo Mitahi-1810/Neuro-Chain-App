@@ -1,128 +1,165 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View, StyleSheet, Text, SafeAreaView,
   ScrollView, TouchableOpacity,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
-import { GAME_CATALOG } from '../../data/games';
+import { typography } from '../../utils/typography';
+import { GAME_CATALOG, GameCatalogItem } from '../../data/games';
 import { useAuthStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
+import { PillTabs } from '../../components/Decorations';
 
-const SKILL_COLORS: Record<string, string> = {
-  'Motor Skills':        '#EFF6FF',
-  'Eye Contact':         '#F0FDF4',
-  'Emotion Recognition': '#FFF7ED',
-  'Imitation':           '#FAF5FF',
-  'Categorization':      '#FFF7ED',
-  'Auditory Processing': '#F0FDF4',
-  'Self Regulation':     '#EFF6FF',
-  'Social Narrative':    '#FDF4FF',
+const SKILL_META: Record<string, { color: string; tint: string; emoji: string }> = {
+  'Motor Skills':         { color: colors.primary,     tint: colors.primaryLight, emoji: '🤸' },
+  'Eye Contact':          { color: colors.accentDark,  tint: colors.accentLight,  emoji: '👁️' },
+  'Emotion Recognition':  { color: '#FB923C',          tint: '#FFEDD5',           emoji: '😊' },
+  'Imitation':            { color: '#A855F7',          tint: '#F3E8FF',           emoji: '🎭' },
+  'Categorization':       { color: '#F97316',          tint: '#FFEDD5',           emoji: '🗂️' },
+  'Auditory Processing':  { color: '#34D399',          tint: '#D1FAE5',           emoji: '🎧' },
+  'Self Regulation':      { color: '#60A5FA',          tint: '#DBEAFE',           emoji: '🧘' },
+  'Social Narrative':     { color: '#EC4899',          tint: '#FCE7F3',           emoji: '📖' },
+  'Social Communication': { color: '#0EA5E9',          tint: '#E0F2FE',           emoji: '💬' },
+  'Joint Attention':      { color: colors.accent,      tint: colors.accentLight,  emoji: '👀' },
 };
 
-const SKILL_DOT: Record<string, string> = {
-  'Motor Skills':        colors.primary,
-  'Eye Contact':         colors.success,
-  'Emotion Recognition': colors.warning,
-  'Imitation':           colors.secondary,
-  'Categorization':      '#F97316',
-  'Auditory Processing': colors.accent,
-  'Self Regulation':     colors.primary,
-  'Social Narrative':    '#A855F7',
+const TIER_BADGE = {
+  FREE:    { label: 'Free',    bg: colors.surfaceAlt,    text: colors.darkGrey  },
+  BASIC:   { label: 'Basic',   bg: colors.primaryLight,  text: colors.primary   },
+  PREMIUM: { label: 'Premium', bg: colors.secondaryLight, text: colors.secondaryDark },
 };
 
-const TIER_BADGE: Record<string, { label: string; bg: string; text: string }> = {
-  FREE:    { label: 'Free',    bg: colors.surfaceAlt, text: colors.darkGrey },
-  BASIC:   { label: 'Basic',   bg: colors.primaryLight, text: colors.primary },
-  PREMIUM: { label: 'Premium', bg: colors.secondaryLight, text: colors.secondary },
-};
+type FilterKey = 'all' | string;
 
 const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { t } = useI18n();
   const tier = user?.tier_level || 'FREE';
+  const [filter, setFilter] = useState<FilterKey>('all');
+
+  const skillKeys = useMemo(() => {
+    const set = new Set<string>();
+    GAME_CATALOG.forEach((g) => set.add(g.target_skill));
+    return Array.from(set);
+  }, []);
+
+  const filteredGames = useMemo(() => {
+    if (filter === 'all') return GAME_CATALOG;
+    return GAME_CATALOG.filter((g) => g.target_skill === filter);
+  }, [filter]);
 
   const isLocked = (minTier: string) => {
-    if (minTier === 'BASIC')    return tier === 'FREE';
-    if (minTier === 'PREMIUM')  return tier !== 'PREMIUM';
+    if (minTier === 'BASIC')   return tier === 'FREE';
+    if (minTier === 'PREMIUM') return tier !== 'PREMIUM';
     return false;
+  };
+
+  const filterOptions: { key: FilterKey; label: string }[] = [
+    { key: 'all', label: 'All' },
+    ...skillKeys.map((s) => ({ key: s, label: s.replace(' Skills', '').replace(' Recognition', '') })),
+  ];
+
+  const renderCard = (game: GameCatalogItem) => {
+    const locked = isLocked(game.min_tier);
+    const meta = SKILL_META[game.target_skill] || {
+      color: colors.primary,
+      tint: colors.primaryLight,
+      emoji: '✨',
+    };
+    const badge = TIER_BADGE[game.min_tier as keyof typeof TIER_BADGE] || TIER_BADGE.FREE;
+
+    return (
+      <TouchableOpacity
+        key={game.id}
+        activeOpacity={0.92}
+        style={[styles.card, locked && styles.cardLocked]}
+        onPress={() =>
+          locked
+            ? navigation.navigate('SubscriptionUpgrade')
+            : navigation.navigate('GameRunner', { gameId: game.id })
+        }
+      >
+        <View style={[styles.thumb, { backgroundColor: meta.tint }]}>
+          <Text style={{ fontSize: 36 }}>{meta.emoji}</Text>
+          <View style={[styles.tierBadge, { backgroundColor: badge.bg }]}>
+            <Text style={[styles.tierText, { color: badge.text }]}>{badge.label}</Text>
+          </View>
+          {game.requires_camera && (
+            <View style={styles.aiBadge}>
+              <MaterialCommunityIcons name="camera" size={11} color={colors.white} />
+              <Text style={styles.aiBadgeText}>AI</Text>
+            </View>
+          )}
+          {locked && (
+            <View style={styles.lockOverlay}>
+              <MaterialCommunityIcons name="lock" size={28} color={colors.white} />
+            </View>
+          )}
+        </View>
+
+        <View style={styles.cardBody}>
+          <View style={styles.skillRow}>
+            <View style={[styles.skillDot, { backgroundColor: meta.color }]} />
+            <Text style={[styles.skillText, { color: meta.color }]}>
+              {game.target_skill}
+            </Text>
+          </View>
+          <Text style={[styles.gameName, locked && { color: colors.textMuted }]} numberOfLines={1}>
+            {game.name}
+          </Text>
+          <Text style={styles.gameDesc} numberOfLines={2}>{game.description}</Text>
+
+          <View style={styles.cardFooter}>
+            <View style={styles.metaRow}>
+              <MaterialCommunityIcons name="clock-outline" size={13} color={colors.darkGrey} />
+              <Text style={styles.metaText}>{game.duration_minutes} min</Text>
+            </View>
+            <View style={[styles.playPill, locked ? styles.unlockPill : { backgroundColor: meta.color }]}>
+              <Text style={[styles.playPillText, locked && { color: colors.warning }]}>
+                {locked ? 'Unlock' : 'Play'}
+              </Text>
+              <MaterialCommunityIcons
+                name={locked ? 'crown-outline' : 'arrow-right'}
+                size={13}
+                color={locked ? colors.warning : colors.white}
+              />
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>{t('games_library_title')}</Text>
-        <Text style={styles.subtitle}>{t('games_library_subtitle')}</Text>
+        <View>
+          <Text style={styles.eyebrow}>game library</Text>
+          <Text style={styles.title}>{t('games_library_title')}</Text>
+          <Text style={styles.subtitle}>{t('games_library_subtitle')}</Text>
+        </View>
+        <View style={styles.countChip}>
+          <Text style={styles.countNum}>{GAME_CATALOG.length}</Text>
+          <Text style={styles.countLabel}>games</Text>
+        </View>
       </View>
+
+      <PillTabs
+        options={filterOptions}
+        selected={filter}
+        onSelect={setFilter}
+        variant="sun"
+        style={styles.filterBar}
+      />
 
       <ScrollView
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       >
-        {GAME_CATALOG.map((game, idx) => {
-          const locked = isLocked(game.min_tier);
-          const skillBg = SKILL_COLORS[game.target_skill] || colors.primaryLight;
-          const skillDot = SKILL_DOT[game.target_skill] || colors.primary;
-          const badge = TIER_BADGE[game.min_tier] || TIER_BADGE.FREE;
-
-          return (
-            <View key={game.id} style={[styles.card, locked && styles.cardLocked]}>
-              {/* Skill Tag + Tier Badge */}
-              <View style={styles.cardTop}>
-                <View style={[styles.skillTag, { backgroundColor: skillBg }]}>
-                  <View style={[styles.skillDot, { backgroundColor: skillDot }]} />
-                  <Text style={[styles.skillText, { color: skillDot }]}>{game.target_skill}</Text>
-                </View>
-                <View style={[styles.tierBadge, { backgroundColor: badge.bg }]}>
-                  <Text style={[styles.tierText, { color: badge.text }]}>{badge.label}</Text>
-                </View>
-              </View>
-
-              {/* Title + Duration */}
-              <View style={styles.cardMid}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.gameName, locked && styles.gameNameLocked]}>{game.name}</Text>
-                  <Text style={styles.gameDesc} numberOfLines={2}>{game.description}</Text>
-                </View>
-                <View style={[styles.iconCircle, { backgroundColor: locked ? colors.surfaceAlt : colors.primaryLight }]}>
-                  <MaterialCommunityIcons
-                    name={locked ? 'lock-outline' : 'play-circle-outline'}
-                    size={26}
-                    color={locked ? colors.darkGrey : colors.primary}
-                  />
-                </View>
-              </View>
-
-              {/* Footer */}
-              <View style={styles.cardFooter}>
-                <View style={styles.metaRow}>
-                  <MaterialCommunityIcons name="clock-outline" size={14} color={colors.darkGrey} />
-                  <Text style={styles.metaText}>{game.duration_minutes} min</Text>
-                </View>
-                {locked ? (
-                  <TouchableOpacity
-                    style={styles.unlockBtn}
-                    onPress={() => navigation.navigate('SubscriptionUpgrade')}
-                  >
-                    <MaterialCommunityIcons name="crown-outline" size={14} color={colors.warning} />
-                    <Text style={styles.unlockText}>Unlock</Text>
-                  </TouchableOpacity>
-                ) : (
-                  <TouchableOpacity
-                    style={styles.playBtn}
-                    onPress={() => navigation.navigate('GameRunner', { gameId: game.id })}
-                    activeOpacity={0.8}
-                  >
-                    <Text style={styles.playText}>{t('game_play')}</Text>
-                    <MaterialCommunityIcons name="arrow-right" size={14} color={colors.white} />
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-          );
-        })}
-        <View style={{ height: 32 }} />
+        {filteredGames.map(renderCard)}
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -132,78 +169,184 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
 
   header: {
-    paddingHorizontal: 24, paddingTop: 20, paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.primary,
+    marginBottom: 6,
   },
   title: {
-    fontSize: 26, fontWeight: '800', color: colors.textDark,
-    fontFamily: 'Poppins', letterSpacing: -0.3,
+    ...typography.h1,
+    fontSize: 26,
+    lineHeight: 32,
   },
   subtitle: {
-    fontSize: 14, color: colors.textMuted, fontFamily: 'Inter', marginTop: 4,
+    ...typography.body,
+    color: colors.textMuted,
+    marginTop: 4,
+  },
+  countChip: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    alignItems: 'center',
+    marginTop: 22,
+    ...shadow.primary,
+  },
+  countNum: {
+    ...typography.h2,
+    color: colors.white,
+    fontSize: 20,
+  },
+  countLabel: {
+    ...typography.badge,
+    color: colors.white,
+    opacity: 0.85,
+    fontSize: 9,
+    marginTop: -2,
   },
 
-  list: { paddingHorizontal: 20, paddingTop: 4 },
+  filterBar: {
+    paddingVertical: 8,
+    paddingBottom: 14,
+  },
+
+  list: {
+    paddingHorizontal: 24,
+    paddingTop: 4,
+  },
 
   card: {
-    backgroundColor: colors.white, borderRadius: radius.lg,
-    padding: 18, marginBottom: 14, ...shadow.md,
-    borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    ...shadow.md,
   },
-  cardLocked: { opacity: 0.75 },
+  cardLocked: { opacity: 0.85 },
 
-  cardTop: {
-    flexDirection: 'row', justifyContent: 'space-between',
-    alignItems: 'center', marginBottom: 14,
+  thumb: {
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  skillTag: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.full,
+  tierBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.full,
+  },
+  tierText: {
+    ...typography.badge,
+    fontSize: 10,
+    textTransform: 'none',
+    letterSpacing: 0.2,
+  },
+  aiBadge: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.textDark,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.full,
+  },
+  aiBadgeText: {
+    ...typography.badge,
+    fontSize: 9,
+    color: colors.white,
+  },
+  lockOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(26,24,48,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  cardBody: {
+    padding: 16,
+  },
+  skillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
   },
   skillDot: { width: 7, height: 7, borderRadius: 4 },
-  skillText: { fontSize: 11, fontWeight: '700', fontFamily: 'Inter' },
-  tierBadge: {
-    paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.full,
-  },
-  tierText: { fontSize: 11, fontWeight: '700', fontFamily: 'Inter' },
-
-  cardMid: {
-    flexDirection: 'row', alignItems: 'flex-start',
-    gap: 12, marginBottom: 14,
+  skillText: {
+    ...typography.badge,
+    fontSize: 10,
+    textTransform: 'none',
+    letterSpacing: 0.2,
   },
   gameName: {
-    fontSize: 17, fontWeight: '800', color: colors.textDark,
-    fontFamily: 'Poppins', marginBottom: 5, letterSpacing: -0.2,
+    ...typography.h3,
+    fontSize: 17,
+    marginBottom: 4,
   },
-  gameNameLocked: { color: colors.textMuted },
   gameDesc: {
-    fontSize: 13, color: colors.textMuted, fontFamily: 'Inter', lineHeight: 19,
-  },
-  iconCircle: {
-    width: 52, height: 52, borderRadius: 16,
-    justifyContent: 'center', alignItems: 'center', flexShrink: 0,
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textMuted,
+    lineHeight: 19,
   },
 
   cardFooter: {
-    flexDirection: 'row', alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.border,
+    marginTop: 14,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
   },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  metaText: { fontSize: 12, color: colors.darkGrey, fontFamily: 'Inter', fontWeight: '600' },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  metaText: {
+    ...typography.caption,
+    fontWeight: '600',
+  },
 
-  playBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    backgroundColor: colors.primary, paddingHorizontal: 18,
-    paddingVertical: 9, borderRadius: radius.full,
+  playPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: radius.full,
   },
-  playText: { fontSize: 13, fontWeight: '700', color: colors.white, fontFamily: 'Poppins' },
-
-  unlockBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: colors.warningLight, paddingHorizontal: 14,
-    paddingVertical: 8, borderRadius: radius.full,
+  playPillText: {
+    ...typography.btnText,
+    fontSize: 13,
+    color: colors.white,
   },
-  unlockText: { fontSize: 12, fontWeight: '700', color: colors.warning, fontFamily: 'Inter' },
+  unlockPill: {
+    backgroundColor: colors.warningLight,
+    borderWidth: 1,
+    borderColor: '#F8E2A4',
+  },
 });
 
 export default GamesGalleryScreen;

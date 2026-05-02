@@ -12,13 +12,14 @@ import {
 } from '../types';
 
 const LOCALE_STORAGE_KEY = 'neurochain.locale';
+const ONBOARDING_KEY = 'neurochain.onboarding_complete';
 
 interface AuthState {
   user: User | null;
   isLoading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, fullName: string) => Promise<void>;
+  signup: (email: string, password: string, fullName: string, role?: UserRole, tier?: TierLevel) => Promise<User | null>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   initializeAuth: () => Promise<void>;
@@ -98,6 +99,10 @@ interface UIState {
   locale: Locale;
   setLocale: (locale: Locale) => Promise<void>;
   hydrateLocale: () => Promise<void>;
+  onboardingComplete: boolean;
+  setOnboardingComplete: () => Promise<void>;
+  hydrateOnboardingStatus: () => Promise<void>;
+  resetOnboarding: () => Promise<void>;
 }
 
 // Auth Store
@@ -131,7 +136,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ isLoading: false });
     }
   },
-  signup: async (email: string, password: string, fullName: string) => {
+  signup: async (email: string, password: string, fullName: string, role: UserRole = 'PARENT', tier: TierLevel = 'FREE') => {
     set({ isLoading: true, error: null });
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -140,26 +145,29 @@ export const useAuthStore = create<AuthState>((set) => ({
         options: {
           data: {
             full_name: fullName,
-            role: 'PARENT',
-            tier_level: 'FREE',
+            role,
+            tier_level: tier,
           },
         },
       });
       if (error) throw error;
-      
+
       if (data.user) {
+        const createdUser = {
+          id: data.user.id,
+          email: data.user.email || email,
+          full_name: fullName,
+          role,
+          tier_level: tier,
+          created_at: data.user.created_at,
+          updated_at: data.user.updated_at || new Date().toISOString(),
+        };
         set({
-          user: {
-            id: data.user.id,
-            email: data.user.email || email,
-            full_name: fullName,
-            role: 'PARENT',
-            tier_level: 'FREE',
-            created_at: data.user.created_at,
-            updated_at: data.user.updated_at || new Date().toISOString(),
-          },
+          user: createdUser,
         });
+        return createdUser;
       }
+      return null;
     } catch (e: any) {
       set({ error: e.message });
       throw e;
@@ -366,5 +374,18 @@ export const useUIStore = create<UIState>((set) => ({
     if (stored === 'en' || stored === 'bn') {
       set({ locale: stored });
     }
+  },
+  onboardingComplete: false,
+  setOnboardingComplete: async () => {
+    await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+    set({ onboardingComplete: true });
+  },
+  hydrateOnboardingStatus: async () => {
+    const stored = await AsyncStorage.getItem(ONBOARDING_KEY);
+    set({ onboardingComplete: stored === 'true' });
+  },
+  resetOnboarding: async () => {
+    await AsyncStorage.removeItem(ONBOARDING_KEY);
+    set({ onboardingComplete: false });
   },
 }));

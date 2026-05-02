@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,40 +6,208 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
-import LottieView from 'lottie-react-native';
-import { colors } from '../../utils/colors';
+import { colors, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
+import { Mascot } from '../../components/Mascot';
 import { RiskLevel } from '../../types';
 import { getDatabase } from '../../data/database';
 import { useChildStore } from '../../store/store';
+import { ScreeningDisclaimerBanner } from '../../components/ScreeningDisclaimerBanner';
+import {
+  CAST_QUESTIONS,
+  MCHAT_QUESTIONS,
+  QCHAT_REVERSED_INDICES,
+  SCREENING_DISCLAIMER,
+} from './screenerData';
 
 interface Props {
   navigation: any;
   route: any;
 }
 
+const RISK_META: Record<
+  RiskLevel,
+  { color: string; bg: string; emoji: string; mascot: any; title: string; mascotKind: any }
+> = {
+  LOW: {
+    color: colors.success,
+    bg: colors.successLight,
+    emoji: '🌟',
+    mascot: 'star',
+    title: 'Looking strong',
+    mascotKind: 'sun',
+  },
+  MODERATE: {
+    color: colors.secondaryDark,
+    bg: colors.secondaryLight,
+    emoji: '🌱',
+    mascot: 'puzzle',
+    title: "Let's monitor",
+    mascotKind: 'puzzle',
+  },
+  HIGH: {
+    color: colors.danger,
+    bg: colors.dangerLight,
+    emoji: '🤝',
+    mascot: 'heart',
+    title: 'Time for support',
+    mascotKind: 'heart',
+  },
+};
+
 const ScreenerResultsScreen: React.FC<Props> = ({ navigation, route }) => {
-  const { riskScore, answers } = route.params || {};
+  const { answers, testType } = route.params || {};
   const { activeChild } = useChildStore();
-  const [riskLevel, setRiskLevel] = useState<RiskLevel>('LOW');
-  const [showConfetti, setShowConfetti] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const normalizedAnswers = Array.isArray(answers) ? answers : [];
+  const resolvedTestType = (testType || 'MCHAT') as 'MCHAT' | 'CSBS_ITC' | 'QCHAT10' | 'CAST';
+
+  const result = useMemo(() => {
+    if (resolvedTestType === 'MCHAT') {
+      const score = MCHAT_QUESTIONS.reduce((total, q, idx) => {
+        const isYes = Boolean(normalizedAnswers[idx]);
+        const contributes = q.is_reversed ? isYes : !isYes;
+        return contributes ? total + 1 : total;
+      }, 0);
+      const riskLevel: RiskLevel = score <= 2 ? 'LOW' : score <= 7 ? 'MODERATE' : 'HIGH';
+      return { riskScore: score, maxScore: 20, riskLevel };
+    }
+
+    if (resolvedTestType === 'CSBS_ITC') {
+      const numericAnswers = normalizedAnswers.map((value) => Number(value) || 0);
+      const social = numericAnswers.slice(0, 7).reduce((sum, val) => sum + val, 0);
+      const speech = numericAnswers.slice(7, 15).reduce((sum, val) => sum + val, 0);
+      const symbolic = numericAnswers.slice(15, 24).reduce((sum, val) => sum + val, 0);
+      const total = social + speech + symbolic;
+      const concernCount = Number(social <= 7) + Number(speech <= 3) + Number(symbolic <= 5);
+      const riskLevel: RiskLevel =
+        concernCount >= 2 || total <= 15
+          ? 'HIGH'
+          : concernCount === 1
+          ? 'MODERATE'
+          : 'LOW';
+      return { riskScore: total, maxScore: 48, riskLevel, concernCount };
+    }
+
+    if (resolvedTestType === 'QCHAT10') {
+      const numericAnswers = normalizedAnswers.map((value) => Number(value) || 0);
+      const score = numericAnswers.reduce((sum, value, idx) => {
+        const questionId = idx + 1;
+        const adjusted = QCHAT_REVERSED_INDICES.has(questionId) ? 4 - value : value;
+        return sum + adjusted;
+      }, 0);
+      const riskLevel: RiskLevel = score >= 3 ? 'HIGH' : 'LOW';
+      return { riskScore: score, maxScore: 40, riskLevel };
+    }
+
+    const castAnswers = normalizedAnswers.map((value) => Boolean(value));
+    const castScore = CAST_QUESTIONS.reduce((sum, question, idx) => {
+      if (!question.scored) return sum;
+      const answer = castAnswers[idx];
+      const isRisk = question.riskAnswer === 'yes' ? answer : !answer;
+      return isRisk ? sum + 1 : sum;
+    }, 0);
+    const castRisk: RiskLevel = castScore <= 9 ? 'LOW' : castScore <= 14 ? 'MODERATE' : 'HIGH';
+    return { riskScore: castScore, maxScore: 31, riskLevel: castRisk };
+  }, [normalizedAnswers, resolvedTestType]);
+
+  const riskLevel = result.riskLevel;
+  const meta = RISK_META[riskLevel];
+
+  const messages = useMemo(() => {
+    switch (resolvedTestType) {
+      case 'CSBS_ITC':
+        return {
+          LOW: 'Your child’s communication development is on track. Keep supporting daily interaction and play.',
+          MODERATE: 'Some areas of communication may benefit from closer monitoring. Daily structured activities can help. Recommended plan: Basic (299 BDT).',
+          HIGH: 'Your child’s responses suggest a developmental evaluation may be beneficial. Early support makes a significant difference. Recommended plan: Premium (799 BDT).',
+        } as Record<RiskLevel, string>;
+      case 'QCHAT10':
+        return {
+          LOW: 'Moderate M-CHAT + Low Q-CHAT suggests overall low-to-moderate risk. Continue structured support and monitoring. Recommended plan: Basic (299 BDT).',
+          MODERATE: 'Moderate M-CHAT + Low Q-CHAT suggests overall low-to-moderate risk. Continue structured support and monitoring. Recommended plan: Basic (299 BDT).',
+          HIGH: 'Moderate M-CHAT + Elevated Q-CHAT suggests higher risk. A specialist evaluation is recommended. Recommended plan: Premium (799 BDT).',
+        } as Record<RiskLevel, string>;
+      case 'CAST':
+        return {
+          LOW: 'Based on your responses, your child does not show significant indicators at this time. If concerns persist, repeat in 6 months.',
+          MODERATE: 'Some responses suggest your child may benefit from additional support. Daily structured activities can help. Recommended plan: Basic (299 BDT).',
+          HIGH: 'Your responses indicate your child may benefit from a specialist evaluation. We strongly recommend speaking with a specialist. Recommended plan: Premium (799 BDT).',
+        } as Record<RiskLevel, string>;
+      default:
+        return {
+          LOW: 'Great news. Your responses suggest your child is showing typical signs at this stage. Keep up the play and monitoring.',
+          MODERATE: 'Some responses suggest it may be helpful to monitor your child’s development closely. Daily activities can help. Recommended plan: Basic (299 BDT).',
+          HIGH: 'Your responses suggest your child may benefit from a specialist evaluation. Recommended plan: Premium (799 BDT).',
+        } as Record<RiskLevel, string>;
+    }
+  }, [resolvedTestType]);
+
+  const cta = useMemo(() => {
+    if (resolvedTestType === 'MCHAT' && riskLevel === 'MODERATE') {
+      return {
+        primary: {
+          label: 'Continue to Q-CHAT-10',
+          action: () => navigation.navigate('QChatScreener', { source: 'MCHAT' }),
+        },
+        secondary: {
+          label: 'Upgrade for daily plan',
+          action: () => navigation.navigate('SubscriptionUpgrade'),
+        },
+        prompt:
+          "Let's complete 10 more quick questions to better understand your child's development.",
+      };
+    }
+
+    if (riskLevel === 'HIGH') {
+      return {
+        primary: {
+          label: 'Run AI Behavioral Check',
+          action: () => navigation.navigate('AIScreening', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
+        },
+        secondary: {
+          label: 'Book a specialist instead',
+          action: () => navigation.navigate('TelehealthBooking'),
+        },
+        prompt: 'A 2-minute on-device AI check can help clarify these results before booking.',
+      };
+    }
+
+    if (riskLevel === 'MODERATE') {
+      return {
+        primary: {
+          label: 'Run AI Behavioral Check',
+          action: () => navigation.navigate('AIScreening', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
+        },
+        secondary: {
+          label: 'Return home',
+          action: () => navigation.navigate('ParentTabs'),
+        },
+        prompt: 'See how your child actually engages in 2 minutes — no questionnaire.',
+      };
+    }
+
+    return {
+      primary: {
+        label: 'Return home',
+        action: () => navigation.navigate('ParentTabs'),
+      },
+      secondary: {
+        label: 'Explore daily games',
+        action: () => navigation.navigate('Games'),
+      },
+    };
+  }, [navigation, resolvedTestType, riskLevel, result]);
+
+  const showCastGirlNote =
+    resolvedTestType === 'CAST' &&
+    riskLevel === 'MODERATE' &&
+    activeChild?.gender === 'girl';
 
   useEffect(() => {
-    let computedRiskLevel: RiskLevel = 'LOW';
-    // Determine risk level
-    if (riskScore <= 2) {
-      computedRiskLevel = 'LOW';
-      setShowConfetti(true);
-    } else if (riskScore <= 7) {
-      computedRiskLevel = 'MODERATE';
-    } else {
-      computedRiskLevel = 'HIGH';
-    }
-    setRiskLevel(computedRiskLevel);
-
-    if (!isSaved && activeChild) {
+    if (!isSaved && activeChild && normalizedAnswers.length > 0) {
       const saveAssessment = async () => {
         try {
           const db = await getDatabase();
@@ -51,116 +219,99 @@ const ScreenerResultsScreen: React.FC<Props> = ({ navigation, route }) => {
             [
               Date.now().toString(),
               activeChild.id,
-              'M-CHAT-R/F',
-              JSON.stringify(answers),
-              riskScore,
-              computedRiskLevel,
+              resolvedTestType,
+              JSON.stringify(normalizedAnswers),
+              result.riskScore,
+              riskLevel,
               timestamp,
               timestamp,
-            ]
+            ],
           );
           setIsSaved(true);
-          console.log('Assessment saved to local database');
         } catch (error) {
           console.error('Failed to save assessment', error);
         }
       };
       saveAssessment();
     }
-  }, [riskScore, answers, activeChild, isSaved]);
-
-  const getRiskColor = () => {
-    switch (riskLevel) {
-      case 'LOW':
-        return colors.success;
-      case 'MODERATE':
-        return colors.accent;
-      case 'HIGH':
-        return colors.danger;
-    }
-  };
-
-  const getRiskMessage = () => {
-    switch (riskLevel) {
-      case 'LOW':
-        return 'Great news! Based on your responses, your child shows low indicators at this time. Continue monitoring development.';
-      case 'MODERATE':
-        return 'Some responses suggest it may be helpful to monitor your child\'s development closely. We recommend daily therapy activities.';
-      case 'HIGH':
-        return 'Your responses suggest your child may benefit from a specialist evaluation. Please consider booking an appointment with a developmental pediatrician.';
-    }
-  };
-
-  const getNextAction = () => {
-    switch (riskLevel) {
-      case 'LOW':
-        return {
-          label: 'Return Home',
-          action: () => navigation.navigate('ParentTabs'),
-        };
-      case 'MODERATE':
-        return {
-          label: 'Upgrade to Basic Tier',
-          action: () => navigation.navigate('SubscriptionUpgrade'),
-        };
-      case 'HIGH':
-        return {
-          label: 'Book a Specialist',
-          action: () => navigation.navigate('TelehealthBooking'),
-        };
-    }
-  };
-
-  const nextAction = getNextAction();
+  }, [activeChild, isSaved, normalizedAnswers, resolvedTestType, result.riskScore, riskLevel]);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Confetti for Low Risk */}
-        {showConfetti && riskLevel === 'LOW' && (
-          <View style={styles.confettiContainer}>
-            <LottieView
-              source={require('../../assets/confetti.json')}
-              autoPlay
-              loop={false}
-              style={styles.confetti}
-            />
+        <ScreeningDisclaimerBanner text={SCREENING_DISCLAIMER} />
+
+        <CrayonCard
+          padding={26}
+          backgroundColor={meta.bg}
+          style={{ marginBottom: 16, borderColor: meta.color + '40' }}
+        >
+          <View style={styles.heroRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.eyebrow, { color: meta.color }]}>screening complete</Text>
+              <Text style={styles.heroTitle}>
+                {meta.emoji} {meta.title}
+              </Text>
+              <Text style={styles.heroDesc}>
+                Score: <Text style={{ fontWeight: '800' }}>{result.riskScore}/{result.maxScore}</Text>
+              </Text>
+              <View style={styles.riskBadgeRow}>
+                <View style={[styles.riskBadge, { backgroundColor: meta.color }]}>
+                  <Text style={styles.riskBadgeText}>{riskLevel} risk</Text>
+                </View>
+              </View>
+            </View>
+            <Mascot kind={meta.mascotKind} size="xl" />
           </View>
+        </CrayonCard>
+
+        <CrayonCard padding={20} style={{ marginBottom: 16 }}>
+          <Text style={styles.messageEyebrow}>what this means</Text>
+          <Text style={styles.message}>{messages[riskLevel]}</Text>
+        </CrayonCard>
+
+        {cta.prompt && (
+          <CrayonCard variant="sun" padding={18} style={{ marginBottom: 24 }}>
+            <View style={styles.tipRow}>
+              <Mascot kind="heart" size="sm" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tipTitle}>Next step</Text>
+                <Text style={styles.tipText}>{cta.prompt}</Text>
+              </View>
+            </View>
+          </CrayonCard>
         )}
 
-        {/* Result Card */}
-        <CrayonCard
-          style={styles.resultCard}
-          backgroundColor={getRiskColor() + '20'}
-          padding={24}
-        >
-          <View style={styles.resultContent}>
-            <View
-              style={[
-                styles.riskBadge,
-                { backgroundColor: getRiskColor() },
-              ]}
-            >
-              <Text style={styles.riskBadgeText}>{riskLevel}</Text>
+        {showCastGirlNote && (
+          <CrayonCard variant="sun" padding={18} style={{ marginBottom: 24 }}>
+            <View style={styles.tipRow}>
+              <Mascot kind="heart" size="sm" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tipTitle}>Note for parents of girls</Text>
+                <Text style={styles.tipText}>
+                  Girls with autism often present differently and may score lower on screeners.
+                  If you have concerns, a specialist consultation is still recommended regardless of this score.
+                </Text>
+              </View>
             </View>
-
-            <Text style={styles.resultTitle}>Assessment Complete</Text>
-            <Text style={styles.resultScore}>Risk Score: {riskScore}/20</Text>
-          </View>
-        </CrayonCard>
-
-        {/* Message */}
-        <CrayonCard style={styles.messageCard} variant="default">
-          <Text style={styles.message}>{getRiskMessage()}</Text>
-        </CrayonCard>
+          </CrayonCard>
+        )}
 
         <View style={styles.cta}>
           <CrayonButton
-            label={nextAction.label}
-            onPress={nextAction.action}
+            label={cta.primary.label}
+            onPress={cta.primary.action}
             variant="primary"
             size="large"
             fullWidth
+          />
+          <CrayonButton
+            label={cta.secondary.label}
+            onPress={cta.secondary.action}
+            variant="ghost"
+            size="medium"
+            fullWidth
+            style={{ marginTop: 10 }}
           />
         </View>
       </ScrollView>
@@ -175,66 +326,76 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
   },
-  confettiContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    pointerEvents: 'none',
-  },
-  confetti: {
-    width: '100%',
-    height: '100%',
-  },
-  resultCard: {
-    marginBottom: 20,
+  heroRow: {
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  resultContent: {
-    alignItems: 'center',
+  eyebrow: {
+    ...typography.eyebrow,
+    marginBottom: 8,
+  },
+  heroTitle: {
+    ...typography.h1,
+    fontSize: 26,
+    lineHeight: 32,
+  },
+  heroDesc: {
+    ...typography.bodyLg,
+    color: colors.textBody,
+    marginTop: 8,
+    paddingRight: 6,
+  },
+  riskBadgeRow: {
+    marginTop: 12,
   },
   riskBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    marginBottom: 16,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: radius.full,
+    ...shadow.sm,
   },
   riskBadgeText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: colors.textLight,
-    fontFamily: 'Poppins',
+    ...typography.badge,
+    color: colors.white,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
   },
-  resultTitle: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: colors.textDark,
-    marginBottom: 8,
-    fontFamily: 'Poppins',
-  },
-  resultScore: {
-    fontSize: 18,
-    fontWeight: '700',
+
+  messageEyebrow: {
+    ...typography.eyebrow,
     color: colors.primary,
-    fontFamily: 'Poppins',
-  },
-  messageCard: {
-    padding: 20,
-    marginBottom: 24,
+    marginBottom: 8,
   },
   message: {
-    fontSize: 16,
+    ...typography.bodyLg,
     color: colors.textDark,
-    lineHeight: 24,
-    fontFamily: 'Inter',
+    lineHeight: 22,
   },
+
+  tipRow: {
+    flexDirection: 'row',
+    gap: 12,
+    alignItems: 'flex-start',
+  },
+  tipTitle: {
+    ...typography.h4,
+    fontSize: 14,
+  },
+  tipText: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textBody,
+    marginTop: 4,
+    lineHeight: 19,
+  },
+
   cta: {
-    marginTop: 12,
-    marginBottom: 24,
+    marginTop: 6,
   },
 });
 

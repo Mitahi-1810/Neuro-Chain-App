@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, StyleSheet, Text, TextInput, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../../utils/colors';
@@ -16,7 +16,7 @@ const MOCK_AI_RESPONSE = {
 };
 
 const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
-  const { appointment, audioUri } = route.params || {};
+  const { appointment, audioUri, sessionNotes } = route.params || {};
   const { user } = useAuthStore();
   const [isGenerating, setIsGenerating] = useState(true);
   const [loadingText, setLoadingText] = useState('Analyzing session audio...');
@@ -25,11 +25,12 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
   const [objective, setObjective] = useState('');
   const [assessment, setAssessment] = useState('');
   const [plan, setPlan] = useState('');
+  const aiOriginalRef = useRef(MOCK_AI_RESPONSE);
 
   useEffect(() => {
     const generateNote = async () => {
       try {
-        let transcript = 'The mother reports the child is sleeping well but remains a picky eater. The child made sporadic eye contact during the game and engaged in repetitive hand-flapping. Social goals remain challenging but motor skills are progressing. Plan is to continue daily sessions and schedule a follow up in 2 weeks.';
+        let transcript = sessionNotes || 'The mother reports the child is sleeping well but remains a picky eater. The child made sporadic eye contact during the game and engaged in repetitive hand-flapping. Social goals remain challenging but motor skills are progressing. Plan is to continue daily sessions and schedule a follow up in 2 weeks.';
 
         // Real Whisper transcription via Groq (free)
         if (audioUri) {
@@ -44,6 +45,7 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
         setLoadingText('Generating SOAP note via AI...');
         const note = await generateSoapNote(transcript);
 
+        aiOriginalRef.current = note;
         setSubjective(note.subjective);
         setObjective(note.objective);
         setAssessment(note.assessment);
@@ -67,34 +69,21 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
     try {
       const db = await getDatabase();
       const timestamp = new Date().toISOString();
-      
-      // We assume clinical_soap_notes table exists (add to initDatabase if not already)
-      await db.runAsync(`
-        CREATE TABLE IF NOT EXISTS clinical_soap_notes (
-          id TEXT PRIMARY KEY,
-          appointment_id TEXT,
-          specialist_id TEXT,
-          subjective TEXT,
-          objective TEXT,
-          assessment TEXT,
-          plan TEXT,
-          is_signed INTEGER,
-          created_at TEXT
-        );
-      `);
+      const aiGenerated = aiOriginalRef.current;
+      const edited = { subjective, objective, assessment, plan };
 
       await db.runAsync(
         `INSERT INTO clinical_soap_notes (
-          id, appointment_id, specialist_id, subjective, objective, assessment, plan, is_signed, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+          id, appointment_id, ai_generated_json, specialist_edited_json, is_signed, signed_at, signed_by, created_at, updated_at, sync_status
+        ) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, 0)`,
         [
           Date.now().toString(),
           appointment?.id || 'mock-apt',
+          JSON.stringify(aiGenerated),
+          JSON.stringify(edited),
+          timestamp,
           user?.id || 'mock-spec',
-          subjective,
-          objective,
-          assessment,
-          plan,
+          timestamp,
           timestamp,
         ]
       );
@@ -124,7 +113,11 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="none"
+      >
         <View style={styles.aiDisclaimer}>
           <MaterialCommunityIcons name="robot-outline" size={20} color={colors.secondary} />
           <Text style={styles.aiDisclaimerText}>AI Draft — Requires Clinical Review</Text>

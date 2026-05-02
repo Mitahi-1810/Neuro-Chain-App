@@ -1,56 +1,59 @@
-/**
- * NeuroChain – Design System v2
- * Professional healthcare-grade palette.
- * Primary: Vibrant Blue  |  Background: Slate White  |  Text: Deep Navy
- */
-
 export const colors = {
   // ── Primary Brand ───────────────────────────────────────────────
-  primary:       '#2563EB',   // Vibrant blue (buttons, active states)
-  primaryDark:   '#1D4ED8',   // Pressed / darker blue
-  primaryLight:  '#EFF6FF',   // Very light blue tint (backgrounds)
-  primaryMid:    '#BFDBFE',   // Mid blue (borders, chips)
+  primary:       '#7C6FE7',   // Lavender purple — buttons, active states, hero cards
+  primaryDark:   '#5F52CF',   // Pressed / darker lavender
+  primaryDeep:   '#4A3FB8',   // Deepest tone for shadows + emphasis
+  primaryLight:  '#EFEDFF',   // Very light tint (backgrounds, chips)
+  primaryMid:    '#D6D2FA',   // Mid lavender (borders, subtle chips)
+  primarySoft:   '#9B91F0',   // Mid-bright lavender (secondary accents)
 
   // ── Secondary / Accent ──────────────────────────────────────────
-  secondary:     '#7C3AED',   // Purple (premium badge, AI features)
-  secondaryLight:'#EDE9FE',
-  accent:        '#06B6D4',   // Cyan (highlights, tags)
-  accentLight:   '#ECFEFF',
-  accentDark:    '#0891B2',
+  secondary:      '#FFD23F',   // Sun yellow (streak, highlights)
+  secondaryDark:  '#F2BB17',
+  secondaryLight: '#FFF6D4',
+  accent:         '#35D0BA',   // Teal (highlights, positive tags)
+  accentLight:    '#E5FBF6',
+  accentDark:     '#1FA994',
+  pink:           '#FF94B6',   // Soft pink (mascot fills, badges)
+  pinkLight:      '#FFE4ED',
+  coral:          '#FF8C7A',   // Coral (warm illustrations)
+  sky:            '#7AC7FF',   // Sky blue (illustrations, badges)
+  skyLight:       '#E0F2FF',
 
   // ── Semantic ────────────────────────────────────────────────────
-  success:       '#10B981',   // Green
+  success:       '#2CB67D',
   successLight:  '#D1FAE5',
   successDark:   '#059669',
-  warning:       '#F59E0B',   // Amber
-  warningLight:  '#FEF3C7',
-  danger:        '#EF4444',   // Red
+  warning:       '#F4A261',
+  warningLight:  '#FFE8D5',
+  danger:        '#EF4444',
   dangerLight:   '#FEE2E2',
   dangerDark:    '#DC2626',
 
   // ── Neutrals ────────────────────────────────────────────────────
-  cream:         '#F8FAFC',   // App background (near-white)
+  cream:         '#F4F4F8',   // App background — soft warm grey
   white:         '#FFFFFF',
   surface:       '#FFFFFF',   // Card surface
-  surfaceAlt:    '#F1F5F9',   // Slightly off-white for input bg
-  border:        '#E2E8F0',   // Dividers, input borders
-  borderDark:    '#CBD5E1',
-  lightGrey:     '#F1F5F9',
-  mediumGrey:    '#E2E8F0',
-  darkGrey:      '#94A3B8',   // Placeholder text, muted labels
+  surfaceAlt:    '#F0EEFE',   // Slightly off-white for input bg
+  surfaceWarm:   '#FFF9EE',   // Warm cream for highlight cards
+  border:        '#E7E4F8',
+  borderDark:    '#CFCAE9',
+  lightGrey:     '#F1F0F7',
+  mediumGrey:    '#DDDAEC',
+  darkGrey:      '#8F8CA8',
 
   // ── Text ────────────────────────────────────────────────────────
-  textDark:      '#0F172A',   // Headings
-  textBody:      '#334155',   // Body text
-  textMuted:     '#64748B',   // Captions, helper text
+  textDark:      '#1A1830',   // Headings — near black with violet undertone
+  textBody:      '#3A345A',
+  textMuted:     '#7A7696',
+  textWarmBrown: '#9E8458',
   textLight:     '#FFFFFF',
-  textWarmBrown: '#64748B',   // Keep alias for backward compat
 
-  // ── Transparent Tints ───────────────────────────────────────────
-  primaryTransparent:   'rgba(37, 99, 235, 0.08)',
-  secondaryTransparent: 'rgba(124, 58, 237, 0.08)',
-  successTransparent:   'rgba(16, 185, 129, 0.08)',
-  dangerTransparent:    'rgba(239, 68, 68, 0.08)',
+  // Transparent tints
+  primaryTransparent:   'rgba(124, 111, 231, 0.08)',
+  secondaryTransparent: 'rgba(255, 210, 63, 0.18)',
+  successTransparent:   'rgba(44, 182, 125, 0.10)',
+  dangerTransparent:    'rgba(239, 68, 68, 0.10)',
 };
 
 export const tiers = {
@@ -63,40 +66,56 @@ export const tiers = {
     badge: 'Basic',
   },
   premium: {
-    color: colors.secondary,
+    color: colors.secondaryDark,
     badge: 'Premium',
   },
 };
 
 /** Shared design tokens */
 export const radius = {
-  sm:   8,
-  md:   14,
-  lg:   20,
+  xs:   6,
+  sm:   10,
+  md:   16,
+  lg:   22,
   xl:   28,
+  xxl:  36,
   full: 999,
 };
 
 export const shadow = {
   sm: {
-    shadowColor: '#0F172A',
+    shadowColor: '#1A1830',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 1,
   },
   md: {
-    shadowColor: '#0F172A',
+    shadowColor: '#1A1830',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.07,
-    shadowRadius: 10,
+    shadowRadius: 12,
     elevation: 3,
   },
   lg: {
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 8 },
+    shadowColor: '#1A1830',
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.10,
+    shadowRadius: 22,
+    elevation: 7,
+  },
+  primary: {
+    shadowColor: '#7C6FE7',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.30,
     shadowRadius: 18,
+    elevation: 8,
+  },
+  yellow: {
+    shadowColor: '#F2BB17',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.30,
+    shadowRadius: 16,
     elevation: 6,
   },
 };

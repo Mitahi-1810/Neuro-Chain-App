@@ -30,7 +30,7 @@ const GROQ_BASE       = 'https://api.groq.com/openai/v1';
  *   mistralai/mistral-7b-instruct:free
  *   google/gemma-2-9b-it:free
  */
-export const MODEL_CHAT = 'openrouter/free';
+export const MODEL_CHAT = 'meta-llama/llama-3.2-3b-instruct:free';
 export const MODEL_WHISPER = 'whisper-large-v3'; // Groq's free Whisper
 
 // ─── Chat Completion (OpenRouter) ─────────────────────────────────────────────
@@ -79,7 +79,7 @@ export async function chatCompletion(
 
   if (!res.ok) {
     const errorBody = await res.text();
-    console.error('[OpenRouter] Error:', res.status, errorBody);
+    console.error('[OpenRouter] Error Status:', res.status, errorBody);
     throw new Error(`OPENROUTER_ERROR_${res.status}`);
   }
 
@@ -87,6 +87,7 @@ export async function chatCompletion(
   const content = data?.choices?.[0]?.message?.content;
 
   if (!content) {
+    console.error('[OpenRouter] Empty Response Data:', JSON.stringify(data, null, 2));
     throw new Error('OPENROUTER_EMPTY_RESPONSE');
   }
 

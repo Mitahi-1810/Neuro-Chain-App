@@ -6,12 +6,14 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
-import { useAuthStore } from '../../store/store';
+import { useAuthStore, useChildStore } from '../../store/store';
+import { getDatabase } from '../../data/database';
 import { useI18n } from '../../i18n/useI18n';
 
 const STORAGE_KEY = 'neurochain.telehealth.wizard';
@@ -49,6 +51,7 @@ const TIME_SLOTS = [
 
 const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
+  const { activeChild } = useChildStore();
   const { t } = useI18n();
   const isPremium = user?.tier_level === 'PREMIUM';
 
@@ -107,6 +110,48 @@ const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
     if (step === 3) return Boolean(selectedSlot);
     if (step === 4) return Boolean(paymentGateway);
     return true;
+  };
+
+  const handleConfirmBooking = async () => {
+    try {
+      const db = await getDatabase();
+      const timestamp = new Date().toISOString();
+      const today = new Date();
+      const scheduled = new Date(today);
+      const [timePart, meridiem] = (selectedSlot || '10:00 AM').split(' ');
+      let [hours, minutes] = timePart.split(':').map(Number);
+      if (meridiem === 'PM' && hours !== 12) hours += 12;
+      if (meridiem === 'AM' && hours === 12) hours = 0;
+      scheduled.setHours(hours, minutes, 0, 0);
+      scheduled.setDate(scheduled.getDate() + 1);
+
+      await db.runAsync(
+        `INSERT INTO appointments (
+          id, parent_id, specialist_id, child_id, scheduled_at, session_type,
+          status, amount_paid_bdt, payment_gateway, created_at, updated_at, sync_status
+        ) VALUES (?, ?, ?, ?, ?, 'Telehealth', 'PENDING', ?, ?, ?, ?, 0)`,
+        [
+          Date.now().toString(),
+          user?.id || '',
+          selectedSpecialist || '',
+          activeChild?.id || '',
+          scheduled.toISOString(),
+          discountedFee,
+          paymentGateway || 'SSLCOMMERZ',
+          timestamp,
+          timestamp,
+        ]
+      );
+      await AsyncStorage.removeItem(STORAGE_KEY);
+      Alert.alert(
+        'Booking confirmed!',
+        `Your appointment with ${specialist?.name} has been requested. You will be notified when they confirm.`,
+        [{ text: 'OK', onPress: () => navigation.navigate('ParentTabs') }]
+      );
+    } catch (error) {
+      console.error('Booking failed:', error);
+      Alert.alert('Error', 'Could not confirm booking. Please try again.');
+    }
   };
 
   const handleNext = () => {
@@ -233,7 +278,7 @@ const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
         <View style={styles.actions}>
           <CrayonButton
             label={step === 5 ? t('telehealth_done') : t('telehealth_continue')}
-            onPress={step === 5 ? () => navigation.goBack() : handleNext}
+            onPress={step === 5 ? handleConfirmBooking : handleNext}
             variant="primary"
             size="large"
             fullWidth

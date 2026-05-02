@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
-import { ChildProfileModal } from './ChildProfileModal';
 import { useAuthStore, useChildStore } from '../store/store';
+import { ChildProfileModal } from './ChildProfileModal';
 
 export const ChildProfileGate: React.FC = () => {
-  const navigation = useNavigation<any>();
   const { user } = useAuthStore();
   const { activeChild, children, addChild, setActiveChild } = useChildStore();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (user?.role !== 'PARENT') {
+      setVisible(false);
+      return;
+    }
     if (!activeChild && children.length === 0) {
       setVisible(true);
     }
-  }, [activeChild, children.length]);
+  }, [activeChild, children.length, user?.role]);
 
   const handleSaveChildProfile = (payload: {
     first_name: string;
@@ -35,15 +37,6 @@ export const ChildProfileGate: React.FC = () => {
     addChild(newChild);
     setActiveChild(newChild);
     setVisible(false);
-
-    const dob = new Date(payload.date_of_birth);
-    const now = new Date();
-    const ageInMonths =
-      (now.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 30);
-
-    if (ageInMonths >= 16 && ageInMonths <= 30) {
-      navigation.navigate('AutismScreener');
-    }
   };
 
   return <ChildProfileModal visible={visible} onSave={handleSaveChildProfile} />;

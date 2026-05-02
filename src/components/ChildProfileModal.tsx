@@ -104,7 +104,11 @@ export const ChildProfileModal: React.FC<Props> = ({ visible, onSave, onClose })
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="none"
+          >
             <Text style={styles.title}>Create Child Profile</Text>
             <Text style={styles.subtitle}>
               Please complete your child\'s profile to continue.

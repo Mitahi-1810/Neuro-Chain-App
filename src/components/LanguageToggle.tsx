@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
-import { colors } from '../utils/colors';
+import { colors, radius, shadow } from '../utils/colors';
+import { typography } from '../utils/typography';
 import { useUIStore } from '../store/store';
 import { useI18n } from '../i18n/useI18n';
 import { Locale } from '../types';
@@ -51,8 +52,8 @@ export const LanguageToggle: React.FC<Props> = ({ compact = false }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    borderRadius: 16,
-    backgroundColor: colors.lightGrey,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceAlt,
     padding: 4,
     gap: 4,
   },
@@ -71,14 +72,14 @@ const styles = StyleSheet.create({
   },
   buttonActive: {
     backgroundColor: colors.primary,
+    ...shadow.sm,
   },
   buttonInactive: {
     backgroundColor: 'transparent',
   },
   text: {
+    ...typography.badge,
     fontSize: 12,
-    fontWeight: '700',
-    fontFamily: 'Inter',
   },
   textCompact: {
     fontSize: 11,
@@ -90,3 +91,4 @@ const styles = StyleSheet.create({
     color: colors.textDark,
   },
 });
+

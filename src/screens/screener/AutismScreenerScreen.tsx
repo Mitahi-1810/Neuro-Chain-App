@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -12,129 +12,39 @@ import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { ScreenerQuestion } from '../../types';
-import { useChildStore } from '../../store/store';
+import { useAuthStore, useChildStore } from '../../store/store';
+import { getDatabase } from '../../data/database';
+import { MCHAT_QUESTIONS } from './screenerData';
 
 interface Props {
   navigation: any;
 }
 
-// M-CHAT-R/F 20 Questions (hardcoded per PRD)
-const SCREENER_QUESTIONS: ScreenerQuestion[] = [
-  {
-    id: 1,
-    question:
-      'If you point at something across the room, does your child look at it?',
-    is_reversed: false,
-  },
-  {
-    id: 2,
-    question: 'Have you ever wondered if your child might be deaf?',
-    is_reversed: true,
-  },
-  {
-    id: 3,
-    question: 'Does your child play pretend or make-believe?',
-    is_reversed: false,
-  },
-  {
-    id: 4,
-    question: 'Does your child like climbing on things?',
-    is_reversed: false,
-  },
-  {
-    id: 5,
-    question:
-      'Does your child make unusual finger movements near his or her eyes?',
-    is_reversed: true,
-  },
-  {
-    id: 6,
-    question:
-      'Does your child point with one finger to ask for something or to get help?',
-    is_reversed: false,
-  },
-  {
-    id: 7,
-    question:
-      'Does your child point with one finger to show you something interesting?',
-    is_reversed: false,
-  },
-  {
-    id: 8,
-    question: 'Is your child interested in other children?',
-    is_reversed: false,
-  },
-  {
-    id: 9,
-    question:
-      'Does your child show you things by bringing them to you or holding them up for you to see?',
-    is_reversed: false,
-  },
-  {
-    id: 10,
-    question: 'Does your child respond when you call his or her name?',
-    is_reversed: false,
-  },
-  {
-    id: 11,
-    question: 'When you smile at your child, does he or she smile back at you?',
-    is_reversed: false,
-  },
-  {
-    id: 12,
-    question: 'Does your child get upset by everyday noises?',
-    is_reversed: true,
-  },
-  {
-    id: 13,
-    question: 'Does your child walk?',
-    is_reversed: false,
-  },
-  {
-    id: 14,
-    question:
-      'Does your child look you in the eye when you are talking, playing, or dressing him or her?',
-    is_reversed: false,
-  },
-  {
-    id: 15,
-    question: 'Does your child try to copy what you do?',
-    is_reversed: false,
-  },
-  {
-    id: 16,
-    question:
-      'If you turn your head to look at something, does your child look around to see what you are looking at?',
-    is_reversed: false,
-  },
-  {
-    id: 17,
-    question: 'Does your child try to get you to watch him or her?',
-    is_reversed: false,
-  },
-  {
-    id: 18,
-    question:
-      'Does your child understand when you tell him or her to do something?',
-    is_reversed: false,
-  },
-  {
-    id: 19,
-    question:
-      'If something new happens, does your child look at your face to see how you feel about it?',
-    is_reversed: false,
-  },
-  {
-    id: 20,
-    question: 'Does your child like movement activities?',
-    is_reversed: false,
-  },
-];
+const SCREENER_QUESTIONS: ScreenerQuestion[] = MCHAT_QUESTIONS;
+
+type Instrument = 'CSBS_ITC' | 'MCHAT' | 'CAST' | 'NONE' | 'OLDER';
+
+const getAgeInMonths = (dob: Date) => {
+  const now = new Date();
+  const months = (now.getTime() - dob.getTime()) / (1000 * 60 * 60 * 24 * 30.4375);
+  return Math.floor(months);
+};
+
+const getInstrumentForAge = (ageMonths: number): Instrument => {
+  if (ageMonths >= 9 && ageMonths <= 15) return 'CSBS_ITC';
+  if (ageMonths >= 16 && ageMonths <= 30) return 'MCHAT';
+  if (ageMonths >= 48 && ageMonths <= 132) return 'CAST';
+  if (ageMonths >= 132) return 'OLDER';
+  return 'NONE';
+};
 
 const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
+  const { user } = useAuthStore();
   const { activeChild } = useChildStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
+  const [lastAssessment, setLastAssessment] = useState<any | null>(null);
+  const [loadingAssessment, setLoadingAssessment] = useState(true);
 
   // Age gate: Check if child is 16-30 months
   const childDOB = useMemo(() => {
@@ -142,37 +52,242 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
     return new Date(activeChild.date_of_birth);
   }, [activeChild]);
 
-  const isEligible = useMemo(() => {
-    if (!childDOB) return false;
-    const now = new Date();
-    const ageInMonths =
-      (now.getTime() - childDOB.getTime()) / (1000 * 60 * 60 * 24 * 30);
-    return ageInMonths >= 16 && ageInMonths <= 30;
+  const childAgeMonths = useMemo(() => {
+    if (!childDOB) return null;
+    return getAgeInMonths(childDOB);
   }, [childDOB]);
 
-  if (!isEligible) {
+  const instrument = useMemo(() => {
+    if (childAgeMonths === null) return 'NONE' as Instrument;
+    return getInstrumentForAge(childAgeMonths);
+  }, [childAgeMonths]);
+
+  useEffect(() => {
+    const loadLatestAssessment = async () => {
+      if (!activeChild) return;
+      try {
+        const db = await getDatabase();
+        const rows = await db.getAllAsync(
+          'SELECT * FROM assessments WHERE child_id = ? ORDER BY timestamp DESC LIMIT 1',
+          [activeChild.id],
+        );
+        setLastAssessment(rows?.[0] ?? null);
+      } catch (error) {
+        console.error('Failed to load assessments', error);
+      } finally {
+        setLoadingAssessment(false);
+      }
+    };
+    setLoadingAssessment(true);
+    loadLatestAssessment();
+  }, [activeChild]);
+
+  const lockInfo = useMemo(() => {
+    if (!lastAssessment || !childAgeMonths) return null;
+    const lastType = lastAssessment.test_type as string;
+    const lastRisk = lastAssessment.risk_level as string;
+    const lastTimestamp = new Date(lastAssessment.timestamp || lastAssessment.created_at || Date.now());
+    const ageInstrument = instrument;
+
+    const monthsSince =
+      (new Date().getTime() - lastTimestamp.getTime()) / (1000 * 60 * 60 * 24 * 30.4375);
+
+    if (
+      ageInstrument === 'MCHAT' &&
+      lastType === 'CSBS_ITC' &&
+      typeof childAgeMonths === 'number' &&
+      childAgeMonths < 18 &&
+      monthsSince < 3
+    ) {
+      return {
+        locked: true,
+        reason: 'M-CHAT will be available at 18 months and at least 90 days after the last CSBS screening.',
+        allowRescreen: false,
+      };
+    }
+
+    if (ageInstrument !== lastType) {
+      return null;
+    }
+
+    if (lastRisk === 'HIGH') {
+      return {
+        locked: true,
+        reason: 'Based on your previous screening, a specialist consultation is the recommended next step.',
+        allowRescreen: false,
+      };
+    }
+
+    const minMonths = lastRisk === 'MODERATE' ? 3 : 6;
+
+    if (lastRisk === 'MODERATE' && user?.tier_level && user.tier_level !== 'FREE') {
+      return null;
+    }
+
+    if (monthsSince < minMonths) {
+      const remainingMonths = Math.ceil(minMonths - monthsSince);
+      return {
+        locked: true,
+        reason: `Re-screening will be available in ${remainingMonths} month${remainingMonths === 1 ? '' : 's'}.`,
+        allowRescreen: false,
+      };
+    }
+
+    return null;
+  }, [lastAssessment, instrument, childAgeMonths, user?.tier_level]);
+
+  if (!activeChild) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <View style={styles.headerSpacer} />
+        </View>
         <View style={styles.content}>
           <View style={styles.ineligibleContainer}>
-            <MaterialCommunityIcons
-              name="calendar-alert"
-              size={64}
-              color={colors.primary}
-              style={{ marginBottom: 16 }}
-            />
-            <Text style={styles.ineligibleTitle}>Screening Unavailable</Text>
+            <MaterialCommunityIcons name="account-alert" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={styles.ineligibleTitle}>Add a child profile</Text>
             <Text style={styles.ineligibleDesc}>
-              Screening is available for children aged 16--30 months. Check back
-              when your child is in this age range.
+              Please add your child's profile to start the right age-specific screening.
             </Text>
             <CrayonButton
-              label="Return Home"
+              label="Return home"
               onPress={() => navigation.navigate('ParentTabs')}
               variant="primary"
               size="large"
               fullWidth
               style={{ marginTop: 24 }}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loadingAssessment) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.content}>
+          <View style={styles.ineligibleContainer}>
+            <MaterialCommunityIcons name="clock-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={styles.ineligibleTitle}>Preparing your screener</Text>
+            <Text style={styles.ineligibleDesc}>Checking your child's eligibility…</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (lockInfo?.locked) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.content}>
+          <View style={styles.ineligibleContainer}>
+            <MaterialCommunityIcons name="lock" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={styles.ineligibleTitle}>Screening locked</Text>
+            <Text style={styles.ineligibleDesc}>{lockInfo.reason}</Text>
+            <CrayonButton
+              label="Book a specialist"
+              onPress={() => navigation.navigate('TelehealthBooking')}
+              variant="primary"
+              size="large"
+              fullWidth
+              style={{ marginTop: 24 }}
+            />
+            <CrayonButton
+              label="Return home"
+              onPress={() => navigation.navigate('ParentTabs')}
+              variant="ghost"
+              size="medium"
+              fullWidth
+              style={{ marginTop: 10 }}
+            />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (instrument !== 'MCHAT') {
+    const ineligibleCopy = (() => {
+      if (instrument === 'CSBS_ITC') {
+        return {
+          title: 'Infant communication screening available',
+          desc: 'Your child is in the 9–15 month window. Start the CSBS-DP Infant-Toddler Checklist now.',
+          actionLabel: 'Start CSBS checklist',
+          action: () => navigation.navigate('CSBSScreener'),
+        };
+      }
+      if (instrument === 'CAST') {
+        return {
+          title: 'School-age screening available',
+          desc: 'Your child is in the 4–11 year window. Start the CAST questionnaire now.',
+          actionLabel: 'Start CAST screening',
+          action: () => navigation.navigate('CastScreener'),
+        };
+      }
+      if (instrument === 'OLDER') {
+        return {
+          title: 'Specialist evaluation recommended',
+          desc: 'For children aged 11 and above, a clinician-led evaluation is the most reliable path. We can connect you with specialists.',
+          actionLabel: 'Learn more',
+          action: () => navigation.navigate('OlderChildInfo'),
+        };
+      }
+      return {
+        title: 'No age-validated screener right now',
+        desc: 'There is no validated self-report screener for this age range yet. A specialist consultation can guide next steps.',
+        actionLabel: 'Book a specialist',
+        action: () => navigation.navigate('TelehealthBooking'),
+      };
+    })();
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View style={styles.content}>
+          <View style={styles.ineligibleContainer}>
+            <MaterialCommunityIcons name="clipboard-text" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+            <Text style={styles.ineligibleTitle}>{ineligibleCopy.title}</Text>
+            <Text style={styles.ineligibleDesc}>{ineligibleCopy.desc}</Text>
+            <CrayonButton
+              label={ineligibleCopy.actionLabel}
+              onPress={ineligibleCopy.action}
+              variant="primary"
+              size="large"
+              fullWidth
+              style={{ marginTop: 24 }}
+            />
+            <CrayonButton
+              label="Return home"
+              onPress={() => navigation.navigate('ParentTabs')}
+              variant="ghost"
+              size="medium"
+              fullWidth
+              style={{ marginTop: 10 }}
             />
           </View>
         </View>
@@ -199,6 +314,7 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
 
       // Navigate to results
       navigation.navigate('ScreenerResults', {
+        testType: 'MCHAT',
         riskScore,
         answers: newAnswers,
       });

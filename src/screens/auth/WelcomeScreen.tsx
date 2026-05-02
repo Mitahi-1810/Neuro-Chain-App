@@ -6,11 +6,14 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Image,
 } from 'react-native';
-import { colors } from '../../utils/colors';
+import { colors, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { LanguageToggle } from '../../components/LanguageToggle';
+import { Mascot } from '../../components/Mascot';
 import { useI18n } from '../../i18n/useI18n';
 
 interface Props {
@@ -22,83 +25,97 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.logoSmall}>
-            <Text style={styles.logoTextSmall}>NC</Text>
+          <View style={styles.logoChip}>
+            <Image
+              source={require('../../../Neuro_logo.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
           </View>
           <LanguageToggle compact />
         </View>
 
-        <View style={styles.contentContainer}>
-          <Text style={styles.headline}>{t('welcome_headline')}</Text>
-          <Text style={styles.subheadline}>
-            {t('welcome_subheadline')}
-          </Text>
+        {/* Decorative mascots floating above hero */}
+        <View style={styles.mascotsRow}>
+          <Mascot kind="star" size="sm" />
+          <Mascot kind="puzzle" size="sm" />
+          <Mascot kind="heart" size="sm" />
+          <Mascot kind="rocket" size="sm" />
+        </View>
 
-          <CrayonCard style={styles.featureCard} variant="accent">
-            <View style={styles.featureRow}>
-              <Text style={styles.featureEmoji}>🎮</Text>
-              <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>
-                  {t('welcome_feature_games_title')}
-                </Text>
-                <Text style={styles.featureDesc}>
-                  {t('welcome_feature_games_desc')}
-                </Text>
-              </View>
+        {/* Headline */}
+        <Text style={styles.eyebrow}>welcome to neurochain</Text>
+        <Text style={styles.headline}>Let's grow{'\n'}together,{' '}
+          <Text style={styles.headlineAccent}>one play at a time.</Text>
+        </Text>
+        <Text style={styles.subheadline}>
+          Daily play sessions, gentle screening, and on-device AI insights — designed
+          with families across South Asia.
+        </Text>
+
+        {/* Hero card */}
+        <CrayonCard variant="primary" padding={22} style={styles.hero}>
+          <View style={styles.heroRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.heroEyebrow}>today's plan</Text>
+              <Text style={styles.heroTitle}>Build a routine{'\n'}that loves your kid back.</Text>
+              <Text style={styles.heroDesc}>
+                Tiny daily activities, big developmental wins.
+              </Text>
             </View>
+            <Mascot kind="sun" size="lg" tint={colors.secondary} />
+          </View>
+        </CrayonCard>
+
+        {/* Feature trio */}
+        <View style={styles.features}>
+          <CrayonCard variant="sky" padding={18} style={styles.featureCard}>
+            <Mascot kind="controller" size="sm" />
+            <Text style={styles.featureTitle}>Play & Learn</Text>
+            <Text style={styles.featureDesc}>13+ guided games tied to therapy goals.</Text>
           </CrayonCard>
-
-          <CrayonCard style={styles.featureCard} variant="soft">
-            <View style={styles.featureRow}>
-              <Text style={styles.featureEmoji}>📊</Text>
-              <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>
-                  {t('welcome_feature_track_title')}
-                </Text>
-                <Text style={styles.featureDesc}>
-                  {t('welcome_feature_track_desc')}
-                </Text>
-              </View>
-            </View>
+          <CrayonCard variant="pink" padding={18} style={styles.featureCard}>
+            <Mascot kind="chart" size="sm" />
+            <Text style={styles.featureTitle}>Track Growth</Text>
+            <Text style={styles.featureDesc}>Friendly weekly reports — never clinical jargon.</Text>
           </CrayonCard>
-
-          <CrayonCard style={styles.featureCard} variant="default">
-            <View style={styles.featureRow}>
-              <Text style={styles.featureEmoji}>👨‍⚕️</Text>
-              <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>
-                  {t('welcome_feature_specialists_title')}
-                </Text>
-                <Text style={styles.featureDesc}>
-                  {t('welcome_feature_specialists_desc')}
-                </Text>
-              </View>
-            </View>
+          <CrayonCard variant="teal" padding={18} style={styles.featureCard}>
+            <Mascot kind="brain" size="sm" />
+            <Text style={styles.featureTitle}>On-device AI</Text>
+            <Text style={styles.featureDesc}>Vision insights stay private — nothing leaves the phone.</Text>
           </CrayonCard>
         </View>
 
-        <View style={styles.buttonContainer}>
+        {/* CTAs */}
+        <View style={styles.ctaBlock}>
           <CrayonButton
             label={t('welcome_get_started')}
-            onPress={() => navigation.navigate('SignUp')}
+            onPress={() => navigation.navigate('RoleSelect')}
             variant="primary"
             size="large"
             fullWidth
           />
-
           <TouchableOpacity
             onPress={() => navigation.navigate('Login')}
             style={styles.loginLink}
+            activeOpacity={0.7}
           >
             <Text style={styles.loginLinkText}>
-              {t('welcome_have_account')}
+              {t('welcome_have_account')}{' '}
+              <Text style={styles.loginLinkAccent}>Sign in</Text>
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.disclaimer}>{t('welcome_disclaimer')}</Text>
+        <Text style={styles.disclaimer}>
+          NeuroChain offers screening tools and educational play. It is not a clinical diagnosis.
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -111,95 +128,119 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
+    paddingHorizontal: 24,
+    paddingTop: 12,
+    paddingBottom: 32,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 22,
   },
-  logoSmall: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoChip: {
+    backgroundColor: colors.white,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
   },
-  logoTextSmall: {
-    fontSize: 28,
-    fontWeight: '800',
-    color: colors.textLight,
-    fontFamily: 'Poppins',
+  logoImage: {
+    width: 110,
+    height: 30,
   },
-  contentContainer: {
-    marginBottom: 32,
+  mascotsRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 18,
+    marginLeft: -6,
+  },
+  eyebrow: {
+    ...typography.eyebrow,
+    color: colors.primary,
+    marginBottom: 8,
   },
   headline: {
-    fontSize: 32,
-    fontWeight: '800',
+    ...typography.hero,
+    fontSize: 36,
+    lineHeight: 42,
     color: colors.textDark,
-    marginBottom: 12,
-    fontFamily: 'Poppins',
-    lineHeight: 40,
+  },
+  headlineAccent: {
+    color: colors.primary,
   },
   subheadline: {
-    fontSize: 16,
-    color: colors.textWarmBrown,
-    marginBottom: 24,
-    fontFamily: 'Inter',
-    lineHeight: 24,
+    ...typography.bodyLg,
+    color: colors.textMuted,
+    marginTop: 12,
+    marginBottom: 22,
+  },
+  hero: {
+    marginBottom: 18,
+  },
+  heroRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  heroEyebrow: {
+    ...typography.badge,
+    color: colors.secondary,
+    marginBottom: 6,
+  },
+  heroTitle: {
+    ...typography.h2,
+    color: colors.white,
+    fontSize: 20,
+    lineHeight: 26,
+  },
+  heroDesc: {
+    ...typography.body,
+    color: colors.primaryLight,
+    marginTop: 8,
+  },
+  features: {
+    gap: 12,
+    marginBottom: 22,
   },
   featureCard: {
-    marginBottom: 12,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  featureEmoji: {
-    fontSize: 32,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  featureText: {
-    flex: 1,
+    flexDirection: 'column',
+    gap: 8,
   },
   featureTitle: {
+    ...typography.h3,
     fontSize: 16,
-    fontWeight: '700',
-    color: colors.textDark,
-    marginBottom: 4,
-    fontFamily: 'Poppins',
+    marginTop: 6,
   },
   featureDesc: {
-    fontSize: 14,
-    color: colors.textWarmBrown,
-    fontFamily: 'Inter',
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textMuted,
   },
-  buttonContainer: {
-    marginBottom: 20,
-    gap: 12,
+  ctaBlock: {
+    marginBottom: 14,
+    gap: 6,
   },
   loginLink: {
-    paddingVertical: 12,
+    paddingVertical: 14,
     alignItems: 'center',
   },
   loginLinkText: {
-    fontSize: 16,
+    ...typography.body,
+    fontSize: 14,
+    color: colors.textMuted,
+  },
+  loginLinkAccent: {
     color: colors.primary,
-    fontWeight: '600',
-    textDecorationLine: 'underline',
-    fontFamily: 'Inter',
+    fontWeight: '700',
   },
   disclaimer: {
-    fontSize: 12,
-    color: colors.darkGrey,
+    ...typography.caption,
     textAlign: 'center',
-    marginTop: 8,
-    fontFamily: 'Inter',
+    marginTop: 4,
+    paddingHorizontal: 12,
   },
 });
 
