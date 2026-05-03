@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, StyleSheet, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, ScrollView, TouchableOpacity, Alert, Clipboard, TextInput } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { CrayonCard } from '../../components/CrayonCard';
 import { CrayonButton } from '../../components/CrayonButton';
 import { useI18n } from '../../i18n/useI18n';
-import { ensureSpecialistSchema, getDatabase } from '../../data/database';
+import { ensureSpecialistSchema, getDatabase, migrateCalendlyUrl } from '../../data/database';
 import { useAuthStore } from '../../store/store';
 
 const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
@@ -15,12 +15,16 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [specialist, setSpecialist] = useState<any | null>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [calendlyUrl, setCalendlyUrl] = useState('');
+  const [editingUrl, setEditingUrl] = useState(false);
+  const [savingUrl, setSavingUrl] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
       try {
         await ensureSpecialistSchema();
+        await migrateCalendlyUrl();
         const db = await getDatabase();
         const specialistRows: any[] = await db.getAllAsync(
           'SELECT * FROM specialists WHERE user_id = ? LIMIT 1',
@@ -40,6 +44,7 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
         }
 
         setSpecialist(specialistProfile);
+        setCalendlyUrl(specialistProfile?.calendly_url || '');
 
         if (specialistProfile?.id) {
           const rows = await db.getAllAsync(
@@ -123,7 +128,7 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
     return (
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.content}>
-          <Text style={styles.title}>Loading dashboard…</Text>
+          <Text style={styles.profileName}>Loading dashboard…</Text>
         </ScrollView>
       </SafeAreaView>
     );
@@ -148,55 +153,182 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
     { label: 'Monthly Earnings (BDT)', value: derived.monthlyEarnings.toLocaleString(), icon: 'cash-multiple' },
   ];
 
+  const initials = (specialist?.full_name || user?.full_name || 'S')
+    .split(' ')
+    .map((w: string) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
+
+  const isActive = specialist?.status === 'ACTIVE';
+
+  const handleCopyCalendlyLink = () => {
+    const url = specialist?.calendly_url || calendlyUrl;
+    if (!url) { Alert.alert('No link set', 'Add your Calendly URL first.'); return; }
+    Clipboard.setString(url);
+    Alert.alert('Link copied', 'Your booking link has been copied to the clipboard.');
+  };
+
+  const handleSaveCalendlyUrl = async () => {
+    const trimmed = calendlyUrl.trim();
+    if (!trimmed) { Alert.alert('URL required', 'Please enter your Calendly URL.'); return; }
+    if (!trimmed.startsWith('https://')) {
+      Alert.alert('Invalid URL', 'URL must start with https://'); return;
+    }
+    setSavingUrl(true);
+    try {
+      const db = await getDatabase();
+      await db.runAsync(
+        'UPDATE specialists SET calendly_url = ?, updated_at = ? WHERE user_id = ?',
+        [trimmed, new Date().toISOString(), user!.id]
+      );
+      setSpecialist((prev: any) => ({ ...prev, calendly_url: trimmed }));
+      setEditingUrl(false);
+    } catch {
+      Alert.alert('Error', 'Could not save. Please try again.');
+    } finally {
+      setSavingUrl(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerRow}>
-          <View>
-            <Text style={styles.title}>{t('specialist_dashboard_title')}</Text>
-            <Text style={styles.subtitle}>{t('specialist_dashboard_subtitle')}</Text>
+
+        {/* ── Profile Header ── */}
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarWrap}>
+            <Text style={styles.avatarText}>{initials}</Text>
           </View>
-          <TouchableOpacity
-            onPress={handleProfilePress}
-            style={styles.profileButton}
-          >
-            <MaterialCommunityIcons name="account-circle" size={26} color={colors.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.profileName} numberOfLines={1}>
+              {specialist?.full_name || user?.full_name || 'Specialist'}
+            </Text>
+            <Text style={styles.profileSpecialty} numberOfLines={1}>
+              {specialist?.specialty || 'General'}
+            </Text>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusBadge, isActive ? styles.statusActive : styles.statusPending]}>
+                <View style={[styles.statusDot, { backgroundColor: isActive ? colors.success : colors.warning }]} />
+                <Text style={[styles.statusText, { color: isActive ? colors.success : colors.warning }]}>
+                  {isActive ? 'Active' : 'Pending Verification'}
+                </Text>
+              </View>
+            </View>
+          </View>
+          <TouchableOpacity onPress={handleProfilePress} style={styles.menuBtn} activeOpacity={0.8}>
+            <MaterialCommunityIcons name="dots-vertical" size={20} color={colors.textMuted} />
           </TouchableOpacity>
         </View>
 
-      <View style={styles.kpiGrid}>
-        {kpis.map((kpi) => (
-          <CrayonCard key={kpi.label} style={styles.kpiCard}>
-            <MaterialCommunityIcons name={kpi.icon as any} size={24} color={colors.primary} />
-            <Text style={styles.kpiValue}>{kpi.value}</Text>
-            <Text style={styles.kpiLabel}>{kpi.label}</Text>
-          </CrayonCard>
-        ))}
-      </View>
+        {/* ── KPI Grid ── */}
+        <View style={styles.kpiGrid}>
+          {kpis.map((kpi) => (
+            <CrayonCard key={kpi.label} style={styles.kpiCard}>
+              <Text style={styles.kpiValue}>{kpi.value}</Text>
+              <Text style={styles.kpiLabel}>{kpi.label}</Text>
+            </CrayonCard>
+          ))}
+        </View>
 
-        {specialist?.status !== 'ACTIVE' && (
+        {/* ── Verification Banner ── */}
+        {!isActive && (
           <CrayonCard style={styles.pendingBanner}>
-            <Text style={styles.pendingTitle}>Verification in progress</Text>
-            <Text style={styles.pendingText}>
-              Your profile is under review. You will be visible to parents once verification is complete.
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 10 }}>
+              <MaterialCommunityIcons name="clock-outline" size={18} color={colors.warning} style={{ marginTop: 1 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.pendingTitle}>Verification in progress</Text>
+                <Text style={styles.pendingText}>
+                  Your profile is under review. You'll be visible to parents once our team activates your account (3–5 business days).
+                </Text>
+              </View>
+            </View>
           </CrayonCard>
         )}
 
-      <View style={styles.quickActions}>
-        <CrayonButton
-          label="Calendar"
-          onPress={() => Alert.alert('Coming soon', 'Full calendar management arrives in the next update.')}
-          variant="outline"
-          size="small"
-        />
-        <CrayonButton
-          label="Earnings"
-          onPress={() => Alert.alert('Coming soon', 'Earnings reports and payouts arrive in the next update.')}
-          variant="outline"
-          size="small"
-        />
-      </View>
+        {/* ── Appointment Settings / Calendly Link ── */}
+        <CrayonCard variant="sky" padding={16} style={{ marginTop: 16 }}>
+          <View style={styles.calendlyCardHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.calendlyTitle}>Appointment booking link</Text>
+              <Text style={styles.calendlySubtitle}>Parents use this to book sessions with you</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => { setEditingUrl(!editingUrl); setCalendlyUrl(specialist?.calendly_url || ''); }}
+              style={styles.editBtn}
+              activeOpacity={0.8}
+            >
+              <MaterialCommunityIcons
+                name={editingUrl ? 'close' : 'pencil-outline'}
+                size={16}
+                color="#0369A1"
+              />
+            </TouchableOpacity>
+          </View>
+
+          {editingUrl ? (
+            <View style={{ marginTop: 10 }}>
+              <TextInput
+                style={styles.calendlyInput}
+                value={calendlyUrl}
+                onChangeText={setCalendlyUrl}
+                placeholder="https://calendly.com/your-name/consultation"
+                placeholderTextColor={colors.textMuted}
+                autoCapitalize="none"
+                keyboardType="url"
+                autoFocus
+              />
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+                <CrayonButton
+                  label={savingUrl ? 'Saving…' : 'Save link'}
+                  onPress={handleSaveCalendlyUrl}
+                  variant="primary"
+                  size="small"
+                  disabled={savingUrl}
+                />
+                <CrayonButton
+                  label="Cancel"
+                  onPress={() => { setEditingUrl(false); setCalendlyUrl(specialist?.calendly_url || ''); }}
+                  variant="outline"
+                  size="small"
+                />
+              </View>
+            </View>
+          ) : specialist?.calendly_url ? (
+            <View style={{ marginTop: 10 }}>
+              <Text style={styles.calendlyUrl} numberOfLines={1}>{specialist.calendly_url}</Text>
+              <CrayonButton
+                label="Copy link"
+                onPress={handleCopyCalendlyLink}
+                variant="primary"
+                size="small"
+                style={{ marginTop: 10, alignSelf: 'flex-start' }}
+                iconRight={<MaterialCommunityIcons name="content-copy" size={14} color={colors.white} />}
+              />
+            </View>
+          ) : (
+            <TouchableOpacity onPress={() => setEditingUrl(true)} style={styles.calendlyEmpty} activeOpacity={0.8}>
+              <MaterialCommunityIcons name="link-plus" size={18} color="#0EA5E9" />
+              <Text style={styles.calendlyEmptyText}>Add your Calendly URL so parents can book</Text>
+            </TouchableOpacity>
+          )}
+        </CrayonCard>
+
+        {/* ── Quick Actions ── */}
+        <View style={styles.quickActions}>
+          <CrayonButton
+            label="Calendar"
+            onPress={() => Alert.alert('Coming soon', 'Full calendar management arrives in the next update.')}
+            variant="outline"
+            size="small"
+          />
+          <CrayonButton
+            label="Earnings"
+            onPress={() => Alert.alert('Coming soon', 'Earnings reports arrive in the next update.')}
+            variant="outline"
+            size="small"
+          />
+        </View>
 
   <Text style={styles.sectionTitle}>{t('specialist_todays_appointments')}</Text>
       {derived.confirmedToday.length === 0 && (
@@ -266,44 +398,89 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  content: { paddingHorizontal: 16, paddingVertical: 24 },
-  headerRow: {
+  content: { paddingHorizontal: 16, paddingVertical: 24, paddingBottom: 40 },
+
+  /* Profile header */
+  profileHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 14,
+    marginBottom: 22,
   },
-  profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.white,
+  avatarWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.primaryLight,
+    borderWidth: 2,
+    borderColor: colors.primaryMid,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '800',
+  avatarText: {
+    ...typography.h3,
+    color: colors.primary,
+    fontSize: 20,
+  },
+  profileName: {
+    ...typography.h3,
+    fontSize: 17,
     color: colors.textDark,
-    fontFamily: 'Poppins',
   },
-  subtitle: {
-    fontSize: 14,
-    color: colors.darkGrey,
-    marginTop: 8,
-    fontFamily: 'Inter',
+  profileSpecialty: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 2,
   },
+  statusRow: {
+    flexDirection: 'row',
+    marginTop: 6,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderWidth: 1,
+  },
+  statusActive: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  statusPending: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    ...typography.badge,
+    fontSize: 10,
+    textTransform: 'none',
+    letterSpacing: 0,
+  },
+  menuBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
   kpiGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 12,
-    marginTop: 24,
   },
   quickActions: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 12,
+    marginTop: 16,
   },
   kpiCard: {
     width: '48%',
@@ -311,17 +488,77 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   kpiValue: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
     color: colors.textDark,
-    marginTop: 8,
+    marginBottom: 4,
     fontFamily: 'Poppins',
   },
   kpiLabel: {
     fontSize: 12,
-    color: colors.textWarmBrown,
-    marginTop: 4,
+    color: colors.textMuted,
     fontFamily: 'Inter',
+    lineHeight: 16,
+  },
+
+  calendlyCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+  },
+  calendlyTitle: {
+    ...typography.label,
+    color: '#0369A1',
+    marginBottom: 2,
+  },
+  calendlySubtitle: {
+    ...typography.caption,
+    color: '#0EA5E9',
+    fontSize: 11,
+  },
+  editBtn: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#E0F2FE',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendlyInput: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: '#7DD3FC',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: colors.textDark,
+    fontFamily: 'Inter',
+  },
+  calendlyUrl: {
+    ...typography.body,
+    fontSize: 12,
+    color: '#0EA5E9',
+    fontFamily: 'Inter',
+  },
+  calendlyEmpty: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: radius.lg,
+    borderWidth: 1.5,
+    borderColor: '#7DD3FC',
+    borderStyle: 'dashed',
+    backgroundColor: '#F0F9FF',
+  },
+  calendlyEmptyText: {
+    ...typography.body,
+    fontSize: 12,
+    color: '#0EA5E9',
+    flex: 1,
   },
   sectionTitle: {
     fontSize: 18,

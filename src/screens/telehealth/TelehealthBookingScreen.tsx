@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,319 +6,421 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { colors } from '../../utils/colors';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { colors, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
-import { CrayonCard } from '../../components/CrayonCard';
-import { useAuthStore, useChildStore } from '../../store/store';
-import { getDatabase } from '../../data/database';
-import { useI18n } from '../../i18n/useI18n';
+import { useAuthStore } from '../../store/store';
+import { CALENDLY_BASE_URL } from './CalendlyBookingScreen';
 
-const STORAGE_KEY = 'neurochain.telehealth.wizard';
+interface Specialist {
+  id: string;
+  name: string;
+  credential: string;
+  specialty: string;
+  fee: number;
+  languages: string[];
+  calendly_url: string;
+  initials: string;
+  accentColor: string;
+}
 
-const SPECIALTIES = [
-  'Autism',
-  'Developmental Pediatrics',
-  'Speech Therapy',
-  'Occupational Therapy',
-];
-
-const SPECIALISTS = [
+const SPECIALISTS: Specialist[] = [
   {
     id: 'spec-1',
     name: 'Dr. Ayesha Rahman',
-    credential: 'MBBS, FCPS',
+    credential: 'MBBS, FCPS (Pediatrics)',
+    specialty: 'Autism & Developmental Pediatrics',
     fee: 2000,
-    specialty: 'Autism',
+    languages: ['Bengali', 'English'],
+    calendly_url: CALENDLY_BASE_URL,
+    initials: 'AR',
+    accentColor: colors.primary,
   },
   {
     id: 'spec-2',
     name: 'Dr. Hasan Chowdhury',
-    credential: 'MBBS, MD',
+    credential: 'MBBS, MD (Child Psychiatry)',
+    specialty: 'Speech & Language Therapy',
     fee: 1800,
-    specialty: 'Speech Therapy',
+    languages: ['Bengali', 'English', 'Hindi'],
+    calendly_url: CALENDLY_BASE_URL,
+    initials: 'HC',
+    accentColor: '#35D0BA',
   },
-];
-
-const TIME_SLOTS = [
-  '10:00 AM',
-  '11:30 AM',
-  '02:00 PM',
-  '04:00 PM',
+  {
+    id: 'spec-3',
+    name: 'Ms. Nadia Islam',
+    credential: 'BSc, MSc (Occupational Therapy)',
+    specialty: 'Occupational Therapy',
+    fee: 1500,
+    languages: ['Bengali'],
+    calendly_url: CALENDLY_BASE_URL,
+    initials: 'NI',
+    accentColor: '#F97316',
+  },
 ];
 
 const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
-  const { activeChild } = useChildStore();
-  const { t } = useI18n();
   const isPremium = user?.tier_level === 'PREMIUM';
+  const [selected, setSelected] = useState<string | null>(null);
 
-  const [step, setStep] = useState(1);
-  const [specialty, setSpecialty] = useState<string | null>(null);
-  const [city, setCity] = useState('Dhaka');
-  const [language, setLanguage] = useState('Bengali');
-  const [selectedSpecialist, setSelectedSpecialist] = useState<string | null>(null);
-  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
-  const [paymentGateway, setPaymentGateway] = useState<'STRIPE' | 'SSLCOMMERZ' | null>(null);
+  const specialist = SPECIALISTS.find((s) => s.id === selected);
+  const discountedFee = specialist
+    ? isPremium
+      ? Math.round(specialist.fee * 0.8)
+      : specialist.fee
+    : 0;
 
-  useEffect(() => {
-    const hydrate = async () => {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (!stored) return;
-      const parsed = JSON.parse(stored);
-      setStep(parsed.step || 1);
-      setSpecialty(parsed.specialty || null);
-      setCity(parsed.city || 'Dhaka');
-      setLanguage(parsed.language || 'Bengali');
-      setSelectedSpecialist(parsed.selectedSpecialist || null);
-      setSelectedSlot(parsed.selectedSlot || null);
-      setPaymentGateway(parsed.paymentGateway || null);
-    };
-    hydrate();
-  }, []);
-
-  useEffect(() => {
-    AsyncStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        step,
-        specialty,
-        city,
-        language,
-        selectedSpecialist,
-        selectedSlot,
-        paymentGateway,
-      })
-    );
-  }, [step, specialty, city, language, selectedSpecialist, selectedSlot, paymentGateway]);
-
-  const specialist = useMemo(
-    () => SPECIALISTS.find((doc) => doc.id === selectedSpecialist),
-    [selectedSpecialist]
-  );
-
-  const discountedFee = useMemo(() => {
-    if (!specialist) return 0;
-    return isPremium ? Math.round(specialist.fee * 0.8) : specialist.fee;
-  }, [specialist, isPremium]);
-
-  const canContinue = () => {
-    if (step === 1) return Boolean(specialty);
-    if (step === 2) return Boolean(selectedSpecialist);
-    if (step === 3) return Boolean(selectedSlot);
-    if (step === 4) return Boolean(paymentGateway);
-    return true;
-  };
-
-  const handleConfirmBooking = async () => {
-    try {
-      const db = await getDatabase();
-      const timestamp = new Date().toISOString();
-      const today = new Date();
-      const scheduled = new Date(today);
-      const [timePart, meridiem] = (selectedSlot || '10:00 AM').split(' ');
-      let [hours, minutes] = timePart.split(':').map(Number);
-      if (meridiem === 'PM' && hours !== 12) hours += 12;
-      if (meridiem === 'AM' && hours === 12) hours = 0;
-      scheduled.setHours(hours, minutes, 0, 0);
-      scheduled.setDate(scheduled.getDate() + 1);
-
-      await db.runAsync(
-        `INSERT INTO appointments (
-          id, parent_id, specialist_id, child_id, scheduled_at, session_type,
-          status, amount_paid_bdt, payment_gateway, created_at, updated_at, sync_status
-        ) VALUES (?, ?, ?, ?, ?, 'Telehealth', 'PENDING', ?, ?, ?, ?, 0)`,
-        [
-          Date.now().toString(),
-          user?.id || '',
-          selectedSpecialist || '',
-          activeChild?.id || '',
-          scheduled.toISOString(),
-          discountedFee,
-          paymentGateway || 'SSLCOMMERZ',
-          timestamp,
-          timestamp,
-        ]
-      );
-      await AsyncStorage.removeItem(STORAGE_KEY);
-      Alert.alert(
-        'Booking confirmed!',
-        `Your appointment with ${specialist?.name} has been requested. You will be notified when they confirm.`,
-        [{ text: 'OK', onPress: () => navigation.navigate('ParentTabs') }]
-      );
-    } catch (error) {
-      console.error('Booking failed:', error);
-      Alert.alert('Error', 'Could not confirm booking. Please try again.');
-    }
-  };
-
-  const handleNext = () => {
-    if (step < 5) setStep(step + 1);
-  };
-
-  const handleBack = () => {
-    if (step === 1) {
-      navigation.goBack();
-      return;
-    }
-    setStep(step - 1);
+  const handleBook = () => {
+    if (!specialist) return;
+    navigation.navigate('CalendlyBooking', {
+      calendlyUrl: specialist.calendly_url,
+      specialistId: specialist.id,
+      specialistName: specialist.name,
+      fee: discountedFee,
+    });
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-  <Text style={styles.title}>{t('telehealth_title')}</Text>
-  <Text style={styles.subtitle}>{t('telehealth_step', { step })}</Text>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.8}>
+          <MaterialCommunityIcons name="arrow-left" size={20} color={colors.textDark} />
+        </TouchableOpacity>
+        <View style={{ flex: 1, paddingHorizontal: 12 }}>
+          <Text style={styles.headerTitle}>Book a Specialist</Text>
+          <Text style={styles.headerSub}>Telehealth consultation</Text>
+        </View>
+      </View>
 
-        {step === 1 && (
-          <CrayonCard style={styles.card}>
-            <Text style={styles.cardTitle}>{t('telehealth_find_specialist')}</Text>
-            <Text style={styles.cardLabel}>{t('telehealth_specialty')}</Text>
-            <View style={styles.rowWrap}>
-              {SPECIALTIES.map((item) => {
-                const active = item === specialty;
-                return (
-                  <TouchableOpacity
-                    key={item}
-                    onPress={() => setSpecialty(item)}
-                    style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
-                  >
-                    <Text style={active ? styles.chipTextActive : styles.chipText}>{item}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-            <Text style={styles.cardLabel}>{t('telehealth_city')}</Text>
-            <Text style={styles.cardValue}>{city}</Text>
-            <Text style={styles.cardLabel}>{t('telehealth_language')}</Text>
-            <Text style={styles.cardValue}>{language}</Text>
-          </CrayonCard>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+      >
+        {isPremium && (
+          <View style={styles.discountBanner}>
+            <MaterialCommunityIcons name="tag" size={14} color={colors.primary} />
+            <Text style={styles.discountText}>Premium discount applied — 20% off all consultations</Text>
+          </View>
         )}
 
-        {step === 2 && (
-          <CrayonCard style={styles.card}>
-            <Text style={styles.cardTitle}>{t('telehealth_profile')}</Text>
-            {SPECIALISTS.map((doc) => {
-              const active = doc.id === selectedSpecialist;
-              return (
-                <TouchableOpacity
-                  key={doc.id}
-                  onPress={() => setSelectedSpecialist(doc.id)}
-                  style={[styles.profileCard, active && styles.profileCardActive]}
-                >
-                  <Text style={styles.profileName}>{doc.name}</Text>
-                  <Text style={styles.profileMeta}>{doc.credential}</Text>
-                  <Text style={styles.profileMeta}>Fee: {doc.fee} BDT</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </CrayonCard>
-        )}
+        <Text style={styles.sectionLabel}>Choose your specialist</Text>
 
-        {step === 3 && (
-          <CrayonCard style={styles.card}>
-            <Text style={styles.cardTitle}>{t('telehealth_select_slot')}</Text>
-            <View style={styles.rowWrap}>
-              {TIME_SLOTS.map((slot) => {
-                const active = slot === selectedSlot;
-                return (
-                  <TouchableOpacity
-                    key={slot}
-                    onPress={() => setSelectedSlot(slot)}
-                    style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
-                  >
-                    <Text style={active ? styles.chipTextActive : styles.chipText}>{slot}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </CrayonCard>
-        )}
+        {SPECIALISTS.map((spec) => {
+          const isSelected = spec.id === selected;
+          const displayFee = isPremium ? Math.round(spec.fee * 0.8) : spec.fee;
+          return (
+            <TouchableOpacity
+              key={spec.id}
+              onPress={() => setSelected(spec.id)}
+              activeOpacity={0.85}
+              style={[styles.specCard, isSelected && styles.specCardSelected]}
+            >
+              {isSelected && (
+                <View style={styles.selectedCheck}>
+                  <MaterialCommunityIcons name="check" size={14} color={colors.white} />
+                </View>
+              )}
 
-        {step === 4 && (
-          <CrayonCard style={styles.card}>
-            <Text style={styles.cardTitle}>{t('telehealth_payment')}</Text>
-            <Text style={styles.cardValue}>
-              {t('telehealth_amount_due', { amount: discountedFee })}
-            </Text>
-            {isPremium && (
-              <Text style={styles.cardHint}>{t('telehealth_discount_note')}</Text>
-            )}
-            <View style={styles.rowWrap}>
-              {['STRIPE', 'SSLCOMMERZ'].map((gateway) => {
-                const active = gateway === paymentGateway;
-                return (
-                  <TouchableOpacity
-                    key={gateway}
-                    onPress={() => setPaymentGateway(gateway as 'STRIPE' | 'SSLCOMMERZ')}
-                    style={[styles.chip, active ? styles.chipActive : styles.chipInactive]}
-                  >
-                    <Text style={active ? styles.chipTextActive : styles.chipText}>
-                      {gateway}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          </CrayonCard>
-        )}
+              <View style={styles.specRow}>
+                <View style={[styles.avatar, { backgroundColor: spec.accentColor + '20', borderColor: spec.accentColor + '40' }]}>
+                  <Text style={[styles.avatarText, { color: spec.accentColor }]}>{spec.initials}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.specName}>{spec.name}</Text>
+                  <Text style={styles.specCred}>{spec.credential}</Text>
+                </View>
+              </View>
 
-        {step === 5 && (
-          <CrayonCard style={styles.card}>
-            <Text style={styles.cardTitle}>{t('telehealth_confirmation')}</Text>
-            <Text style={styles.cardValue}>Specialist: {specialist?.name}</Text>
-            <Text style={styles.cardValue}>Slot: {selectedSlot}</Text>
-            <Text style={styles.cardValue}>Payment: {discountedFee} BDT</Text>
-            <Text style={styles.cardHint}>{t('telehealth_confirm_note')}</Text>
-          </CrayonCard>
-        )}
+              <View style={styles.specDetails}>
+                <View style={styles.specChip}>
+                  <Text style={styles.specChipText}>{spec.specialty}</Text>
+                </View>
+                <View style={[styles.specChip, styles.langChip]}>
+                  <Text style={[styles.specChipText, { color: colors.textMuted }]}>
+                    {spec.languages.join(' · ')}
+                  </Text>
+                </View>
+              </View>
 
-        <View style={styles.actions}>
-          <CrayonButton
-            label={step === 5 ? t('telehealth_done') : t('telehealth_continue')}
-            onPress={step === 5 ? handleConfirmBooking : handleNext}
-            variant="primary"
-            size="large"
-            fullWidth
-            disabled={!canContinue()}
-          />
-          <CrayonButton
-            label="Back"
-            onPress={handleBack}
-            variant="outline"
-            size="large"
-            fullWidth
-            style={{ marginTop: 12 }}
-          />
+              <View style={styles.specFooter}>
+                <View>
+                  {isPremium && (
+                    <Text style={styles.originalFee}>{spec.fee} BDT</Text>
+                  )}
+                  <Text style={[styles.feeText, { color: spec.accentColor }]}>
+                    {displayFee} BDT <Text style={styles.feeLabel}>/ session</Text>
+                  </Text>
+                </View>
+                <View style={[styles.availBadge, isSelected && { backgroundColor: spec.accentColor + '15', borderColor: spec.accentColor + '40' }]}>
+                  <View style={[styles.availDot, { backgroundColor: isSelected ? spec.accentColor : colors.success }]} />
+                  <Text style={[styles.availText, isSelected && { color: spec.accentColor }]}>Available</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        <View style={{ height: 24 }} />
+
+        <View style={styles.infoCard}>
+          <MaterialCommunityIcons name="shield-check-outline" size={18} color={colors.primary} />
+          <Text style={styles.infoText}>
+            All specialists are verified by the Bangladesh Medical & Dental Council.
+          </Text>
         </View>
       </ScrollView>
+
+      {/* Sticky bottom CTA */}
+      <View style={styles.bottomBar}>
+        {specialist && (
+          <Text style={styles.selectedSummary}>
+            {specialist.name} · <Text style={{ color: colors.primary }}>{discountedFee} BDT</Text>
+          </Text>
+        )}
+        <CrayonButton
+          label={specialist ? 'Select Date & Time' : 'Select a specialist'}
+          onPress={handleBook}
+          variant="primary"
+          size="large"
+          fullWidth
+          disabled={!specialist}
+          iconRight={
+            specialist
+              ? <MaterialCommunityIcons name="calendar-arrow-right" size={18} color={colors.white} />
+              : undefined
+          }
+        />
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.cream },
-  content: { paddingHorizontal: 16, paddingVertical: 24 },
-  title: { fontSize: 24, fontWeight: '800', color: colors.textDark, fontFamily: 'Poppins' },
-  subtitle: { fontSize: 14, color: colors.primary, marginTop: 6, fontFamily: 'Inter' },
-  card: { marginTop: 16, padding: 16 },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: colors.textDark, fontFamily: 'Poppins', marginBottom: 8 },
-  cardLabel: { fontSize: 12, fontWeight: '700', color: colors.textWarmBrown, marginTop: 8, fontFamily: 'Inter' },
-  cardValue: { fontSize: 14, color: colors.textDark, marginTop: 6, fontFamily: 'Inter' },
-  cardHint: { fontSize: 12, color: colors.darkGrey, marginTop: 8, fontFamily: 'Inter' },
-  rowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
-  chip: { borderRadius: 16, paddingVertical: 8, paddingHorizontal: 12 },
-  chipActive: { backgroundColor: colors.primary },
-  chipInactive: { backgroundColor: colors.lightGrey },
-  chipText: { fontSize: 12, color: colors.textDark, fontWeight: '600', fontFamily: 'Inter' },
-  chipTextActive: { fontSize: 12, color: colors.textLight, fontWeight: '600', fontFamily: 'Inter' },
-  profileCard: { padding: 12, borderRadius: 12, backgroundColor: colors.lightGrey, marginTop: 12 },
-  profileCardActive: { borderWidth: 2, borderColor: colors.primary, backgroundColor: colors.cream },
-  profileName: { fontSize: 14, fontWeight: '700', color: colors.textDark, fontFamily: 'Poppins' },
-  profileMeta: { fontSize: 12, color: colors.textWarmBrown, marginTop: 4, fontFamily: 'Inter' },
-  actions: { marginTop: 24 },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  headerTitle: {
+    ...typography.h3,
+    fontSize: 18,
+  },
+  headerSub: {
+    ...typography.caption,
+    color: colors.textMuted,
+    marginTop: 1,
+  },
+
+  scroll: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 24,
+  },
+
+  discountBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: colors.primaryMid,
+  },
+  discountText: {
+    ...typography.label,
+    color: colors.primary,
+    fontSize: 12,
+    flex: 1,
+  },
+
+  sectionLabel: {
+    ...typography.h4,
+    color: colors.textMuted,
+    fontSize: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+    marginBottom: 12,
+  },
+
+  specCard: {
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    ...shadow.sm,
+    position: 'relative',
+  },
+  specCardSelected: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryLight,
+    ...shadow.primary,
+  },
+  selectedCheck: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  specRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 12,
+  },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    ...typography.h3,
+    fontSize: 18,
+  },
+  specName: {
+    ...typography.h3,
+    fontSize: 16,
+    marginBottom: 2,
+  },
+  specCred: {
+    ...typography.caption,
+    color: colors.textMuted,
+  },
+
+  specDetails: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 14,
+  },
+  specChip: {
+    backgroundColor: colors.lightGrey,
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  langChip: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  specChipText: {
+    ...typography.caption,
+    color: colors.textBody,
+    fontSize: 11,
+  },
+
+  specFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  originalFee: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textDecorationLine: 'line-through',
+    marginBottom: 2,
+  },
+  feeText: {
+    ...typography.h3,
+    fontSize: 17,
+  },
+  feeLabel: {
+    ...typography.caption,
+    color: colors.textMuted,
+    fontWeight: '400',
+  },
+  availBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    borderRadius: radius.full,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  availDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  availText: {
+    ...typography.badge,
+    fontSize: 11,
+    color: colors.success,
+    textTransform: 'none',
+    letterSpacing: 0,
+  },
+
+  infoCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: colors.primaryLight,
+    borderRadius: radius.lg,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.primaryMid,
+  },
+  infoText: {
+    ...typography.body,
+    fontSize: 12,
+    color: colors.primary,
+    flex: 1,
+    lineHeight: 18,
+  },
+
+  bottomBar: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    paddingBottom: 24,
+    backgroundColor: colors.white,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 8,
+  },
+  selectedSummary: {
+    ...typography.label,
+    color: colors.textBody,
+    textAlign: 'center',
+    marginBottom: 2,
+  },
 });
 
 export default TelehealthBookingScreen;

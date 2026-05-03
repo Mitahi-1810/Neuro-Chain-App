@@ -64,6 +64,7 @@ import CaregiverHomeScreen from './src/screens/caregiver/CaregiverHomeScreen';
 
 // Telehealth
 import TelehealthBookingScreen from './src/screens/telehealth/TelehealthBookingScreen';
+import CalendlyBookingScreen from './src/screens/telehealth/CalendlyBookingScreen';
 
 import { ChildProfileGate } from './src/components/ChildProfileGate';
 
@@ -104,7 +105,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
   const getIcon = (routeName: string, focused: boolean): string => {
     if (routeName === 'Home') return focused ? 'home' : 'home-outline';
-    if (routeName === 'Games') return focused ? 'gamepad-variant' : 'gamepad-variant-outline';
+    if (routeName === 'Games') return focused ? 'puzzle' : 'puzzle-outline';
     if (routeName === 'Reports') return isFree ? 'lock-outline' : 'chart-line';
     if (routeName === 'Store') return focused ? 'tag' : 'tag-outline';
     if (routeName === 'Insights') return 'brain';
@@ -244,6 +245,7 @@ function ParentStack() {
         <Stack.Screen name="AIScreening" component={AIScreeningScreen} />
         <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
         <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
+        <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />
       </Stack.Navigator>
     </>
   );

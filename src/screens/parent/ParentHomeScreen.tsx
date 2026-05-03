@@ -16,7 +16,6 @@ import { CrayonCard } from '../../components/CrayonCard';
 import { Mascot } from '../../components/Mascot';
 import { AvatarBubble, SectionTitle, StatPill } from '../../components/Decorations';
 import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
-import { LanguageToggle } from '../../components/LanguageToggle';
 import { useI18n } from '../../i18n/useI18n';
 
 interface Props {
@@ -71,12 +70,9 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
           </View>
         </View>
-        <View style={styles.headerRight}>
-          <LanguageToggle compact />
-          <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textDark} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
+          <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textDark} />
+        </TouchableOpacity>
       </View>
 
       <View style={styles.tierBar}>
@@ -436,11 +432,6 @@ const styles = StyleSheet.create({
   headerName: {
     ...typography.h2,
     fontSize: 20,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
   },
   bellBtn: {
     width: 42,

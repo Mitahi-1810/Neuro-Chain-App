@@ -78,6 +78,7 @@ export const initDatabase = async () => {
       bio TEXT,
       profile_photo_url TEXT,
       bank_account_encrypted TEXT,
+      calendly_url TEXT,
       status TEXT CHECK(status IN ('PENDING', 'ACTIVE', 'INACTIVE')),
       is_verified INTEGER DEFAULT 0,
       created_at TEXT,
@@ -153,6 +154,7 @@ export const ensureSpecialistSchema = async () => {
       bio TEXT,
       profile_photo_url TEXT,
       bank_account_encrypted TEXT,
+      calendly_url TEXT,
       status TEXT CHECK(status IN ('PENDING', 'ACTIVE', 'INACTIVE')),
       is_verified INTEGER DEFAULT 0,
       created_at TEXT,
@@ -208,4 +210,13 @@ export const ensureSpecialistSchema = async () => {
       FOREIGN KEY (specialist_id) REFERENCES specialists(id) ON DELETE CASCADE
     );
   `);
+};
+
+export const migrateCalendlyUrl = async () => {
+  const database = await getDatabase();
+  try {
+    await database.execAsync('ALTER TABLE specialists ADD COLUMN calendly_url TEXT;');
+  } catch {
+    // Column already exists — safe to ignore
+  }
 };
