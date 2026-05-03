@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8FAFC; padding: 20px; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; gap: 16px; align-items: flex-start; }
+  .label { font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+
+  /* Bottom Nav */
+  .bottom-nav {
+    width: 375px; background: #FFFFFF; border-top: 1px solid #E2E8F0; border-radius: 20px 20px 0 0;
+    height: 68px; display: flex; align-items: center;
+    box-shadow: 0 -2px 12px rgba(15,23,42,0.06);
+  }
+  .nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; padding-bottom: 6px; padding-top: 6px; cursor: pointer;
+    position: relative;
+  }
+  .nav-icon { font-size: 22px; }
+  .nav-label { font-size: 10px; font-weight: 700; font-family: 'Inter', sans-serif; }
+  .nav-active .nav-icon  { color: #2563EB; }
+  .nav-active .nav-label { color: #2563EB; }
+  .nav-inactive .nav-icon  { color: #94A3B8; }
+  .nav-inactive .nav-label { color: #94A3B8; }
+  .nav-locked .nav-icon  { color: #CBD5E1; }
+  .nav-locked .nav-label { color: #CBD5E1; }
+  .bell-dot {
+    position: absolute; top: 5px; right: 50%; transform: translateX(14px);
+    width: 8px; height: 8px; border-radius: 50%; background: #EF4444;
+  }
+
+  /* Header */
+  .app-header {
+    width: 375px; background: #F8FAFC; padding: 16px 24px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .avatar {
+    width: 52px; height: 52px; border-radius: 26px;
+    background: #2563EB; display: flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; color: #fff;
+  }
+  .child-name { font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 700; color: #0F172A; }
+  .tier-lbl   { font-size: 12px; font-weight: 600; color: #2563EB; margin-top: 2px; }
+  .bell-btn {
+    width: 44px; height: 44px; border-radius: 22px; background: #fff;
+    border: 1px solid #E2E8F0; display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #2563EB; position: relative;
+  }
+</style>
+</head>
+<body>
+  <div class="label">App Header</div>
+  <div class="app-header" style="border-radius:20px; box-shadow: 0 2px 8px rgba(15,23,42,0.06);">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="avatar">R</div>
+      <div>
+        <div class="child-name">Rafi</div>
+        <div class="tier-lbl">Basic Plan · Day 7 streak 🔥</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="bell-btn">
+        <span class="mdi mdi-bell-outline"></span>
+        <div class="bell-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="label">Bottom Navigation (Basic Tier)</div>
+  <div class="bottom-nav">
+    <div class="nav-item nav-active">
+      <span class="mdi mdi-home nav-icon"></span>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-gamepad-variant-outline nav-icon"></span>
+      <span class="nav-label">Games</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-chart-line nav-icon"></span>
+      <span class="nav-label">Reports</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-tag-outline nav-icon"></span>
+      <span class="nav-label">Store</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-account-circle-outline nav-icon"></span>
+      <span class="nav-label">Profile</span>
+    </div>
+  </div>
+
+  <div class="label">Bottom Navigation (Free Tier — locked)</div>
+  <div class="bottom-nav">
+    <div class="nav-item nav-active">
+      <span class="mdi mdi-home nav-icon"></span>
+      <span class="nav-label">Home</span>
+    </div>
+    <div class="nav-item nav-locked">
+      <span class="mdi mdi-lock-outline nav-icon"></span>
+      <span class="nav-label">Games</span>
+    </div>
+    <div class="nav-item nav-locked">
+      <span class="mdi mdi-lock-outline nav-icon"></span>
+      <span class="nav-label">Reports</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-tag-outline nav-icon"></span>
+      <span class="nav-label">Store</span>
+    </div>
+    <div class="nav-item nav-inactive">
+      <span class="mdi mdi-account-circle-outline nav-icon"></span>
+      <span class="nav-label">Profile</span>
+    </div>
+  </div>
+</body>
+</html>

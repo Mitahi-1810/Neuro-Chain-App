@@ -24,10 +24,6 @@ export type RootStackParamList = {
   SubscriptionUpgrade: undefined;
   TelehealthBooking: undefined;
   SpecialistDashboard: undefined;
-  SpecialistProfile: undefined;
-  SpecialistCalendar: undefined;
-  SpecialistEarnings: undefined;
-  SpecialistPatient: { childId: string };
   TelehealthSession: { appointment?: any };
   SoapNoteGenerator: { appointment?: any; sessionNotes: string };
 };

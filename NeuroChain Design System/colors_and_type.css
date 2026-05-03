@@ -1,0 +1,260 @@
+/**
+ * NeuroChain Design System
+ * colors_and_type.css
+ *
+ * Source: Mitahi-1810/Neuro-Chain-App (src/utils/colors.ts + App.tsx font loading)
+ * Fonts: Poppins (headings) + Inter (body) via Google Fonts
+ */
+
+/* ─── Google Fonts ──────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css');
+
+/* ─── Base Color Tokens ─────────────────────────────────────────────────── */
+:root {
+  /* Primary Brand */
+  --nc-primary:             #2563EB;
+  --nc-primary-dark:        #1D4ED8;
+  --nc-primary-light:       #EFF6FF;
+  --nc-primary-mid:         #BFDBFE;
+
+  /* Secondary / Accent */
+  --nc-secondary:           #7C3AED;
+  --nc-secondary-light:     #EDE9FE;
+  --nc-accent:              #06B6D4;
+  --nc-accent-light:        #ECFEFF;
+  --nc-accent-dark:         #0891B2;
+
+  /* Semantic */
+  --nc-success:             #10B981;
+  --nc-success-light:       #D1FAE5;
+  --nc-success-dark:        #059669;
+  --nc-warning:             #F59E0B;
+  --nc-warning-light:       #FEF3C7;
+  --nc-danger:              #EF4444;
+  --nc-danger-light:        #FEE2E2;
+  --nc-danger-dark:         #DC2626;
+
+  /* Neutrals */
+  --nc-cream:               #F8FAFC;
+  --nc-white:               #FFFFFF;
+  --nc-surface:             #FFFFFF;
+  --nc-surface-alt:         #F1F5F9;
+  --nc-border:              #E2E8F0;
+  --nc-border-dark:         #CBD5E1;
+  --nc-light-grey:          #F1F5F9;
+  --nc-medium-grey:         #E2E8F0;
+  --nc-dark-grey:           #94A3B8;
+
+  /* Text */
+  --nc-text-dark:           #0F172A;
+  --nc-text-body:           #334155;
+  --nc-text-muted:          #64748B;
+  --nc-text-light:          #FFFFFF;
+
+  /* Transparent tints */
+  --nc-primary-alpha:       rgba(37, 99, 235, 0.08);
+  --nc-secondary-alpha:     rgba(124, 58, 237, 0.08);
+  --nc-success-alpha:       rgba(16, 185, 129, 0.08);
+  --nc-danger-alpha:        rgba(239, 68, 68, 0.08);
+
+  /* Tier Colors */
+  --nc-tier-free:           #94A3B8;
+  --nc-tier-basic:          #2563EB;
+  --nc-tier-premium:        #7C3AED;
+
+  /* ─── Border Radius Tokens ──────────────────────────────────────────── */
+  --nc-radius-sm:           8px;
+  --nc-radius-md:           14px;
+  --nc-radius-lg:           20px;
+  --nc-radius-xl:           28px;
+  --nc-radius-full:         999px;
+
+  /* ─── Shadow Tokens ─────────────────────────────────────────────────── */
+  --nc-shadow-sm:           0 1px 4px rgba(15, 23, 42, 0.04);
+  --nc-shadow-md:           0 4px 10px rgba(15, 23, 42, 0.07);
+  --nc-shadow-lg:           0 8px 18px rgba(15, 23, 42, 0.10);
+
+  /* ─── Spacing ───────────────────────────────────────────────────────── */
+  --nc-space-1:  4px;
+  --nc-space-2:  8px;
+  --nc-space-3:  12px;
+  --nc-space-4:  16px;
+  --nc-space-5:  20px;
+  --nc-space-6:  24px;
+  --nc-space-8:  32px;
+  --nc-space-10: 40px;
+  --nc-space-12: 48px;
+
+  /* ─── Typography Tokens ─────────────────────────────────────────────── */
+  --nc-font-display:        'Poppins', system-ui, sans-serif;
+  --nc-font-body:           'Inter', system-ui, sans-serif;
+
+  /* Font Sizes */
+  --nc-text-xs:    11px;
+  --nc-text-sm:    12px;
+  --nc-text-base:  14px;
+  --nc-text-md:    15px;
+  --nc-text-lg:    16px;
+  --nc-text-xl:    17px;
+  --nc-text-2xl:   18px;
+  --nc-text-3xl:   20px;
+  --nc-text-4xl:   24px;
+  --nc-text-5xl:   26px;
+  --nc-text-6xl:   30px;
+  --nc-text-7xl:   32px;
+  --nc-text-hero:  40px;
+
+  /* Font Weights */
+  --nc-weight-regular:   400;
+  --nc-weight-semibold:  600;
+  --nc-weight-bold:      700;
+  --nc-weight-extrabold: 800;
+
+  /* Line Heights */
+  --nc-leading-tight:   1.2;
+  --nc-leading-snug:    1.3;
+  --nc-leading-normal:  1.5;
+  --nc-leading-relaxed: 1.6;
+}
+
+/* ─── Semantic Typography Classes ───────────────────────────────────────── */
+
+/* Display / Hero */
+.nc-hero {
+  font-family: var(--nc-font-display);
+  font-size: var(--nc-text-hero);
+  font-weight: var(--nc-weight-extrabold);
+  color: var(--nc-text-dark);
+  line-height: var(--nc-leading-tight);
+  letter-spacing: -0.5px;
+}
+
+/* Screen Title (h1) */
+.nc-h1 {
+  font-family: var(--nc-font-display);
+  font-size: var(--nc-text-7xl);
+  font-weight: var(--nc-weight-extrabold);
+  color: var(--nc-text-dark);
+  line-height: var(--nc-leading-tight);
+  letter-spacing: -0.3px;
+}
+
+/* Section Heading (h2) */
+.nc-h2 {
+  font-family: var(--nc-font-display);
+  font-size: var(--nc-text-4xl);
+  font-weight: var(--nc-weight-extrabold);
+  color: var(--nc-text-dark);
+  letter-spacing: -0.2px;
+}
+
+/* Card Title (h3) */
+.nc-h3 {
+  font-family: var(--nc-font-display);
+  font-size: var(--nc-text-xl);
+  font-weight: var(--nc-weight-bold);
+  color: var(--nc-text-dark);
+}
+
+/* Subheading */
+.nc-h4 {
+  font-family: var(--nc-font-display);
+  font-size: var(--nc-text-lg);
+  font-weight: var(--nc-weight-bold);
+  color: var(--nc-text-dark);
+}
+
+/* Body Large */
+.nc-body-lg {
+  font-family: var(--nc-font-body);
+  font-size: var(--nc-text-md);
+  font-weight: var(--nc-weight-regular);
+  color: var(--nc-text-body);
+  line-height: var(--nc-leading-normal);
+}
+
+/* Body */
+.nc-body {
+  font-family: var(--nc-font-body);
+  font-size: var(--nc-text-base);
+  font-weight: var(--nc-weight-regular);
+  color: var(--nc-text-body);
+  line-height: var(--nc-leading-normal);
+}
+
+/* Label */
+.nc-label {
+  font-family: var(--nc-font-body);
+  font-size: 13px;
+  font-weight: var(--nc-weight-bold);
+  color: var(--nc-text-body);
+  letter-spacing: 0.2px;
+}
+
+/* Caption / Muted */
+.nc-caption {
+  font-family: var(--nc-font-body);
+  font-size: var(--nc-text-sm);
+  font-weight: var(--nc-weight-regular);
+  color: var(--nc-text-muted);
+  line-height: var(--nc-leading-normal);
+}
+
+/* Badge / Tag */
+.nc-badge {
+  font-family: var(--nc-font-body);
+  font-size: var(--nc-text-xs);
+  font-weight: var(--nc-weight-bold);
+  letter-spacing: 0.2px;
+}
+
+/* CTA / Button Text */
+.nc-btn-text {
+  font-family: var(--nc-font-display);
+  font-weight: var(--nc-weight-bold);
+  letter-spacing: 0.2px;
+}
+
+/* ─── Base Utility Classes ──────────────────────────────────────────────── */
+.nc-bg-app       { background-color: var(--nc-cream); }
+.nc-bg-card      { background-color: var(--nc-white); }
+.nc-bg-primary   { background-color: var(--nc-primary); }
+.nc-bg-secondary { background-color: var(--nc-secondary); }
+.nc-text-primary { color: var(--nc-primary); }
+.nc-text-muted   { color: var(--nc-text-muted); }
+.nc-border       { border: 1px solid var(--nc-border); }
+
+/* ─── Card Base ─────────────────────────────────────────────────────────── */
+.nc-card {
+  background: var(--nc-white);
+  border-radius: var(--nc-radius-lg);
+  box-shadow: var(--nc-shadow-md);
+  padding: var(--nc-space-5);
+}
+
+/* ─── Button Base ───────────────────────────────────────────────────────── */
+.nc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--nc-font-display);
+  font-weight: var(--nc-weight-bold);
+  letter-spacing: 0.2px;
+  border-radius: var(--nc-radius-full);
+  cursor: pointer;
+  border: none;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+}
+.nc-btn:active { opacity: 0.75; transform: scale(0.98); }
+
+.nc-btn-sm  { height: 40px; padding: 0 20px; font-size: 13px; }
+.nc-btn-md  { height: 52px; padding: 0 28px; font-size: 15px; }
+.nc-btn-lg  { height: 60px; padding: 0 36px; font-size: 16px; }
+
+.nc-btn-primary   { background: var(--nc-primary); color: var(--nc-white); box-shadow: var(--nc-shadow-md); }
+.nc-btn-secondary { background: var(--nc-secondary); color: var(--nc-white); }
+.nc-btn-success   { background: var(--nc-success); color: var(--nc-white); }
+.nc-btn-danger    { background: var(--nc-danger); color: var(--nc-white); }
+.nc-btn-outline   { background: transparent; color: var(--nc-primary); border: 1.5px solid var(--nc-primary); }
+.nc-btn-ghost     { background: var(--nc-primary-light); color: var(--nc-primary); }

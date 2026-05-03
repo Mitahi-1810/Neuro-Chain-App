@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8FAFC; padding: 20px; font-family: 'Inter', sans-serif; display: flex; gap: 20px; align-items: flex-start; }
+
+  /* Progress Ring */
+  .ring-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .ring-label { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; }
+  .ring-outer {
+    position: relative; display: flex; align-items: center; justify-content: center;
+    background: #F8FAFC; border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+  }
+  .ring-inner { position: absolute; text-align: center; }
+  .ring-pct { font-family: 'Poppins', sans-serif; font-size: 22px; font-weight: 800; color: #2563EB; }
+  .ring-sub { font-size: 10px; color: #64748B; margin-top: 2px; }
+
+  /* Linear Progress */
+  .prog-section { flex: 1; }
+  .prog-label { font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; }
+  .prog-row { margin-bottom: 14px; }
+  .prog-meta { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 12px; font-weight: 700; }
+  .prog-name { color: #334155; }
+  .prog-val  { color: #2563EB; }
+  .prog-track { height: 8px; background: #E2E8F0; border-radius: 999px; overflow: hidden; }
+  .prog-fill  { height: 100%; border-radius: 999px; }
+
+  /* Streak */
+  .streak-card {
+    background: #FFFFFF; border-radius: 20px; box-shadow: 0 4px 10px rgba(15,23,42,0.07);
+    padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100px;
+  }
+  .streak-icon { font-size: 28px; color: #7C3AED; }
+  .streak-num { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 800; color: #2563EB; }
+  .streak-text { font-size: 11px; color: #64748B; }
+</style>
+</head>
+<body>
+  <!-- Progress Ring -->
+  <div style="display:flex;flex-direction:column;gap:16px;align-items:center;">
+    <div class="ring-label">Progress Ring</div>
+    <div class="ring-wrap">
+      <div class="ring-outer" style="width:110px;height:110px;">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <defs>
+            <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#2563EB"/>
+              <stop offset="100%" stop-color="#7C3AED"/>
+            </linearGradient>
+          </defs>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="#E2E8F0" stroke-width="8"/>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="url(#g)" stroke-width="8"
+            stroke-dasharray="289" stroke-dashoffset="86" stroke-linecap="round"
+            transform="rotate(-90 55 55)"/>
+        </svg>
+        <div class="ring-inner">
+          <div class="ring-pct">70%</div>
+          <div class="ring-sub">Today</div>
+        </div>
+      </div>
+    </div>
+    <div class="streak-card">
+      <span class="mdi mdi-fire streak-icon"></span>
+      <div class="streak-num">7</div>
+      <div class="streak-text">Day Streak</div>
+    </div>
+  </div>
+
+  <!-- Linear Progress Bars -->
+  <div class="prog-section">
+    <div class="prog-label">Weekly Progress (7-day)</div>
+    <div class="prog-row">
+      <div class="prog-meta"><span class="prog-name">Bubble Pop</span><span class="prog-val">85%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:85%;background:#2563EB;"></div></div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-meta"><span class="prog-name">Pattern Match</span><span class="prog-val">62%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:62%;background:#06B6D4;"></div></div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-meta"><span class="prog-name">Eye Contact</span><span class="prog-val">48%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:48%;background:#7C3AED;"></div></div>
+    </div>
+    <div class="prog-row">
+      <div class="prog-meta"><span class="prog-name">Story Sequence</span><span class="prog-val">91%</span></div>
+      <div class="prog-track"><div class="prog-fill" style="width:91%;background:#10B981;"></div></div>
+    </div>
+    <!-- Screener progress bar -->
+    <div class="prog-label" style="margin-top:14px;">Screener Progress</div>
+    <div class="prog-row">
+      <div class="prog-meta"><span class="prog-name">Question 12 of 20</span><span class="prog-val">60%</span></div>
+      <div class="prog-track" style="height:6px;"><div class="prog-fill" style="width:60%;background:linear-gradient(90deg,#2563EB,#7C3AED);"></div></div>
+    </div>
+  </div>
+</body>
+</html>

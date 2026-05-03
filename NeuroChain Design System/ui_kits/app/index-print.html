@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeuroChain UI Kit — Print</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  font-family: 'Nunito', sans-serif;
+  background: #f0ebf8;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ── Print page layout ── */
+@page { size: landscape; margin: 0; }
+
+@media print {
+  html, body { background: #fff; }
+  .page { break-before: page; break-inside: avoid; }
+  .page:first-child { break-before: auto; }
+  .picker-bar { display: none !important; }
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ── Screen grid (screen preview) ── */
+.page {
+  width: 100vw; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 30%, #1e1040 0%, #0d0a1a 70%);
+  padding: 32px;
+  gap: 0;
+  break-inside: avoid;
+}
+
+/* Title page */
+.page.title-page {
+  flex-direction: column;
+  background: linear-gradient(160deg, #fffbe6 0%, #fff5e8 50%, #fef0f5 100%);
+}
+
+/* ── Phone frame ── */
+.frame-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.frame-label {
+  font-family: 'Nunito', sans-serif;
+  font-size: 11px; font-weight: 800; letter-spacing: 1px;
+  text-transform: uppercase; color: rgba(255,255,255,0.5);
+}
+.phone {
+  width: 340px; height: 736px;
+  border-radius: 46px; overflow: hidden; position: relative;
+  box-shadow:
+    0 0 0 1.5px #2a1f50,
+    0 0 0 3px #0d0a1a,
+    0 24px 60px rgba(0,0,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.07);
+  background: #FEF9F0;
+  flex-shrink: 0;
+}
+.notch {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 100px; height: 28px; background: #0d0a1a;
+  border-radius: 0 0 18px 18px; z-index: 200;
+}
+.status {
+  height: 44px; display: flex; align-items: flex-end;
+  justify-content: space-between; padding: 0 24px 8px;
+  position: relative; z-index: 10;
+}
+.status-time { font-size: 13px; font-weight: 800; color: #2D1A0E; }
+.status-icons { display: flex; gap: 4px; align-items: center; color: #2D1A0E; font-size: 12px; }
+.home-bar {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  width: 110px; height: 4px; background: #2D1A0E;
+  border-radius: 3px; opacity: 0.18; z-index: 200;
+}
+.content {
+  position: absolute; top: 44px; left: 0; right: 0; bottom: 16px;
+  overflow: hidden; background: #FEF9F0;
+}
+
+/* ── Tokens (inline) ── */
+/* Passed via JS — see script below */
+
+/* ── 2-up layout ── */
+.two-up { display: flex; gap: 24px; align-items: flex-start; }
+.three-up { display: flex; gap: 18px; align-items: flex-start; }
+
+/* ── Title page elements ── */
+.tp-logo-wrap {
+  background: #FFE94E; border-radius: 24px; padding: 14px 32px;
+  box-shadow: 0 6px 0 #D4B800, 0 0 0 3px rgba(61,26,0,0.12);
+  margin-bottom: 16px;
+}
+.tp-tagline {
+  font-family: 'Baloo 2', sans-serif; font-size: 18px; font-weight: 800;
+  color: #6B3A1F; margin-bottom: 32px; text-align: center;
+}
+.tp-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  max-width: 900px;
+}
+.tp-card {
+  background: #fff; border-radius: 18px; padding: 18px;
+  border: 2px solid #EDE0D0;
+  box-shadow: 0 4px 0 #EDE0D0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.tp-screen-num {
+  font-family: 'Baloo 2', sans-serif; font-size: 11px; font-weight: 800;
+  color: #9B7A65; letter-spacing: 1px; text-transform: uppercase;
+}
+.tp-screen-name {
+  font-family: 'Baloo 2', sans-serif; font-size: 16px; font-weight: 800; color: #1E0E00;
+}
+.tp-screen-desc {
+  font-family: 'Nunito', sans-serif; font-size: 12px; color: #9B7A65;
+  font-weight: 600; line-height: 1.5;
+}
+.tp-dot {
+  width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0;
+}
+
+/* ── Nav bar (static) ── */
+.nav-bar {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 58px; background: #fff;
+  border-top: 2px solid #EDE0D0;
+  display: flex; align-items: center;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 2px; padding-bottom: 2px;
+}
+.nav-icon { font-size: 19px; }
+.nav-lbl { font-size: 9px; font-weight: 800; font-family: 'Nunito', sans-serif; }
+.nav-active-bg {
+  width: 30px; height: 22px; border-radius: 8px;
+  background: #FFF0EC; display: flex; align-items: center; justify-content: center;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const T = {
+  yellow:'#FFE94E', yellowDark:'#F5D800', yellowDeep:'#D4B800',
+  yellowPale:'#FFFBE6', brown:'#3D1A00', brownMid:'#6B3A1F',
+  coral:'#FF6B4A', coralDk:'#D94C2D', coralLt:'#FFF0EC',
+  peach:'#FFAB5C', peachDk:'#D9832A', peachLt:'#FFF5E8',
+  sky:'#5DB8FF', skyDk:'#2A7FD9', skyLt:'#EAF5FF',
+  mint:'#3ECF8E', mintDk:'#1DA066', mintLt:'#E6FAF2',
+  lavender:'#9B7FF5', lavDk:'#6A4FCC', lavLt:'#F0ECFF',
+  rose:'#FF6B9D', roseDk:'#D93E72', roseLt:'#FFF0F6',
+  teal:'#2EC4C4', tealDk:'#169090', tealLt:'#E5FAFA',
+  cream:'#FEF9F0', white:'#FFFFFF',
+  surfAlt:'#F7F3EE', borderWarm:'#EDE0D0', borderMid:'#E2D5C5',
+  ink:'#1E0E00', inkBody:'#4A2E1A', inkMuted:'#9B7A65', inkLight:'#C4A898',
+};
+
+function darken(hex, pct=15) {
+  const n = parseInt(hex.replace('#',''), 16);
+  const r = Math.max(0, ((n>>16)&255) - pct*2.5|0);
+  const g = Math.max(0, ((n>>8)&255) - pct*2.5|0);
+  const b = Math.max(0, (n&255) - pct*2.5|0);
+  return `#${((r<<16)|(g<<8)|b).toString(16).padStart(6,'0')}`;
+}
+function alpha(hex, a) {
+  const n = parseInt(hex.replace('#',''), 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+
+// ── Shared micro-components ──────────────────────
+function StatusBar({ light }) {
+  const c = light ? '#fff' : '#2D1A0E';
+  return (
+    <div className="status">
+      <span className="status-time" style={{color:c}}>9:41</span>
+      <div className="status-icons" style={{color:c}}>
+        <i className="mdi mdi-signal-variant"/>
+        <i className="mdi mdi-wifi"/>
+        <i className="mdi mdi-battery-80"/>
+      </div>
+    </div>
+  );
+}
+
+function Phone({ label, children, bg='#FEF9F0', lightStatus }) {
+  return (
+    <div className="frame-wrap">
+      <div className="frame-label">{label}</div>
+      <div className="phone" style={{background:bg}}>
+        <div className="notch"/>
+        <StatusBar light={lightStatus}/>
+        <div className="content">{children}</div>
+        <div className="home-bar"/>
+      </div>
+    </div>
+  );
+}
+
+function NavBar({ active='home' }) {
+  const items = [
+    {id:'home', icon:'home-variant', label:'Home'},
+    {id:'games', icon:'controller-classic-outline', label:'Games'},
+    {id:'reports', icon:'chart-areaspline', label:'Progress'},
+    {id:'store', icon:'shopping-outline', label:'Store'},
+    {id:'profile', icon:'account-circle-outline', label:'Me'},
+  ];
+  return (
+    <div className="nav-bar">
+      {items.map(it => {
+        const on = it.id === active;
+        return (
+          <div key={it.id} className="nav-item">
+            <div className={on?'nav-active-bg':''} style={{
+              width:30,height:22,borderRadius:8,
+              background:on?T.coralLt:'transparent',
+              display:'flex',alignItems:'center',justifyContent:'center',
+            }}>
+              <i className={`mdi mdi-${it.icon} nav-icon`} style={{color:on?T.coral:T.inkLight}}/>
+            </div>
+            <span className="nav-lbl" style={{color:on?T.coral:T.inkLight}}>{it.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function Tag({ label, color, bg, border }) {
+  return (
+    <span style={{
+      display:'inline-flex', alignItems:'center', gap:4,
+      background:bg, border:`1.5px solid ${border||darken(bg,10)}`,
+      color, padding:'3px 9px', borderRadius:999,
+      fontSize:10, fontWeight:800, fontFamily:"'Nunito',sans-serif",
+    }}>{label}</span>
+  );
+}
+
+function Btn({ label, color=T.yellow, textColor=T.brown, icon, full, sm }) {
+  return (
+    <div style={{
+      display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6,
+      background:color, color:textColor,
+      borderRadius:14, height:sm?36:46,
+      padding:`0 ${sm?14:22}px`,
+      fontFamily:"'Baloo 2',sans-serif", fontSize:sm?12:14, fontWeight:800,
+      boxShadow:`0 4px 0 ${darken(color,20)}`,
+      width:full?'100%':undefined, flexShrink:0,
+      letterSpacing:0.2,
+    }}>
+      {icon&&<i className={`mdi mdi-${icon}`} style={{fontSize:sm?13:16}}/>}
+      {label}
+    </div>
+  );
+}
+
+function ProgBar({ pct, color=T.coral, h=9 }) {
+  return (
+    <div style={{height:h, background:T.borderWarm, borderRadius:999,
+      overflow:'hidden', border:`1.5px solid ${T.borderMid}`}}>
+      <div style={{height:'100%', width:`${pct}%`,
+        background:`linear-gradient(90deg,${color},${darken(color,-10)})`,
+        borderRadius:999}}/>
+    </div>
+  );
+}
+
+function Card({ children, style={}, color=T.white, border=T.borderWarm }) {
+  return (
+    <div style={{
+      background:color, border:`2px solid ${border}`,
+      borderRadius:18, boxShadow:`0 3px 0 ${darken(border,8)}`, ...style,
+    }}>{children}</div>
+  );
+}
+
+function MascotSVG({ size=44 }) {
+  const s = size;
+  return (
+    <svg width={s} height={s} viewBox="0 0 64 64">
+      <ellipse cx="32" cy="40" rx="20" ry="16" fill={T.yellow} stroke={T.brown} strokeWidth="2"/>
+      <circle cx="32" cy="26" r="18" fill={T.yellow} stroke={T.brown} strokeWidth="2"/>
+      <ellipse cx="16" cy="14" rx="6" ry="8" fill={T.yellow} stroke={T.brown} strokeWidth="2"/>
+      <ellipse cx="48" cy="14" rx="6" ry="8" fill={T.yellow} stroke={T.brown} strokeWidth="2"/>
+      <ellipse cx="16" cy="14" rx="3" ry="5" fill={T.rose}/>
+      <ellipse cx="48" cy="14" rx="3" ry="5" fill={T.rose}/>
+      <circle cx="26" cy="25" r="5" fill="white" stroke={T.brown} strokeWidth="1.5"/>
+      <circle cx="38" cy="25" r="5" fill="white" stroke={T.brown} strokeWidth="1.5"/>
+      <circle cx="27" cy="25" r="2.5" fill={T.brown}/>
+      <circle cx="39" cy="25" r="2.5" fill={T.brown}/>
+      <circle cx="28" cy="24" r="1" fill="white"/>
+      <circle cx="40" cy="24" r="1" fill="white"/>
+      <ellipse cx="20" cy="31" rx="4" ry="2.5" fill={T.rose} opacity="0.5"/>
+      <ellipse cx="44" cy="31" rx="4" ry="2.5" fill={T.rose} opacity="0.5"/>
+      <path d="M26 33 Q32 39 38 33" fill="none" stroke={T.brown} strokeWidth="2" strokeLinecap="round"/>
+      <ellipse cx="32" cy="30" rx="2.5" ry="1.5" fill={T.brownMid} opacity="0.5"/>
+    </svg>
+  );
+}
+
+function FlameSVG({ size=26 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 32 32">
+      <defs>
+        <linearGradient id="fg" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stopColor="#FF4500"/>
+          <stop offset="50%" stopColor="#FF8C00"/>
+          <stop offset="100%" stopColor="#FFE94E"/>
+        </linearGradient>
+      </defs>
+      <path d="M16 3C16 3 20 9 20 13C20 13 22 10 21 7C21 7 26 12 26 18C26 24.6 21.5 29 16 29C10.5 29 6 24.6 6 18C6 13 10 9 10 9C10 9 11 13 13 14C13 14 11 10 16 3Z"
+        fill="url(#fg)" stroke={T.brown} strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M16 16C16 16 18 19 18 21.5C18 23 17.1 24 16 24C14.9 24 14 23 14 21.5C14 19 16 16 16 16Z"
+        fill="rgba(255,255,255,0.7)"/>
+    </svg>
+  );
+}
+
+function GemSVG({ size=22, color=T.sky }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <path d="M6 2L2 8l10 14L22 8l-4-6H6z" fill={color} stroke={darken(color,20)} strokeWidth="1.2" strokeLinejoin="round"/>
+      <path d="M9 8l3 10 3-10" fill="rgba(255,255,255,0.25)"/>
+    </svg>
+  );
+}
+
+function TrophySVG({ size=24, color=T.yellow }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <path d="M12 15c-4 0-7-3-7-7V4h14v4c0 4-3 7-7 7z" fill={color} stroke={T.brown} strokeWidth="1.5"/>
+      <path d="M5 6H2v2c0 2 1.5 3.5 3 4" stroke={T.brown} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <path d="M19 6h3v2c0 2-1.5 3.5-3 4" stroke={T.brown} strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+      <rect x="9" y="15" width="6" height="3" fill={darken(color,10)} stroke={T.brown} strokeWidth="1.2"/>
+      <rect x="7" y="18" width="10" height="2" rx="1" fill={darken(color,5)} stroke={T.brown} strokeWidth="1.2"/>
+    </svg>
+  );
+}
+
+function CrownSVG({ size=14, color=T.yellow }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <path d="M3 17L6 8l4.5 5L12 6l1.5 7L18 8l3 9H3z" fill={color} stroke={T.brown} strokeWidth="1.5" strokeLinejoin="round"/>
+    </svg>
+  );
+}
+
+function CheckCircleSVG({ size=24, color=T.mint }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill={color} stroke={darken(color,20)} strokeWidth="1.8"/>
+      <path d="M7 12.5l3.5 3.5 6.5-7" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    </svg>
+  );
+}
+
+function LockSVG({ size=22, color=T.inkLight }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24">
+      <rect x="5" y="11" width="14" height="11" rx="3" fill={T.surfAlt} stroke={color} strokeWidth="1.8"/>
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
+      <circle cx="12" cy="16" r="2" fill={color}/>
+    </svg>
+  );
+}
+
+// ══════════════════════════════════════════════
+// STATIC SCREEN RENDERERS
+// ══════════════════════════════════════════════
+
+// 1. WELCOME
+function WelcomeContent() {
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',position:'relative',overflow:'hidden',background:'#FEF9F0'}}>
+      <div style={{
+        position:'absolute',top:0,left:0,right:0,height:'50%',
+        backgroundImage:`url(../../assets/meadow-bg.png)`,
+        backgroundSize:'cover',backgroundPosition:'top center',
+        opacity:0.9,
+      }}/>
+      <div style={{
+        position:'absolute',top:0,left:0,right:0,height:'50%',
+        background:'linear-gradient(180deg,transparent 40%,#FEF9F0 100%)',
+      }}/>
+      <div style={{position:'relative',zIndex:2,display:'flex',flexDirection:'column',
+        alignItems:'center',paddingTop:30}}>
+        <div style={{
+          background:T.yellow,borderRadius:20,padding:'7px 18px',
+          boxShadow:`0 4px 0 ${T.yellowDeep}`,marginBottom:6,
+        }}>
+          <img src="../../assets/logo.jpeg" alt="NeuroChain"
+            style={{width:130,height:40,objectFit:'contain',mixBlendMode:'multiply',display:'block'}}/>
+        </div>
+        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,fontWeight:700,
+          color:T.brownMid,letterSpacing:0.2}}>Your child's therapy adventure</div>
+      </div>
+      <div style={{
+        position:'absolute',bottom:0,left:0,right:0,
+        background:T.white,borderRadius:'24px 24px 0 0',
+        border:`2px solid ${T.borderWarm}`,borderBottom:'none',
+        padding:'18px 18px 14px',
+        boxShadow:'0 -6px 20px rgba(61,26,0,0.07)',
+        zIndex:3,
+      }}>
+        {[
+          {icon:'controller-classic',color:T.coral,bg:T.coralLt,border:T.coral,title:'Daily Therapy Games',desc:'8 ABA-based games your child will love'},
+          {icon:'chart-line',color:T.sky,bg:T.skyLt,border:T.sky,title:'Track Every Milestone',desc:'AI-powered insights and progress charts'},
+          {icon:'stethoscope',color:T.mint,bg:T.mintLt,border:T.mint,title:'Connect with Specialists',desc:'Telehealth with certified autism experts'},
+        ].map((f,i)=>(
+          <div key={i} style={{
+            display:'flex',alignItems:'center',gap:10,
+            background:f.bg,border:`2px solid ${f.border}`,
+            borderRadius:14,padding:'9px 12px',marginBottom:8,
+            boxShadow:`0 2px 0 ${darken(f.border,15)}`,
+          }}>
+            <div style={{
+              width:34,height:34,borderRadius:10,background:T.white,
+              border:`2px solid ${f.border}`,
+              display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
+            }}>
+              <i className={`mdi mdi-${f.icon}`} style={{fontSize:18,color:f.color}}/>
+            </div>
+            <div>
+              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:12,fontWeight:800,
+                color:T.ink,marginBottom:1}}>{f.title}</div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:10,color:T.inkMuted,
+                fontWeight:600}}>{f.desc}</div>
+            </div>
+          </div>
+        ))}
+        <Btn label="Get Started" full color={T.yellow} textColor={T.brown} icon="arrow-right"/>
+      </div>
+    </div>
+  );
+}
+
+// 2. LOGIN
+function LoginContent() {
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(160deg,${T.yellowPale} 0%,${T.peachLt} 100%)`,
+        padding:'12px 16px 18px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        <div style={{
+          width:32,height:32,borderRadius:10,background:T.white,
+          border:`2px solid ${T.borderWarm}`,
+          display:'flex',alignItems:'center',justifyContent:'center',
+          boxShadow:`0 2px 0 ${T.borderMid}`,marginBottom:12,
+        }}>
+          <i className="mdi mdi-arrow-left" style={{fontSize:16,color:T.ink}}/>
+        </div>
+        <div style={{background:T.yellow,borderRadius:14,padding:'6px 14px',
+          boxShadow:`0 3px 0 ${T.yellowDeep}`,display:'inline-block',marginBottom:8}}>
+          <img src="../../assets/logo.jpeg" alt="NeuroChain"
+            style={{width:100,height:32,objectFit:'contain',mixBlendMode:'multiply',display:'block'}}/>
+        </div>
+        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:T.brownMid,fontWeight:700}}>
+          Welcome back! Let's keep going.
+        </div>
+      </div>
+      <div style={{flex:1,padding:'16px 16px 0',overflow:'hidden'}}>
+        {['Email Address','Password'].map((lbl,i)=>(
+          <div key={i} style={{marginBottom:12}}>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:10,fontWeight:800,
+              color:T.inkBody,marginBottom:4,letterSpacing:0.4,textTransform:'uppercase'}}>{lbl}</div>
+            <div style={{
+              display:'flex',alignItems:'center',gap:8,background:T.white,
+              borderRadius:13,padding:'0 12px',height:46,
+              border:`2px solid ${T.borderWarm}`,boxShadow:`0 2px 0 ${T.borderWarm}`,
+            }}>
+              <i className={`mdi mdi-${i===0?'email-outline':'lock-outline'}`}
+                style={{fontSize:17,color:T.inkLight}}/>
+              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:13,color:T.inkLight}}>
+                {i===0?'your@email.com':'••••••••'}
+              </span>
+            </div>
+          </div>
+        ))}
+        <div style={{textAlign:'right',marginBottom:14}}>
+          <span style={{fontSize:11,color:T.coral,fontWeight:800,fontFamily:"'Nunito',sans-serif"}}>Forgot password?</span>
+        </div>
+        <Btn label="Sign In" full color={T.yellow} textColor={T.brown}/>
+        <div style={{display:'flex',alignItems:'center',gap:10,margin:'14px 0 12px'}}>
+          <div style={{flex:1,height:1.5,background:T.borderWarm}}/>
+          <span style={{fontSize:11,color:T.inkMuted,fontWeight:700,fontFamily:"'Nunito',sans-serif"}}>or</span>
+          <div style={{flex:1,height:1.5,background:T.borderWarm}}/>
+        </div>
+        <div style={{display:'flex',gap:8}}>
+          {[{icon:'google',label:'Google',c:'#EA4335'},{icon:'apple',label:'Apple',c:T.ink}].map(s=>(
+            <div key={s.icon} style={{
+              flex:1,height:44,borderRadius:13,background:T.white,
+              border:`2px solid ${T.borderWarm}`,
+              display:'flex',alignItems:'center',justifyContent:'center',gap:6,
+              fontFamily:"'Nunito',sans-serif",fontSize:12,fontWeight:800,color:T.inkBody,
+              boxShadow:`0 2px 0 ${T.borderWarm}`,
+            }}>
+              <i className={`mdi mdi-${s.icon}`} style={{fontSize:17,color:s.c}}/>{s.label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 3. SIGN UP
+function SignUpContent() {
+  const concerns = ['Social Skills','Communication','Behavior','Sensory','Motor Skills'];
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(160deg,${T.mintLt} 0%,${T.yellowPale} 100%)`,
+        padding:'12px 16px 16px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        <div style={{width:32,height:32,borderRadius:10,background:T.white,
+          border:`2px solid ${T.borderWarm}`,
+          display:'flex',alignItems:'center',justifyContent:'center',
+          boxShadow:`0 2px 0 ${T.borderMid}`,marginBottom:10}}>
+          <i className="mdi mdi-arrow-left" style={{fontSize:16,color:T.ink}}/>
+        </div>
+        <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:18,fontWeight:800,color:T.ink}}>Create Account</div>
+        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:T.inkBody,fontWeight:700,marginTop:2}}>
+          Join thousands of families on their journey
+        </div>
+      </div>
+      <div style={{flex:1,padding:'14px 14px 0',overflow:'hidden'}}>
+        {['Parent Name','Email Address','Password',"Child's First Name"].map((lbl,i)=>(
+          <div key={i} style={{marginBottom:10}}>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:10,fontWeight:800,
+              color:T.inkBody,marginBottom:3,letterSpacing:0.3,textTransform:'uppercase'}}>{lbl}</div>
+            <div style={{
+              display:'flex',alignItems:'center',gap:8,background:T.white,
+              borderRadius:12,padding:'0 12px',height:42,
+              border:`2px solid ${T.borderWarm}`,boxShadow:`0 2px 0 ${T.borderWarm}`,
+            }}>
+              <i className={`mdi mdi-${ ['account-outline','email-outline','lock-outline','baby-face-outline'][i] }`}
+                style={{fontSize:16,color:T.inkLight}}/>
+              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:12,color:T.inkLight}}>
+                {['Jane Smith','your@email.com','••••••••','Rafi'][i]}
+              </span>
+            </div>
+          </div>
+        ))}
+        <div style={{marginBottom:12}}>
+          <div style={{fontFamily:"'Nunito',sans-serif",fontSize:10,fontWeight:800,
+            color:T.inkBody,marginBottom:6,letterSpacing:0.3,textTransform:'uppercase'}}>Primary Concerns</div>
+          <div style={{display:'flex',flexWrap:'wrap',gap:5}}>
+            {concerns.map((c,i)=>(
+              <div key={c} style={{
+                background:i<2?T.coral:T.white,
+                color:i<2?'#fff':T.inkBody,
+                border:`2px solid ${i<2?T.coral:T.borderWarm}`,
+                borderRadius:10,padding:'5px 10px',
+                fontSize:10,fontWeight:800,
+                fontFamily:"'Nunito',sans-serif",
+                boxShadow:`0 2px 0 ${i<2?T.coralDk:T.borderMid}`,
+                display:'flex',alignItems:'center',gap:4,
+              }}>
+                {i<2&&<i className="mdi mdi-check" style={{fontSize:10}}/>}{c}
+              </div>
+            ))}
+          </div>
+        </div>
+        <Btn label="Create Account" full color={T.yellow} textColor={T.brown}/>
+      </div>
+    </div>
+  );
+}
+
+// 4. HOME
+function HomeContent() {
+  const plan=[
+    {name:'Bubble Pop',skill:'Motor Skills',dur:10,xp:50,done:true,icon:'hand-back-right-outline',color:T.mintDk,lt:T.mintLt,border:T.mint},
+    {name:'Waiting Game',skill:'Eye Contact',dur:8,xp:60,done:false,icon:'eye-outline',color:T.skyDk,lt:T.skyLt,border:T.sky},
+    {name:'Pattern Match',skill:'Categorization',dur:12,xp:40,done:false,icon:'shape-outline',color:T.coralDk,lt:T.coralLt,border:T.coral},
+  ];
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(175deg,${T.yellowPale} 0%,${T.peachLt} 100%)`,
+        padding:'10px 14px 14px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        {/* Header row */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:9}}>
+          <div style={{display:'flex',alignItems:'center',gap:8}}>
+            <div style={{
+              width:40,height:40,borderRadius:14,
+              background:`linear-gradient(135deg,${T.coral},${T.peach})`,
+              border:`2px solid ${T.white}`,
+              display:'flex',alignItems:'center',justifyContent:'center',
+              boxShadow:`0 2px 0 ${T.coralDk}`,
+            }}>
+              <MascotSVG size={32}/>
+            </div>
+            <div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,fontWeight:700,
+                color:T.inkMuted,textTransform:'uppercase',letterSpacing:0.5}}>Good Morning</div>
+              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:14,fontWeight:800,
+                color:T.ink}}>Rafi's Journey</div>
+            </div>
+          </div>
+          <div style={{width:34,height:34,borderRadius:11,background:T.white,
+            border:`2px solid ${T.borderWarm}`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            boxShadow:`0 2px 0 ${T.borderMid}`,position:'relative'}}>
+            <i className="mdi mdi-bell-outline" style={{fontSize:18,color:T.inkBody}}/>
+            <div style={{position:'absolute',top:6,right:6,width:7,height:7,
+              borderRadius:4,background:T.coral,border:`2px solid ${T.cream}`}}/>
+          </div>
+        </div>
+        {/* XP + streak row */}
+        <div style={{display:'flex',gap:8,alignItems:'stretch'}}>
+          <div style={{flex:1,background:T.white,borderRadius:13,border:`2px solid ${T.borderWarm}`,
+            boxShadow:`0 2px 0 ${T.borderMid}`,padding:'8px 10px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:5}}>
+              <div style={{display:'flex',alignItems:'center',gap:4}}>
+                <TrophySVG size={16} color={T.yellow}/>
+                <span style={{fontFamily:"'Baloo 2',sans-serif",fontSize:11,fontWeight:800,color:T.ink}}>Level 7</span>
+              </div>
+              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:9,fontWeight:700,color:T.inkMuted}}>340/500 XP</span>
+            </div>
+            <ProgBar pct={68} color={T.coral} h={7}/>
+          </div>
+          {[
+            {icon:<FlameSVG size={20}/>,val:'7',lbl:'STREAK',bg:T.peachLt,border:T.peach,vc:'#D94C00'},
+            {icon:<GemSVG size={18} color={T.sky}/>,val:'24',lbl:'GEMS',bg:T.skyLt,border:T.sky,vc:T.skyDk},
+          ].map((w,i)=>(
+            <div key={i} style={{background:w.bg,border:`2px solid ${w.border}`,borderRadius:13,
+              padding:'6px 10px',boxShadow:`0 2px 0 ${darken(w.border,15)}`,
+              display:'flex',flexDirection:'column',alignItems:'center',gap:1,flexShrink:0,minWidth:48}}>
+              {w.icon}
+              <span style={{fontFamily:"'Baloo 2',sans-serif",fontSize:16,fontWeight:800,
+                color:w.vc,lineHeight:1}}>{w.val}</span>
+              <span style={{fontFamily:"'Nunito',sans-serif",fontSize:8,fontWeight:800,
+                color:w.vc,letterSpacing:0.3}}>{w.lbl}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1,padding:'10px 12px 0',overflowY:'auto'}}>
+        {/* Mission */}
+        <div style={{
+          background:`linear-gradient(135deg,${T.yellow},${T.peach})`,
+          border:`2px solid ${T.yellowDark}`,borderRadius:18,padding:'10px 14px',marginBottom:10,
+          boxShadow:`0 4px 0 ${T.yellowDeep}`,
+          display:'flex',alignItems:'center',gap:10,
+        }}>
+          <TrophySVG size={32} color={T.white}/>
+          <div style={{flex:1}}>
+            <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:13,fontWeight:800,color:T.brown,marginBottom:3}}>
+              Daily Mission
+            </div>
+            <ProgBar pct={33} color={T.brown} h={6}/>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,color:T.brownMid,
+              marginTop:2,fontWeight:700}}>1 of 3 complete · 150 XP</div>
+          </div>
+        </div>
+        {/* Plan */}
+        <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:14,fontWeight:800,
+          color:T.ink,marginBottom:7}}>Today's Plan</div>
+        {plan.map(g=>(
+          <div key={g.name} style={{
+            background:g.done?T.mintLt:T.white,
+            border:`2px solid ${g.done?T.mint:T.borderWarm}`,
+            borderRadius:14,padding:'9px 11px',marginBottom:7,
+            boxShadow:`0 3px 0 ${g.done?T.mintDk:T.borderMid}`,
+            display:'flex',alignItems:'center',gap:9,
+          }}>
+            <div style={{
+              width:36,height:36,borderRadius:11,flexShrink:0,
+              background:g.done?T.mint:g.lt,
+              border:`2px solid ${g.done?T.mintDk:g.border}`,
+              display:'flex',alignItems:'center',justifyContent:'center',
+            }}>
+              {g.done
+                ? <CheckCircleSVG size={20} color="#fff"/>
+                : <i className={`mdi mdi-${g.icon}`} style={{fontSize:18,color:g.color}}/>}
+            </div>
+            <div style={{flex:1}}>
+              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:12,fontWeight:800,
+                color:g.done?T.mintDk:T.ink,
+                textDecoration:g.done?'line-through':'none'}}>{g.name}</div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,color:T.inkMuted,marginTop:1}}>
+                {g.skill} · {g.dur} min · <span style={{color:T.peach,fontWeight:800}}>+{g.xp} XP</span>
+              </div>
+            </div>
+            {!g.done&&<Btn label="Play" sm color={g.color} textColor="#fff" icon="play"/>}
+          </div>
+        ))}
+      </div>
+      <NavBar active="home"/>
+    </div>
+  );
+}
+
+// 5. GAMES
+function GamesContent() {
+  const games=[
+    {name:'Bubble Pop',skill:'Motor Skills',dur:10,xp:50,locked:false,premium:false,
+     bg:T.peachLt,border:T.peach,ic:T.peachDk,icon:'hand-back-right-outline'},
+    {name:'Waiting Game',skill:'Eye Contact',dur:8,xp:60,locked:true,premium:true,
+     bg:T.tealLt,border:T.teal,ic:T.tealDk,icon:'eye-outline'},
+    {name:'Pattern Match',skill:'Categorization',dur:12,xp:40,locked:false,premium:false,
+     bg:T.coralLt,border:T.coral,ic:T.coralDk,icon:'shape-outline'},
+    {name:'Emotion Mirror',skill:'Emotion Recog.',dur:10,xp:55,locked:false,premium:false,
+     bg:T.roseLt,border:T.rose,ic:T.roseDk,icon:'emoticon-outline'},
+    {name:'Copy Cat',skill:'Imitation',dur:8,xp:50,locked:true,premium:true,
+     bg:T.lavLt,border:T.lavender,ic:T.lavDk,icon:'human-child'},
+  ];
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(160deg,${T.coralLt} 0%,${T.peachLt} 100%)`,
+        padding:'12px 14px 14px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:18,fontWeight:800,
+          color:T.ink,letterSpacing:-0.3}}>Therapy Games</div>
+        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,color:T.inkBody,
+          fontWeight:700,marginTop:2,marginBottom:10}}>Play. Learn. Grow every day.</div>
+        <div style={{display:'flex',gap:6}}>
+          {['All','Motor','Social','Cognitive'].map((f,i)=>(
+            <div key={f} style={{
+              background:i===0?T.coral:T.white,color:i===0?'#fff':T.inkMuted,
+              border:`2px solid ${i===0?T.coral:T.borderWarm}`,
+              borderRadius:999,padding:'4px 11px',
+              fontSize:10,fontWeight:800,
+              fontFamily:"'Nunito',sans-serif",
+              boxShadow:`0 2px 0 ${i===0?T.coralDk:T.borderMid}`,
+            }}>{f}</div>
+          ))}
+        </div>
+      </div>
+      <div style={{flex:1,padding:'10px 12px',overflowY:'auto',paddingBottom:66}}>
+        {games.map(g=>(
+          <div key={g.name} style={{
+            background:g.locked?T.surfAlt:g.bg,
+            border:`2px solid ${g.locked?T.borderMid:g.border}`,
+            borderRadius:16,padding:'11px 12px',marginBottom:9,
+            boxShadow:`0 3px 0 ${g.locked?T.borderMid:darken(g.border,12)}`,
+            opacity:g.locked?0.78:1,
+          }}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7}}>
+              <span style={{
+                display:'inline-flex',alignItems:'center',gap:4,
+                background:'rgba(255,255,255,0.75)',
+                border:`1.5px solid ${g.locked?T.borderMid:g.border}`,
+                color:g.locked?T.inkMuted:g.ic,
+                fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:999,
+                fontFamily:"'Nunito',sans-serif",
+              }}>
+                <span style={{width:5,height:5,borderRadius:3,
+                  background:g.locked?T.inkMuted:g.ic,display:'inline-block'}}/>
+                {g.skill}
+              </span>
+              {g.premium
+                ? <span style={{display:'inline-flex',alignItems:'center',gap:3,
+                    background:T.lavLt,color:T.lavDk,
+                    border:`1.5px solid ${T.lavender}`,
+                    fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:999}}>
+                    <CrownSVG size={11} color={T.lavDk}/>Premium
+                  </span>
+                : <span style={{background:T.skyLt,color:T.skyDk,
+                    border:`1.5px solid ${T.sky}`,
+                    fontSize:9,fontWeight:800,padding:'2px 8px',borderRadius:999,
+                    fontFamily:"'Nunito',sans-serif"}}>Basic</span>
+              }
+            </div>
+            <div style={{display:'flex',gap:9,alignItems:'center',marginBottom:7}}>
+              <div style={{
+                width:40,height:40,borderRadius:12,flexShrink:0,
+                background:g.locked?T.borderWarm:'rgba(255,255,255,0.9)',
+                border:`2px solid ${g.locked?T.borderMid:g.border}`,
+                display:'flex',alignItems:'center',justifyContent:'center',
+              }}>
+                {g.locked
+                  ? <LockSVG size={18}/>
+                  : <i className={`mdi mdi-${g.icon}`} style={{fontSize:22,color:g.ic}}/>}
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:13,fontWeight:800,
+                  color:g.locked?T.inkMuted:T.ink,marginBottom:2}}>{g.name}</div>
+                <div style={{display:'flex',alignItems:'center',gap:9}}>
+                  <span style={{fontSize:10,color:T.inkMuted,fontWeight:700,fontFamily:"'Nunito',sans-serif"}}>
+                    <i className="mdi mdi-clock-outline" style={{fontSize:10}}/> {g.dur} min
+                  </span>
+                  <span style={{fontSize:10,color:T.peach,fontWeight:800,fontFamily:"'Nunito',sans-serif"}}>
+                    +{g.xp} XP
+                  </span>
+                </div>
+              </div>
+              {g.locked
+                ? <Btn label="Unlock" sm color={T.yellow} textColor={T.brown} icon="crown-outline"/>
+                : <Btn label="Play" sm color={g.ic} textColor="#fff" icon="play"/>}
+            </div>
+          </div>
+        ))}
+      </div>
+      <NavBar active="games"/>
+    </div>
+  );
+}
+
+// 6. SCREENER
+function ScreenerContent() {
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(160deg,${T.skyLt} 0%,${T.lavLt} 100%)`,
+        padding:'10px 14px 14px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+          <div style={{width:32,height:32,borderRadius:10,background:T.white,
+            border:`2px solid ${T.borderWarm}`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            boxShadow:`0 2px 0 ${T.borderMid}`,flexShrink:0}}>
+            <i className="mdi mdi-arrow-left" style={{fontSize:16,color:T.ink}}/>
+          </div>
+          <div style={{flex:1}}>
+            <div style={{display:'flex',justifyContent:'space-between',
+              fontFamily:"'Nunito',sans-serif",fontSize:10,fontWeight:800,
+              color:T.inkMuted,marginBottom:4}}>
+              <span>Question 3 of 20</span>
+              <span style={{color:T.coral}}>15%</span>
+            </div>
+            <ProgBar pct={15} color={T.coral} h={8}/>
+          </div>
+        </div>
+        <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:14,fontWeight:800,color:T.ink}}>
+          M-CHAT Screener
+        </div>
+        <div style={{fontFamily:"'Nunito',sans-serif",fontSize:10,color:T.inkMuted,
+          fontWeight:600,marginTop:1}}>
+          Think about the past 2 weeks when answering
+        </div>
+      </div>
+
+      <div style={{flex:1,display:'flex',flexDirection:'column',padding:'10px 12px',gap:10}}>
+        {/* Hint card */}
+        <div style={{
+          background:T.yellowPale,border:`2px solid ${T.borderWarm}`,
+          borderRadius:14,padding:'9px 12px',
+          display:'flex',alignItems:'center',gap:10,
+          boxShadow:`0 2px 0 ${T.borderMid}`,
+        }}>
+          <MascotSVG size={40}/>
+          <div style={{fontFamily:"'Nunito',sans-serif",fontSize:11,
+            color:T.inkBody,fontWeight:700,lineHeight:1.5}}>
+            Take your time! There are no wrong answers.
+          </div>
+        </div>
+
+        {/* Question card */}
+        <div style={{
+          flex:1,background:T.white,border:`2.5px solid ${T.yellow}`,
+          borderRadius:20,padding:'18px 16px',
+          boxShadow:`0 5px 0 ${T.yellowDeep}`,
+          display:'flex',flexDirection:'column',
+          alignItems:'center',justifyContent:'center',
+          textAlign:'center',gap:12,
+        }}>
+          <div style={{
+            width:60,height:60,borderRadius:18,
+            background:`linear-gradient(135deg,${T.yellowPale},${T.peachLt})`,
+            border:`2px solid ${T.borderWarm}`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            boxShadow:`0 3px 0 ${T.borderMid}`,
+          }}>
+            <i className="mdi mdi-drama-masks" style={{fontSize:30,color:T.peachDk}}/>
+          </div>
+          <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:15,fontWeight:800,
+            color:T.ink,lineHeight:1.5}}>
+            Does your child play pretend or make-believe?
+          </div>
+        </div>
+
+        {/* Answer buttons */}
+        <div style={{display:'flex',gap:8,paddingBottom:4}}>
+          <div style={{
+            flex:1,height:52,borderRadius:16,
+            background:T.mintLt,border:`2.5px solid ${T.mint}`,
+            display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+            fontFamily:"'Baloo 2',sans-serif",fontSize:17,fontWeight:800,color:T.mintDk,
+            boxShadow:`0 4px 0 ${T.mintDk}`,
+          }}>
+            <i className="mdi mdi-check-bold" style={{fontSize:18}}/>YES
+          </div>
+          <div style={{
+            flex:1,height:52,borderRadius:16,
+            background:T.roseLt,border:`2.5px solid ${T.rose}`,
+            display:'flex',alignItems:'center',justifyContent:'center',gap:8,
+            fontFamily:"'Baloo 2',sans-serif",fontSize:17,fontWeight:800,color:T.roseDk,
+            boxShadow:`0 4px 0 ${T.roseDk}`,
+          }}>
+            <i className="mdi mdi-close-thick" style={{fontSize:18}}/>NO
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 7. SPECIALIST DASHBOARD
+function SpecialistContent() {
+  const kpis=[
+    {label:'Active Patients',value:'18',icon:'account-group-outline',color:T.coral,bg:T.coralLt,border:T.coral},
+    {label:'Pending Requests',value:'3',icon:'clock-alert-outline',color:T.peach,bg:T.peachLt,border:T.peach},
+    {label:"Today's Sessions",value:'4',icon:'calendar-check-outline',color:T.teal,bg:T.tealLt,border:T.teal},
+    {label:'Earnings (BDT)',value:'42,500',icon:'cash-multiple',color:T.mint,bg:T.mintLt,border:T.mint},
+  ];
+  const apts=[
+    {name:'Nadia Ahmed',child:'Rafi',age:'3y 2m',time:'10:30 AM',type:'Initial',init:'NA',c:T.coral},
+    {name:'Imran Hasan',child:'Samiha',age:'2y 6m',time:'1:00 PM',type:'Follow-Up',init:'IH',c:T.sky},
+    {name:'Sultana Alam',child:'Jabir',age:'4y 1m',time:'3:30 PM',type:'Follow-Up',init:'SA',c:T.mint},
+  ];
+  return (
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:T.cream}}>
+      <div style={{
+        background:`linear-gradient(160deg,${T.lavLt} 0%,${T.skyLt} 100%)`,
+        padding:'12px 14px 14px',borderBottom:`2px solid ${T.borderWarm}`,
+      }}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div>
+            <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,fontWeight:700,
+              color:T.inkMuted,textTransform:'uppercase',letterSpacing:0.5}}>Thu · 1 May 2026</div>
+            <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:16,fontWeight:800,
+              color:T.ink,marginTop:1}}>Dr. Sara's Dashboard</div>
+          </div>
+          <div style={{
+            width:40,height:40,borderRadius:14,
+            background:`linear-gradient(135deg,${T.lavender},${T.rose})`,
+            border:`2px solid ${T.white}`,
+            display:'flex',alignItems:'center',justifyContent:'center',
+            boxShadow:`0 3px 0 ${T.lavDk}`,
+          }}>
+            <i className="mdi mdi-stethoscope" style={{fontSize:22,color:'#fff'}}/>
+          </div>
+        </div>
+      </div>
+      <div style={{flex:1,padding:'10px 12px 0',overflowY:'auto'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginBottom:12}}>
+          {kpis.map(k=>(
+            <div key={k.label} style={{background:k.bg,border:`2px solid ${k.border}`,
+              borderRadius:14,padding:'11px',
+              boxShadow:`0 3px 0 ${darken(k.border,15)}`}}>
+              <i className={`mdi mdi-${k.icon}`} style={{fontSize:20,color:k.color}}/>
+              <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:18,fontWeight:800,
+                color:T.ink,margin:'4px 0 2px'}}>{k.value}</div>
+              <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,
+                color:T.inkMuted,fontWeight:700,lineHeight:1.3}}>{k.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:13,fontWeight:800,
+          color:T.ink,marginBottom:7}}>Today's Appointments</div>
+        {apts.map(a=>(
+          <div key={a.name} style={{
+            background:T.white,border:`2px solid ${T.borderWarm}`,
+            borderRadius:14,padding:'10px 12px',marginBottom:8,
+            boxShadow:`0 3px 0 ${T.borderMid}`,
+          }}>
+            <div style={{display:'flex',alignItems:'center',gap:9,marginBottom:8}}>
+              <div style={{
+                width:36,height:36,borderRadius:11,flexShrink:0,
+                background:`linear-gradient(135deg,${a.c},${darken(a.c,-10)})`,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                boxShadow:`0 2px 0 ${darken(a.c,15)}`,
+              }}>
+                <span style={{fontFamily:"'Baloo 2',sans-serif",fontSize:11,fontWeight:800,color:'#fff'}}>{a.init}</span>
+              </div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:12,fontWeight:800,color:T.ink}}>{a.name}</div>
+                <div style={{fontFamily:"'Nunito',sans-serif",fontSize:9,color:T.inkMuted,fontWeight:600}}>
+                  Child: {a.child} · Age {a.age}
+                </div>
+              </div>
+              <div style={{textAlign:'right'}}>
+                <div style={{fontFamily:"'Baloo 2',sans-serif",fontSize:11,fontWeight:800,color:T.coral}}>{a.time}</div>
+                <Tag label={a.type} color={T.peachDk} bg={T.peachLt} border={T.peach}/>
+              </div>
+            </div>
+            <div style={{display:'flex',gap:6}}>
+              <Btn label="Join Call" sm full color={T.coral} textColor="#fff" icon="video-outline"/>
+              <Btn label="Patient Data" sm full color={T.surfAlt} textColor={T.inkBody} icon="folder-account-outline"/>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// TITLE PAGE
+// ══════════════════════════════════════════════
+function TitlePage() {
+  const screens = [
+    {n:'01',name:'Welcome',desc:'Meadow bg, feature cards, get started CTA',color:T.mint},
+    {n:'02',name:'Login',desc:'Warm header, email/password, OAuth buttons',color:T.sky},
+    {n:'03',name:'Sign Up',desc:'Multi-field form, concern chip multi-select',color:T.coral},
+    {n:'04',name:'Home',desc:'XP bar, streak, daily mission, today\'s plan',color:T.peach},
+    {n:'05',name:'Games',desc:'8 ABA games, skill tags, tier locking',color:T.lavender},
+    {n:'06',name:'Screener',desc:'M-CHAT paginated deck, YES/NO big buttons',color:T.teal},
+    {n:'07',name:'Specialist',desc:'KPI grid, appointment cards, join call',color:T.rose},
+  ];
+  return (
+    <div className="page title-page">
+      <div className="tp-logo-wrap">
+        <img src="../../assets/logo.jpeg" alt="NeuroChain"
+          style={{width:260,height:80,objectFit:'contain',mixBlendMode:'multiply',display:'block'}}/>
+      </div>
+      <div className="tp-tagline">UI Kit · 7 Production Screens · May 2026</div>
+      <div className="tp-grid">
+        {screens.map(s=>(
+          <div key={s.n} className="tp-card">
+            <div style={{display:'flex',alignItems:'center',gap:8}}>
+              <div className="tp-dot" style={{background:s.color}}/>
+              <div className="tp-screen-num">Screen {s.n}</div>
+            </div>
+            <div className="tp-screen-name">{s.name}</div>
+            <div className="tp-screen-desc">{s.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════
+// MAIN PRINT LAYOUT
+// ══════════════════════════════════════════════
+function PrintDoc() {
+  const screens = [
+    { label:'01 Welcome',    el:<WelcomeContent/> },
+    { label:'02 Login',      el:<LoginContent/> },
+    { label:'03 Sign Up',    el:<SignUpContent/> },
+    { label:'04 Home',       el:<HomeContent/> },
+    { label:'05 Games',      el:<GamesContent/> },
+    { label:'06 Screener',   el:<ScreenerContent/> },
+    { label:'07 Specialist', el:<SpecialistContent/> },
+  ];
+
+  // Group into pairs for 2-up landscape layout
+  const pairs = [];
+  for(let i=0;i<screens.length;i+=2) pairs.push(screens.slice(i,i+2));
+
+  return (
+    <div>
+      {/* Title page */}
+      <TitlePage/>
+
+      {/* Screen pairs */}
+      {pairs.map((pair,pi)=>(
+        <div key={pi} className="page" style={{
+          background:'radial-gradient(ellipse at 30% 30%,#1e1040 0%,#0d0a1a 70%)',
+        }}>
+          <div className="two-up">
+            {pair.map(s=>(
+              <Phone key={s.label} label={s.label}>{s.el}</Phone>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<PrintDoc/>);
+
+// Auto-print: wait for fonts + Babel render
+document.fonts.ready.then(() => {
+  setTimeout(() => window.print(), 600);
+});
+</script>
+</body>
+</html>

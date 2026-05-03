@@ -69,21 +69,34 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
     try {
       const db = await getDatabase();
       const timestamp = new Date().toISOString();
-      const aiGenerated = aiOriginalRef.current;
-      const edited = { subjective, objective, assessment, plan };
+      
+      // We assume clinical_soap_notes table exists (add to initDatabase if not already)
+      await db.runAsync(`
+        CREATE TABLE IF NOT EXISTS clinical_soap_notes (
+          id TEXT PRIMARY KEY,
+          appointment_id TEXT,
+          specialist_id TEXT,
+          subjective TEXT,
+          objective TEXT,
+          assessment TEXT,
+          plan TEXT,
+          is_signed INTEGER,
+          created_at TEXT
+        );
+      `);
 
       await db.runAsync(
         `INSERT INTO clinical_soap_notes (
-          id, appointment_id, ai_generated_json, specialist_edited_json, is_signed, signed_at, signed_by, created_at, updated_at, sync_status
-        ) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, 0)`,
+          id, appointment_id, specialist_id, subjective, objective, assessment, plan, is_signed, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)`,
         [
           Date.now().toString(),
           appointment?.id || 'mock-apt',
-          JSON.stringify(aiGenerated),
-          JSON.stringify(edited),
-          timestamp,
           user?.id || 'mock-spec',
-          timestamp,
+          subjective,
+          objective,
+          assessment,
+          plan,
           timestamp,
         ]
       );

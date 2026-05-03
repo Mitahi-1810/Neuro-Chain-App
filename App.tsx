@@ -54,10 +54,6 @@ import OlderChildArticleScreen from './src/screens/screener/OlderChildArticleScr
 import SpecialistDashboardScreen from './src/screens/specialist/SpecialistDashboardScreen';
 import TelehealthSessionScreen from './src/screens/specialist/TelehealthSessionScreen';
 import SoapNoteGeneratorScreen from './src/screens/specialist/SoapNoteGeneratorScreen';
-import SpecialistProfileScreen from './src/screens/specialist/SpecialistProfileScreen';
-import SpecialistCalendarScreen from './src/screens/specialist/SpecialistCalendarScreen';
-import SpecialistEarningsScreen from './src/screens/specialist/SpecialistEarningsScreen';
-import SpecialistPatientScreen from './src/screens/specialist/SpecialistPatientScreen';
 
 // Caregiver
 import CaregiverHomeScreen from './src/screens/caregiver/CaregiverHomeScreen';
@@ -256,10 +252,6 @@ function SpecialistStack() {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
       <Stack.Screen name="SpecialistDashboard" component={SpecialistDashboardScreen} />
-      <Stack.Screen name="SpecialistProfile" component={SpecialistProfileScreen} />
-      <Stack.Screen name="SpecialistCalendar" component={SpecialistCalendarScreen} />
-      <Stack.Screen name="SpecialistEarnings" component={SpecialistEarningsScreen} />
-      <Stack.Screen name="SpecialistPatient" component={SpecialistPatientScreen} />
       <Stack.Screen name="TelehealthSession" component={TelehealthSessionScreen} />
       <Stack.Screen name="SoapNoteGenerator" component={SoapNoteGeneratorScreen} />
     </Stack.Navigator>

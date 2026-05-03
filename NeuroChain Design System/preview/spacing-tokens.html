@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8FAFC; padding: 20px; font-family: 'Inter', sans-serif; display: flex; gap: 20px; }
+  .section { flex: 1; }
+  .label { font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+  /* Radius */
+  .radius-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .radius-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .radius-box { background: #2563EB; }
+  .radius-name { font-size: 10px; font-weight: 700; color: #64748B; }
+  .radius-val  { font-size: 9px; color: #94A3B8; font-family: monospace; }
+
+  /* Shadow */
+  .shadow-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 4px; }
+  .shadow-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .shadow-box  { width: 64px; height: 48px; background: #fff; border-radius: 10px; }
+</style>
+</head>
+<body>
+  <div class="section">
+    <div class="label">Border Radius</div>
+    <div class="radius-row">
+      <div class="radius-item">
+        <div class="radius-box" style="width:40px;height:32px;border-radius:8px;opacity:0.9;"></div>
+        <div class="radius-name">sm</div>
+        <div class="radius-val">8px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:44px;height:36px;border-radius:14px;opacity:0.85;"></div>
+        <div class="radius-name">md</div>
+        <div class="radius-val">14px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:48px;height:40px;border-radius:20px;opacity:0.8;"></div>
+        <div class="radius-name">lg</div>
+        <div class="radius-val">20px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:52px;height:44px;border-radius:28px;opacity:0.75;"></div>
+        <div class="radius-name">xl</div>
+        <div class="radius-val">28px</div>
+      </div>
+      <div class="radius-item">
+        <div class="radius-box" style="width:56px;height:32px;border-radius:999px;opacity:0.7;"></div>
+        <div class="radius-name">full</div>
+        <div class="radius-val">999px</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="label">Shadow Scale</div>
+    <div class="shadow-row">
+      <div class="shadow-item">
+        <div class="shadow-box" style="box-shadow:0 1px 4px rgba(15,23,42,0.04); border:1px solid #E2E8F0;"></div>
+        <div class="radius-name">sm</div>
+        <div class="radius-val">y1 · blur4</div>
+      </div>
+      <div class="shadow-item">
+        <div class="shadow-box" style="box-shadow:0 4px 10px rgba(15,23,42,0.07);"></div>
+        <div class="radius-name">md</div>
+        <div class="radius-val">y4 · blur10</div>
+      </div>
+      <div class="shadow-item">
+        <div class="shadow-box" style="box-shadow:0 8px 18px rgba(15,23,42,0.10);"></div>
+        <div class="radius-name">lg</div>
+        <div class="radius-val">y8 · blur18</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

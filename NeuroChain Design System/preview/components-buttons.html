@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8FAFC; padding: 20px; font-family: 'Inter', sans-serif; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 16px; }
+  .label { font-size: 10px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  button {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Poppins', sans-serif; font-weight: 700; letter-spacing: 0.2px;
+    border-radius: 999px; cursor: pointer; border: none;
+    transition: opacity 0.15s;
+  }
+  button:active { opacity: 0.75; }
+  .btn-sm  { height: 40px; padding: 0 20px; font-size: 13px; }
+  .btn-md  { height: 52px; padding: 0 28px; font-size: 15px; }
+  .btn-lg  { height: 60px; padding: 0 36px; font-size: 16px; }
+  .btn-primary   { background: #2563EB; color: #fff; box-shadow: 0 4px 10px rgba(37,99,235,0.25); }
+  .btn-secondary { background: #7C3AED; color: #fff; }
+  .btn-success   { background: #10B981; color: #fff; }
+  .btn-danger    { background: #EF4444; color: #fff; }
+  .btn-outline   { background: transparent; color: #2563EB; border: 1.5px solid #2563EB; }
+  .btn-ghost     { background: #EFF6FF; color: #2563EB; }
+  .btn-disabled  { background: #2563EB; color: #fff; opacity: 0.5; cursor: not-allowed; }
+  .btn-full      { width: 100%; }
+</style>
+</head>
+<body>
+  <div class="label">Variants</div>
+  <div class="row">
+    <button class="btn-md btn-primary">Get Started</button>
+    <button class="btn-md btn-secondary">Premium Feature</button>
+    <button class="btn-md btn-success">Complete</button>
+    <button class="btn-md btn-danger">Delete</button>
+    <button class="btn-md btn-outline">Learn More</button>
+    <button class="btn-md btn-ghost">View All</button>
+  </div>
+  <div class="label">Sizes</div>
+  <div class="row">
+    <button class="btn-sm btn-primary">Play</button>
+    <button class="btn-md btn-primary">Sign In</button>
+    <button class="btn-lg btn-primary">Get Started</button>
+    <button class="btn-md btn-disabled" disabled>Loading…</button>
+  </div>
+  <div class="label">Full Width</div>
+  <button class="btn-lg btn-primary btn-full" style="margin-top:2px;">Unlock Daily Autism Therapy — 299 BDT/month</button>
+</body>
+</html>

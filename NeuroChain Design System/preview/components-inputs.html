@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F8FAFC; padding: 20px; font-family: 'Inter', sans-serif; display: flex; flex-direction: column; gap: 16px; max-width: 380px; }
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .label { font-size: 13px; font-weight: 700; color: #334155; letter-spacing: 0.2px; }
+  .input-row {
+    display: flex; align-items: center; gap: 10px;
+    background: #FFFFFF; border-radius: 14px;
+    padding: 0 16px; height: 54px;
+    border: 1.5px solid #E2E8F0;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+  }
+  .input-row.focused { border-color: #2563EB; background: #EFF6FF; }
+  .input-row.error   { border-color: #EF4444; background: #FEF2F2; }
+  .icon { font-size: 18px; color: #94A3B8; }
+  .icon.active { color: #2563EB; }
+  .icon.error  { color: #EF4444; }
+  input { flex: 1; border: none; background: transparent; font-family: 'Inter', sans-serif; font-size: 15px; color: #0F172A; outline: none; }
+  input::placeholder { color: #94A3B8; }
+  .helper { font-size: 12px; color: #64748B; }
+  .helper.error { color: #EF4444; }
+  .divider-row { display: flex; align-items: center; gap: 12px; }
+  .div-line { flex: 1; height: 1px; background: #E2E8F0; }
+  .div-text { font-size: 12px; color: #94A3B8; font-weight: 600; }
+  .social-row { display: flex; gap: 12px; }
+  .social-btn {
+    flex: 1; height: 52px; border-radius: 14px;
+    background: #fff; border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 4px rgba(15,23,42,0.04);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: #334155; gap: 8px; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <div class="field-group">
+    <div class="label">Email Address</div>
+    <div class="input-row">
+      <span class="icon mdi mdi-email-outline"></span>
+      <input type="email" placeholder="parent@example.com" value="">
+    </div>
+  </div>
+  <div class="field-group">
+    <div class="label">Password</div>
+    <div class="input-row focused">
+      <span class="icon active mdi mdi-lock-outline"></span>
+      <input type="password" placeholder="••••••••" value="mypassword">
+      <span class="icon mdi mdi-eye-outline" style="cursor:pointer;color:#94A3B8;"></span>
+    </div>
+    <div class="helper">Min 8 characters, 1 uppercase, 1 number</div>
+  </div>
+  <div class="field-group">
+    <div class="label">Full Name</div>
+    <div class="input-row error">
+      <span class="icon error mdi mdi-account-outline"></span>
+      <input type="text" placeholder="Your name" value="A">
+      <span class="icon error mdi mdi-alert-circle-outline"></span>
+    </div>
+    <div class="helper error">Min 2 characters required</div>
+  </div>
+  <div class="divider-row">
+    <div class="div-line"></div>
+    <div class="div-text">or continue with</div>
+    <div class="div-line"></div>
+  </div>
+  <div class="social-row">
+    <div class="social-btn"><span class="mdi mdi-google" style="color:#EA4335;font-size:20px;"></span> Google</div>
+    <div class="social-btn"><span class="mdi mdi-apple" style="font-size:20px;"></span> Apple</div>
+  </div>
+</body>
+</html>

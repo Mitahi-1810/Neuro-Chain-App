@@ -63,6 +63,29 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
   const tier = user?.tier_level || 'FREE';
   const [activeTab, setActiveTab] = useState<'overview' | 'sessions'>('overview');
 
+  /* ───────── FREE TIER GATE ───────── */
+  if (tier === 'FREE') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.gateContainer}>
+          <Mascot kind="chart" size="xl" />
+          <Text style={styles.gateTitle}>Unlock progress reports</Text>
+          <Text style={styles.gateSub}>
+            Detailed charts, friendly weekly summaries, badges & session history — all on the Basic plan.
+          </Text>
+          <CrayonButton
+            label="Upgrade to Basic"
+            onPress={() => navigation.navigate('SubscriptionUpgrade')}
+            variant="primary"
+            size="large"
+            fullWidth
+            style={{ marginTop: 24 }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   const childSessions = useMemo(
     () => completedGames.filter((s) => !activeChild || s.child_id === activeChild.id),
     [completedGames, activeChild],
@@ -133,29 +156,6 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
   ];
 
   const recentSessions = [...childSessions].reverse().slice(0, 20);
-
-  /* ───────── FREE TIER GATE ───────── */
-  if (tier === 'FREE') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.gateContainer}>
-          <Mascot kind="chart" size="xl" />
-          <Text style={styles.gateTitle}>Unlock progress reports</Text>
-          <Text style={styles.gateSub}>
-            Detailed charts, friendly weekly summaries, badges & session history — all on the Basic plan.
-          </Text>
-          <CrayonButton
-            label="Upgrade to Basic"
-            onPress={() => navigation.navigate('SubscriptionUpgrade')}
-            variant="primary"
-            size="large"
-            fullWidth
-            style={{ marginTop: 24 }}
-          />
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>

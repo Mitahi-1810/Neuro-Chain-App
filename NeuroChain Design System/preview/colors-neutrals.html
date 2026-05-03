@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../colors_and_type.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: #F8FAFC; padding: 20px; }
+  .row { display: flex; gap: 10px; align-items: stretch; }
+  .swatch { flex: 1; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 6px rgba(15,23,42,0.06); }
+  .swatch-color { height: 48px; }
+  .swatch-info  { background: #fff; padding: 8px 10px; }
+  .swatch-name  { font-size: 11px; font-weight: 700; color: #0F172A; }
+  .swatch-hex   { font-size: 10px; color: #64748B; font-family: monospace; margin-top: 1px; }
+  .group-label  { font-size: 11px; font-weight: 700; color: #94A3B8; text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 8px; }
+</style>
+</head>
+<body>
+  <div class="group-label">Surfaces</div>
+  <div class="row">
+    <div class="swatch"><div class="swatch-color" style="background:#F8FAFC; border:1px solid #E2E8F0;"></div><div class="swatch-info"><div class="swatch-name">Cream</div><div class="swatch-hex">#F8FAFC</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#FFFFFF; border:1px solid #E2E8F0;"></div><div class="swatch-info"><div class="swatch-name">White</div><div class="swatch-hex">#FFFFFF</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#F1F5F9; border:1px solid #E2E8F0;"></div><div class="swatch-info"><div class="swatch-name">Surface Alt</div><div class="swatch-hex">#F1F5F9</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#E2E8F0;"></div><div class="swatch-info"><div class="swatch-name">Border</div><div class="swatch-hex">#E2E8F0</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#CBD5E1;"></div><div class="swatch-info"><div class="swatch-name">Border Dark</div><div class="swatch-hex">#CBD5E1</div></div></div>
+  </div>
+  <div class="group-label">Text</div>
+  <div class="row">
+    <div class="swatch"><div class="swatch-color" style="background:#0F172A;"></div><div class="swatch-info"><div class="swatch-name">Text Dark</div><div class="swatch-hex">#0F172A</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#334155;"></div><div class="swatch-info"><div class="swatch-name">Text Body</div><div class="swatch-hex">#334155</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#64748B;"></div><div class="swatch-info"><div class="swatch-name">Text Muted</div><div class="swatch-hex">#64748B</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#94A3B8;"></div><div class="swatch-info"><div class="swatch-name">Dark Grey</div><div class="swatch-hex">#94A3B8</div></div></div>
+    <div class="swatch"><div class="swatch-color" style="background:#FFFFFF; border:1px solid #E2E8F0;"></div><div class="swatch-info"><div class="swatch-name">Text Light</div><div class="swatch-hex">#FFFFFF</div></div></div>
+  </div>
+</body>
+</html>
