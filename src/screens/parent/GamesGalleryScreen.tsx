@@ -10,18 +10,21 @@ import { GAME_CATALOG, GameCatalogItem } from '../../data/games';
 import { useAuthStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
 import { PillTabs } from '../../components/Decorations';
+import { IconSymbol } from '../../components/IconSymbol';
 
-const SKILL_META: Record<string, { color: string; tint: string; emoji: string }> = {
-  'Motor Skills':         { color: colors.primary,     tint: colors.primaryLight, emoji: '🤸' },
-  'Eye Contact':          { color: colors.accentDark,  tint: colors.accentLight,  emoji: '👁️' },
-  'Emotion Recognition':  { color: '#FB923C',          tint: '#FFEDD5',           emoji: '😊' },
-  'Imitation':            { color: '#A855F7',          tint: '#F3E8FF',           emoji: '🎭' },
-  'Categorization':       { color: '#F97316',          tint: '#FFEDD5',           emoji: '🗂️' },
-  'Auditory Processing':  { color: '#34D399',          tint: '#D1FAE5',           emoji: '🎧' },
-  'Self Regulation':      { color: '#60A5FA',          tint: '#DBEAFE',           emoji: '🧘' },
-  'Social Narrative':     { color: '#EC4899',          tint: '#FCE7F3',           emoji: '📖' },
-  'Social Communication': { color: '#0EA5E9',          tint: '#E0F2FE',           emoji: '💬' },
-  'Joint Attention':      { color: colors.accent,      tint: colors.accentLight,  emoji: '👀' },
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+
+const SKILL_META: Record<string, { color: string; tint: string; icon: IconName }> = {
+  'Motor Skills':         { color: colors.primary,     tint: colors.primaryLight, icon: 'run' },
+  'Eye Contact':          { color: colors.accentDark,  tint: colors.accentLight,  icon: 'eye-outline' },
+  'Emotion Recognition':  { color: '#FB923C',          tint: '#FFEDD5',           icon: 'emoticon-outline' },
+  'Imitation':            { color: '#A855F7',          tint: '#F3E8FF',           icon: 'mirror' },
+  'Categorization':       { color: '#F97316',          tint: '#FFEDD5',           icon: 'shape-outline' },
+  'Auditory Processing':  { color: '#34D399',          tint: '#D1FAE5',           icon: 'ear-hearing' },
+  'Self Regulation':      { color: '#60A5FA',          tint: '#DBEAFE',           icon: 'meditation' },
+  'Social Narrative':     { color: '#EC4899',          tint: '#FCE7F3',           icon: 'book-open-variant' },
+  'Social Communication': { color: '#0EA5E9',          tint: '#E0F2FE',           icon: 'message-outline' },
+  'Joint Attention':      { color: colors.accent,      tint: colors.accentLight,  icon: 'eye' },
 };
 
 const TIER_BADGE = {
@@ -65,7 +68,7 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
     const meta = SKILL_META[game.target_skill] || {
       color: colors.primary,
       tint: colors.primaryLight,
-      emoji: '✨',
+      icon: 'star-four-points' as IconName,
     };
     const badge = TIER_BADGE[game.min_tier as keyof typeof TIER_BADGE] || TIER_BADGE.FREE;
 
@@ -80,8 +83,8 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
             : navigation.navigate('GameRunner', { gameId: game.id })
         }
       >
-        <View style={[styles.thumb, { backgroundColor: meta.tint }]}>
-          <Text style={{ fontSize: 36 }}>{meta.emoji}</Text>
+        <View style={[styles.thumb, { backgroundColor: meta.tint }]}> 
+          <IconSymbol name={meta.icon} size={36} color={meta.color} />
           <View style={[styles.tierBadge, { backgroundColor: badge.bg }]}>
             <Text style={[styles.tierText, { color: badge.text }]}>{badge.label}</Text>
           </View>

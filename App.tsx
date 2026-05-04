@@ -49,6 +49,11 @@ import QChatScreenerScreen from './src/screens/screener/QChatScreenerScreen';
 import CastScreenerScreen from './src/screens/screener/CastScreenerScreen';
 import OlderChildInfoScreen from './src/screens/screener/OlderChildInfoScreen';
 import OlderChildArticleScreen from './src/screens/screener/OlderChildArticleScreen';
+import VideoScreeningSetupScreen from './src/screens/screener/VideoScreeningSetupScreen';
+import TaskInstructionScreen from './src/screens/screener/TaskInstructionScreen';
+import TaskRecordingScreen from './src/screens/screener/TaskRecordingScreen';
+import TaskReviewScreen from './src/screens/screener/TaskReviewScreen';
+import BehavioralReportScreen from './src/screens/screener/BehavioralReportScreen';
 
 // Specialist Screens
 import SpecialistDashboardScreen from './src/screens/specialist/SpecialistDashboardScreen';
@@ -243,6 +248,11 @@ function ParentStack() {
   <Stack.Screen name="OlderChildArticle" component={OlderChildArticleScreen} />
         <Stack.Screen name="ScreenerResults" component={ScreenerResultsScreen} />
         <Stack.Screen name="AIScreening" component={AIScreeningScreen} />
+        <Stack.Screen name="VideoScreeningSetup" component={VideoScreeningSetupScreen} />
+        <Stack.Screen name="TaskInstruction"     component={TaskInstructionScreen} />
+        <Stack.Screen name="TaskRecording"       component={TaskRecordingScreen} />
+        <Stack.Screen name="TaskReview"          component={TaskReviewScreen} />
+        <Stack.Screen name="BehavioralReport"    component={BehavioralReportScreen} />
         <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
         <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
         <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />

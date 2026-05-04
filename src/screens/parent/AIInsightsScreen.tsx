@@ -162,6 +162,8 @@ const AIInsightsScreen: React.FC<any> = ({ navigation }) => {
         setError(
           'OpenRouter API key missing. Add EXPO_PUBLIC_OPENROUTER_API_KEY to your .env file. Showing example report:',
         );
+      } else if (e.message?.includes('OPENROUTER_RATE_LIMIT') || e.message?.includes('OPENROUTER_ERROR_429')) {
+        setError('The free AI endpoint is rate-limited right now. Try again later or switch models. Showing example report:');
       } else {
         setError('Could not reach AI. Showing example report:');
       }

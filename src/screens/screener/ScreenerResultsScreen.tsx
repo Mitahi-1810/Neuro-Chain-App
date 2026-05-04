@@ -164,28 +164,28 @@ const ScreenerResultsScreen: React.FC<Props> = ({ navigation, route }) => {
     if (riskLevel === 'HIGH') {
       return {
         primary: {
-          label: 'Run AI Behavioral Check',
-          action: () => navigation.navigate('AIScreening', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
+          label: 'Run Video Behavioral Check',
+          action: () => navigation.navigate('VideoScreeningSetup', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
         },
         secondary: {
           label: 'Book a specialist instead',
           action: () => navigation.navigate('TelehealthBooking'),
         },
-        prompt: 'A 2-minute on-device AI check can help clarify these results before booking.',
+        prompt: 'Record 4 short clips of your child — AI observes eye contact, name response, and more.',
       };
     }
 
     if (riskLevel === 'MODERATE') {
       return {
         primary: {
-          label: 'Run AI Behavioral Check',
-          action: () => navigation.navigate('AIScreening', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
+          label: 'Run Video Behavioral Check',
+          action: () => navigation.navigate('VideoScreeningSetup', { riskLevel: result.riskLevel, riskScore: result.riskScore }),
         },
         secondary: {
           label: 'Return home',
           action: () => navigation.navigate('ParentTabs'),
         },
-        prompt: 'See how your child actually engages in 2 minutes — no questionnaire.',
+        prompt: 'Record 4 short clips of your child — AI observes eye contact, name response, and more.',
       };
     }
 

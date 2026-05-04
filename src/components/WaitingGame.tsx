@@ -44,6 +44,7 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 // faceDetectorSettings-conditional API surface). Cast through any to satisfy tsc.
 const FaceCamera = CameraView as any;
 import { buildFrameFromDetection, isGazingAtScreen } from '../engine/visionEngine';
+import { IconSymbol } from './IconSymbol';
 import { colors } from '../utils/colors';
 
 const { width: W, height: H } = Dimensions.get('window');
@@ -58,12 +59,12 @@ const GAZE_DECAY_MS     = 150;   // subtracted per non-gazing frame (fast decay 
 const BID_TIMEOUT_MS    = 12000; // max wait per bid before counting as attempted
 
 const OBJECTS = [
-  { id: 'rocket',   emoji: '🚀', label: 'Rocket',    readyText: 'Ready for launch!',   goText: '🚀 LAUNCH!' },
-  { id: 'car',      emoji: '🚗', label: 'Race Car',   readyText: 'Ready to race!',      goText: '🚗 ZOOM!'   },
-  { id: 'train',    emoji: '🚂', label: 'Train',      readyText: 'Ready to go!',        goText: '🚂 CHOO!'   },
-  { id: 'balloon',  emoji: '🎈', label: 'Balloon',    readyText: 'Ready to fly!',       goText: '🎈 FLY!'    },
-  { id: 'fish',     emoji: '🐠', label: 'Fish',       readyText: 'Ready to swim!',      goText: '🐠 SWIM!'   },
-];
+  { id: 'rocket',   icon: 'rocket-launch', label: 'Rocket',    readyText: 'Ready for launch!',   goText: 'LAUNCH!' },
+  { id: 'car',      icon: 'car-sports',    label: 'Race Car',  readyText: 'Ready to race!',      goText: 'ZOOM!' },
+  { id: 'train',    icon: 'train',         label: 'Train',     readyText: 'Ready to go!',        goText: 'CHOO!' },
+  { id: 'balloon',  icon: 'balloon',       label: 'Balloon',   readyText: 'Ready to fly!',       goText: 'FLY!' },
+  { id: 'fish',     icon: 'fish',          label: 'Fish',      readyText: 'Ready to swim!',      goText: 'SWIM!' },
+] as const;
 
 type Phase = 'INTRO' | 'WAITING' | 'LAUNCHING' | 'BETWEEN' | 'DONE';
 
@@ -268,26 +269,6 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
     }
   }, [triggerSuccess]);
 
-  // ── Permission screens ───────────────────────────────────────────────────────
-
-  if (!permission) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.permText}>Requesting camera…</Text>
-      </View>
-    );
-  }
-
-  if (!permission.granted) {
-    return (
-      <View style={styles.center}>
-        <Text style={styles.permText}>
-          📷 Camera is required for this game.{'\n'}Please allow access in Settings.
-        </Text>
-      </View>
-    );
-  }
-
   // ── Animated styles ──────────────────────────────────────────────────────────
 
   const objectStyle = useAnimatedStyle(() => ({
@@ -309,8 +290,29 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
   const gazePercent = Math.min(100, Math.round((gazeHoldMs / GAZE_THRESHOLD_MS) * 100));
   const isGazingNow = gazeHoldMs > 100;
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ── Permission screens ───────────────────────────────────────────────────────────────
+  if (!permission) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.permText}>Requesting camera…</Text>
+      </View>
+    );
+  }
 
+  if (!permission.granted) {
+    return (
+      <View style={styles.center}>
+        <View style={styles.permRow}>
+          <IconSymbol name="camera-outline" size={20} color={colors.textDark} />
+          <Text style={styles.permText}>
+            Camera is required for this game.{"\n"}Please allow access in Settings.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <View style={styles.container}>
       {/* Camera runs but shows no preview */}
@@ -340,7 +342,10 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
           </Text>
         </View>
         <View style={styles.successBadge}>
-          <Text style={styles.successText}>⭐ {successCount}</Text>
+            <View style={styles.successRow}>
+              <IconSymbol name="star-four-points" size={16} color="#FFD600" />
+              <Text style={styles.successText}>{successCount}</Text>
+            </View>
         </View>
       </View>
 
@@ -351,7 +356,7 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
 
         {/* The frozen object */}
         <Animated.View style={[styles.objectWrapper, objectStyle]}>
-          <Text style={styles.objectEmoji}>{currentObject.emoji}</Text>
+          <IconSymbol name={currentObject.icon} size={110} color="#FFF" style={styles.objectIcon} />
         </Animated.View>
 
         {/* Phase label */}
@@ -369,8 +374,14 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
         <View style={styles.gazePanel}>
           <View style={styles.gazeLabelRow}>
             <View style={[styles.gazeDot, isGazingNow && styles.gazeDotActive]} />
+            <IconSymbol
+              name={isGazingNow ? 'eye' : 'eye-outline'}
+              size={16}
+              color={isGazingNow ? '#4FC3F7' : 'rgba(255,255,255,0.55)'}
+              style={styles.gazeIcon}
+            />
             <Text style={[styles.gazeLabel, isGazingNow && styles.gazeLabelActive]}>
-              {isGazingNow ? 'Keep looking! 👀' : 'Look at the screen…'}
+              {isGazingNow ? 'Keep looking!' : 'Look at the screen…'}
             </Text>
             <Text style={styles.gazePercent}>{gazePercent}%</Text>
           </View>
@@ -382,7 +393,10 @@ export const WaitingGame: React.FC<Props> = ({ onFinish }) => {
 
       {phase === 'DONE' && (
         <View style={styles.doneOverlay}>
-          <Text style={styles.doneText}>Amazing! 🌟</Text>
+          <View style={styles.doneRow}>
+            <IconSymbol name="star-four-points" size={24} color="#FFD600" />
+            <Text style={styles.doneText}>Amazing!</Text>
+          </View>
           <Text style={styles.doneSub}>
             You looked {successCount} out of {TOTAL_BIDS} times!
           </Text>
@@ -419,6 +433,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cream,
     padding: 24,
   },
+  permRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   permText: {
     fontSize: 16,
     color: colors.textDark,
@@ -454,6 +473,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,214,0,0.4)',
   },
+  successRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
   successText: {
     color: '#FFD600',
     fontSize: 15,
@@ -478,7 +502,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  objectEmoji: {
+  objectIcon: {
     fontSize: 100,
     lineHeight: 120,
     textShadowColor: 'rgba(255,255,255,0.3)',
@@ -515,6 +539,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  gazeIcon: {
+    marginLeft: 2,
   },
   gazeDot: {
     width: 10,
@@ -563,6 +590,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+  },
+  doneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   doneText: {
     fontSize: 32,

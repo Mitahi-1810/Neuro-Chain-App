@@ -17,10 +17,21 @@ import { Mascot } from '../../components/Mascot';
 import { AvatarBubble, SectionTitle, StatPill } from '../../components/Decorations';
 import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
+import { IconSymbol } from '../../components/IconSymbol';
 
 interface Props {
   navigation: any;
 }
+
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+
+const PLAN_ICONS: IconName[] = [
+  'target',
+  'palette-outline',
+  'puzzle-outline',
+  'music-note',
+  'star-four-points',
+];
 
 const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useI18n();
@@ -77,11 +88,11 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.tierBar}>
         <View style={[styles.tierChip, { backgroundColor: tierColor + '18' }]}>
-          <Text style={{ fontSize: 12 }}>👑</Text>
+          <IconSymbol name="crown-outline" size={14} color={tierColor} />
           <Text style={[styles.tierChipText, { color: tierColor }]}>{tierLabel} plan</Text>
         </View>
         <View style={styles.streakChip}>
-          <Text style={{ fontSize: 14 }}>🔥</Text>
+          <IconSymbol name="fire" size={14} color={colors.secondaryDark} />
           <Text style={styles.streakChipText}>
             {streakData.current_streak} day streak
           </Text>
@@ -175,21 +186,21 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const Stats = () => (
     <View style={styles.statRow}>
       <StatPill
-        emoji="🔥"
+        icon="fire"
         label="Streak"
         value={`${streakData.current_streak}d`}
         iconBg={colors.secondaryLight}
         iconColor={colors.secondaryDark}
       />
       <StatPill
-        emoji="🎮"
+        icon="gamepad-variant"
         label="Games"
         value={streakData.total_games_played}
         iconBg={colors.primaryLight}
         iconColor={colors.primary}
       />
       <StatPill
-        emoji="⭐"
+        icon="star-four-points"
         label="Points"
         value={streakData.total_games_played * 12}
         iconBg={colors.accentLight}
@@ -292,10 +303,12 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => !isCompleted && navigation.navigate('GameRunner', { gameId: item.id })}
                 style={styles.planCard}
               >
-                <View style={[styles.planIcon, { backgroundColor: accent + '22' }]}>
-                  <Text style={{ fontSize: 24 }}>
-                    {['🎯', '🌈', '🧩', '🎵', '✨'][index % 5]}
-                  </Text>
+                <View style={[styles.planIcon, { backgroundColor: accent + '22' }]}> 
+                  <IconSymbol
+                    name={PLAN_ICONS[index % PLAN_ICONS.length]}
+                    size={22}
+                    color={accent}
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.planName}>{item.name}</Text>

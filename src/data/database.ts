@@ -65,6 +65,18 @@ export const initDatabase = async () => {
       FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
     );
 
+    CREATE TABLE IF NOT EXISTS video_screenings (
+      id TEXT PRIMARY KEY,
+      child_id TEXT,
+      original_risk TEXT,
+      adjusted_risk TEXT,
+      concern_score INTEGER,
+      task_results TEXT,
+      created_at TEXT,
+      sync_status INTEGER DEFAULT 0,
+      FOREIGN KEY (child_id) REFERENCES children(id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS specialists (
       id TEXT PRIMARY KEY,
       user_id TEXT,
