@@ -22,6 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { supabaseClient } from "@/lib/supabaseClient";
+import { cn } from "@/lib/utils";
 
 interface SpecialistRow {
   id: string;
@@ -40,26 +41,53 @@ interface Stats {
   active: number;
 }
 
+type Tab = "pending" | "approved" | "all";
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "pending", label: "Pending" },
+  { id: "approved", label: "Approved" },
+  { id: "all", label: "All" },
+];
+
+function formatDate(iso: string | null) {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export default function SpecialistsPage() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>("pending");
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [pendingSpecialists, setPendingSpecialists] = useState<SpecialistRow[]>(
-    [],
-  );
-  const [stats, setStats] = useState<Stats>({
-    total: 0,
-    pending: 0,
-    active: 0,
-  });
   const [warning, setWarning] = useState<string | null>(null);
 
-  const pendingCountLabel = useMemo(() => {
-    return stats.pending === 1
-      ? "1 pending profile"
-      : `${stats.pending} pending profiles`;
-  }, [stats.pending]);
+  const [allSpecialists, setAllSpecialists] = useState<SpecialistRow[]>([]);
+  const [pendingSpecialists, setPendingSpecialists] = useState<SpecialistRow[]>([]);
+  const [approvedSpecialists, setApprovedSpecialists] = useState<SpecialistRow[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, pending: 0, active: 0 });
+
+  const tabRows: Record<Tab, SpecialistRow[]> = useMemo(
+    () => ({
+      pending: pendingSpecialists,
+      approved: approvedSpecialists,
+      all: allSpecialists,
+    }),
+    [allSpecialists, pendingSpecialists, approvedSpecialists],
+  );
+
+  const counts: Record<Tab, number> = useMemo(
+    () => ({
+      pending: pendingSpecialists.length,
+      approved: approvedSpecialists.length,
+      all: allSpecialists.length,
+    }),
+    [allSpecialists, pendingSpecialists, approvedSpecialists],
+  );
 
   const fetchSpecialists = async () => {
     setLoading(true);
@@ -75,9 +103,7 @@ export default function SpecialistsPage() {
     }
 
     const response = await fetch("/api/admin/specialists", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     if (!response.ok) {
@@ -93,7 +119,9 @@ export default function SpecialistsPage() {
     }
 
     const data = await response.json();
+    setAllSpecialists(data.all || []);
     setPendingSpecialists(data.pending || []);
+    setApprovedSpecialists(data.approved || []);
     setStats(data.stats || { total: 0, pending: 0, active: 0 });
     setWarning(data.warning || null);
     setLoading(false);
@@ -134,32 +162,28 @@ export default function SpecialistsPage() {
     setActionLoading(null);
   };
 
+  const rows = tabRows[activeTab];
+
   return (
     <AdminShell>
       <div className="flex flex-col gap-6">
+        {/* ── Header ── */}
         <header className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               Admin Dashboard
             </p>
-            <h1 className="mt-2 text-3xl font-semibold">
-              Specialist approvals
-            </h1>
+            <h1 className="mt-2 text-3xl font-semibold">Specialists</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {pendingCountLabel}
+              Manage and verify specialist profiles
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={fetchSpecialists}
-              disabled={loading}
-            >
-              Refresh
-            </Button>
-          </div>
+          <Button variant="outline" onClick={fetchSpecialists} disabled={loading}>
+            Refresh
+          </Button>
         </header>
 
+        {/* ── Stat cards ── */}
         <section className="grid gap-4 sm:grid-cols-3">
           <Card>
             <CardHeader>
@@ -181,31 +205,69 @@ export default function SpecialistsPage() {
           </Card>
         </section>
 
+        {/* ── Tabs + table ── */}
         <Card className="border-primary/15">
-          <CardHeader>
-            <CardTitle>Pending verification</CardTitle>
+          {/* Tab bar */}
+          <div className="flex items-center gap-1 border-b border-primary/10 px-5 pt-4">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  "relative flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                  activeTab === tab.id
+                    ? "text-primary after:absolute after:bottom-[-1px] after:left-0 after:right-0 after:h-[2px] after:rounded-full after:bg-primary after:content-['']"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {tab.label}
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-xs font-semibold",
+                    activeTab === tab.id
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {counts[tab.id]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <CardHeader className="pb-2">
+            <CardTitle>
+              {activeTab === "pending" && "Pending verification"}
+              {activeTab === "approved" && "Approved specialists"}
+              {activeTab === "all" && "All specialists"}
+            </CardTitle>
             <CardDescription>
-              Approve or reject specialist profiles.
+              {activeTab === "pending" && "Approve or reject specialist profiles."}
+              {activeTab === "approved" && "Specialists who have been verified and are active."}
+              {activeTab === "all" && "Every specialist registered on the platform."}
             </CardDescription>
           </CardHeader>
+
           <CardContent>
-            {warning ? (
+            {warning && (
               <p className="mb-3 rounded-xl bg-accent/40 px-3 py-2 text-sm text-accent-foreground">
                 {warning}
               </p>
-            ) : null}
-            {error ? (
+            )}
+            {error && (
               <p className="mb-4 rounded-xl bg-accent/60 px-3 py-2 text-sm text-accent-foreground">
                 {error}
               </p>
-            ) : null}
+            )}
+
             {loading ? (
-              <p className="text-sm text-muted-foreground">
-                Loading specialists...
-              </p>
-            ) : pendingSpecialists.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No pending specialists right now.
+              <p className="py-4 text-sm text-muted-foreground">Loading specialists…</p>
+            ) : rows.length === 0 ? (
+              <p className="py-4 text-sm text-muted-foreground">
+                {activeTab === "pending" && "No pending specialists right now."}
+                {activeTab === "approved" && "No approved specialists yet."}
+                {activeTab === "all" && "No specialists found."}
               </p>
             ) : (
               <Table>
@@ -214,51 +276,68 @@ export default function SpecialistsPage() {
                     <TableHead>Name</TableHead>
                     <TableHead>Specialty</TableHead>
                     <TableHead>City</TableHead>
+                    <TableHead>Joined</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
+                    {activeTab === "pending" && (
+                      <TableHead className="text-right">Action</TableHead>
+                    )}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingSpecialists.map((specialist) => (
-                    <TableRow key={specialist.id}>
-                      <TableCell>
-                        <div className="font-medium">
-                          {specialist.full_name || "Unnamed specialist"}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          {specialist.medical_reg_number || "No reg number"}
-                        </div>
-                      </TableCell>
-                      <TableCell>{specialist.specialty || "-"}</TableCell>
-                      <TableCell>{specialist.city || "-"}</TableCell>
-                      <TableCell>
-                        <Badge variant="pending">Pending</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() =>
-                              handleAction(specialist.id, "approve")
+                  {rows.map((specialist) => {
+                    const isActive =
+                      specialist.status === "ACTIVE" && specialist.is_verified === 1;
+                    const isPending =
+                      specialist.status === "PENDING" || specialist.is_verified === 0;
+
+                    return (
+                      <TableRow key={specialist.id}>
+                        <TableCell>
+                          <div className="font-medium">
+                            {specialist.full_name || "Unnamed specialist"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {specialist.medical_reg_number || "No reg number"}
+                          </div>
+                        </TableCell>
+                        <TableCell>{specialist.specialty || "—"}</TableCell>
+                        <TableCell>{specialist.city || "—"}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatDate(specialist.created_at)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              isActive ? "active" : isPending ? "pending" : "inactive"
                             }
-                            disabled={actionLoading === specialist.id}
                           >
-                            Approve
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              handleAction(specialist.id, "reject")
-                            }
-                            disabled={actionLoading === specialist.id}
-                          >
-                            Reject
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            {isActive ? "Active" : isPending ? "Pending" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        {activeTab === "pending" && (
+                          <TableCell className="text-right">
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                size="sm"
+                                onClick={() => handleAction(specialist.id, "approve")}
+                                disabled={actionLoading === specialist.id}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleAction(specialist.id, "reject")}
+                                disabled={actionLoading === specialist.id}
+                              >
+                                Reject
+                              </Button>
+                            </div>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}

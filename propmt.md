@@ -1,0 +1,4 @@
+- in starting of login as parent this logo bacame too big. fix this . i think removeing will be better. in frist images i marked those.
+- In Parential screen the first block with an image and icon showing ugly. Fix the box . reduce the icon size and also the height of the full box. also fix the button view make the card better. In image 4 i marked that
+- Then in the bottom nav we are showing icon and name both. show inly icon.
+- after upgrading parent account into premuim we need to show a card below with ai behavioral check about booking consultancy. There will be a button also to go that page/screen. Then show the approved specialists. Then after click on the specialists card show the calendly ui to book time(this some part maybe implemented)

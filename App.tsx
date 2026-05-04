@@ -41,7 +41,6 @@ import {
   Poppins_700Bold,
   Poppins_800ExtraBold,
 } from "@expo-google-fonts/poppins";
-import { typography } from "./src/utils/typography";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -201,11 +200,6 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
                       : colors.textBody
                 }
               />
-              {isFocused && (
-                <Text style={tabStyles.tabLabel} numberOfLines={1}>
-                  {label}
-                </Text>
-              )}
             </TouchableOpacity>
           );
         })}
@@ -234,25 +228,16 @@ const tabStyles = StyleSheet.create({
   },
   tab: {
     flex: 1,
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: radius.full,
-    gap: 6,
     minHeight: 44,
   },
   tabActive: {
     backgroundColor: colors.primary,
     ...shadow.primary,
-  },
-  tabLabel: {
-    ...typography.badge,
-    color: colors.white,
-    fontSize: 11,
-    textTransform: "none",
-    letterSpacing: 0.2,
   },
 });
 

@@ -10,7 +10,6 @@ import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
-import { Mascot } from '../../components/Mascot';
 import { useAuthStore, useChildStore, useUIStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -150,7 +149,6 @@ const ParentOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           {/* ── STEP 0: Language ── */}
           {step === 0 && (
             <View style={styles.stepBody}>
-              <Mascot kind="star" size="xl" />
               <Text style={styles.eyebrow}>step 1 of 4</Text>
               <Text style={styles.stepTitle}>Choose your language</Text>
               <Text style={styles.stepSubtitle}>
@@ -186,7 +184,6 @@ const ParentOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           {/* ── STEP 1: Child profile ── */}
           {step === 1 && (
             <View style={styles.stepBody}>
-              <Mascot kind="heart" size="xl" />
               <Text style={styles.eyebrow}>step 2 of 4</Text>
               <Text style={styles.stepTitle}>Tell us about{'\n'}your child.</Text>
               <Text style={styles.stepSubtitle}>
@@ -285,7 +282,6 @@ const ParentOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           {/* ── STEP 2: Privacy & Consent ── */}
           {step === 2 && (
             <View style={styles.stepBody}>
-              <Mascot kind="puzzle" size="xl" />
               <Text style={styles.eyebrow}>step 3 of 4</Text>
               <Text style={styles.stepTitle}>Your child's{'\n'}privacy matters.</Text>
               <Text style={styles.stepSubtitle}>
@@ -342,7 +338,6 @@ const ParentOnboardingScreen: React.FC<{ navigation: any }> = ({ navigation }) =
           {/* ── STEP 3: Ready ── */}
           {step === 3 && (
             <View style={styles.stepBody}>
-              <Mascot kind="rocket" size="xl" />
               <Text style={styles.eyebrow}>step 4 of 4</Text>
               <Text style={styles.stepTitle}>
                 You're all set,{'\n'}{firstName || 'Parent'}!

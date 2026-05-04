@@ -84,20 +84,21 @@ export async function GET(request: Request) {
       (row) => row.status === "ACTIVE" && row.is_verified === 1,
     ).length ?? 0;
 
-  const { data: pendingSpecialists, error: pendingError } = await supabase
+  const { data: allSpecialistsFull, error: allError } = await supabase
     .from("specialists")
     .select(
       "id, full_name, medical_reg_number, specialty, city, status, is_verified, created_at",
     )
-    .or("status.eq.PENDING,is_verified.eq.0")
     .order("created_at", { ascending: false });
 
-  if (pendingError) {
-    const message = pendingError.message || "Failed to load specialists";
+  if (allError) {
+    const message = allError.message || "Failed to load specialists";
     if (message.includes("Could not find the table")) {
       return NextResponse.json({
         stats: { total, pending: 0, active },
+        all: [],
         pending: [],
+        approved: [],
         warning: "Specialists table not found in Supabase.",
       });
     }
@@ -107,9 +108,19 @@ export async function GET(request: Request) {
     );
   }
 
+  const rows = allSpecialistsFull || [];
+  const pendingRows = rows.filter(
+    (r) => r.status === "PENDING" || r.is_verified === 0,
+  );
+  const approvedRows = rows.filter(
+    (r) => r.status === "ACTIVE" && r.is_verified === 1,
+  );
+
   return NextResponse.json({
     stats: { total, pending, active },
-    pending: pendingSpecialists || [],
+    all: rows,
+    pending: pendingRows,
+    approved: approvedRows,
   });
 }
 

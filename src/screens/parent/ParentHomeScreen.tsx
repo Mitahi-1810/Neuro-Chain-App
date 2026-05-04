@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -47,6 +47,8 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   }, [activeChild, refreshDailyPlan]);
 
   const tier = user?.tier_level || 'FREE';
+
+  
   const tierKey = tier.toLowerCase() as 'free' | 'basic' | 'premium';
   const tierColor = tiers[tierKey]?.color || colors.primary;
   const tierLabel = t(`tier_${tierKey}`);
@@ -118,7 +120,7 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
     };
 
     return (
-      <CrayonCard variant="primary" padding={22} style={styles.hero}>
+      <CrayonCard variant="primary" padding={16} style={styles.hero}>
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroEyebrow}>
@@ -142,16 +144,16 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
               label={ctaLabel}
               onPress={onCta}
               variant="secondary"
-              size="medium"
-              style={{ marginTop: 14, alignSelf: 'flex-start' }}
+              size="small"
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
               iconRight={
-                <MaterialCommunityIcons name="arrow-right" size={18} color={colors.textDark} />
+                <MaterialCommunityIcons name="arrow-right" size={16} color={colors.textDark} />
               }
             />
           </View>
           <Mascot
             kind={tier === 'FREE' ? 'puzzle' : nextGame ? 'rocket' : 'star'}
-            size="xl"
+            size="md"
             tint="rgba(255,255,255,0.18)"
           />
         </View>
@@ -386,6 +388,27 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </CrayonCard>
       )}
+
+      {/* ── Book a Consultation ── */}
+      <CrayonCard padding={18} style={{ marginBottom: 18, borderColor: colors.accent + '30', borderWidth: 1.5 }}>
+        <View style={styles.specRow}>
+          <Mascot kind="heart" size="md" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.specTitle}>Book a consultation</Text>
+            <Text style={styles.specDesc}>
+              Get a personalised AI behavioural check, then book a session with a verified specialist.
+            </Text>
+            <CrayonButton
+              label="See All"
+              onPress={() => navigation.navigate('TelehealthBooking')}
+              variant="primary"
+              size="small"
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
+              iconRight={<MaterialCommunityIcons name="arrow-right" size={16} color={colors.white} />}
+            />
+          </View>
+        </View>
+      </CrayonCard>
     </View>
   );
 
@@ -660,6 +683,52 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.successLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* Specialist list cards */
+  specialistCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: 14,
+    gap: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  specialistAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.primaryMid,
+  },
+  specialistAvatarText: {
+    ...typography.h3,
+    fontSize: 18,
+    color: colors.primary,
+  },
+  specialistName: {
+    ...typography.h3,
+    fontSize: 15,
+  },
+  specialistMeta: {
+    ...typography.caption,
+    marginTop: 2,
+    color: colors.textMuted,
+  },
+  specialistBookBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
