@@ -360,7 +360,7 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.specDesc}>{t('home_ai_check_desc')}</Text>
             <CrayonButton
               label={t('home_ai_check_cta')}
-              onPress={() => navigation.navigate('AIScreening', { riskLevel: 'MODERATE' })}
+              onPress={() => navigation.navigate('AIBehavioralCheck')}
               variant="primary"
               size="small"
               style={{ marginTop: 12, alignSelf: 'flex-start' }}
