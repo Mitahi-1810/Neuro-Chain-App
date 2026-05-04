@@ -50,24 +50,19 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Headline */}
-        <Text style={styles.eyebrow}>welcome to neurochain</Text>
-        <Text style={styles.headline}>Let's grow{'\n'}together,{' '}
-          <Text style={styles.headlineAccent}>one play at a time.</Text>
+        <Text style={styles.eyebrow}>{t('welcome_eyebrow')}</Text>
+        <Text style={styles.headline}>{t('welcome_headline_pre')}{' '}
+          <Text style={styles.headlineAccent}>{t('welcome_headline_accent')}</Text>
         </Text>
-        <Text style={styles.subheadline}>
-          Daily play sessions, gentle screening, and on-device AI insights — designed
-          with families across South Asia.
-        </Text>
+        <Text style={styles.subheadline}>{t('welcome_subheadline')}</Text>
 
         {/* Hero card */}
         <CrayonCard variant="primary" padding={22} style={styles.hero}>
           <View style={styles.heroRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.heroEyebrow}>today's plan</Text>
-              <Text style={styles.heroTitle}>Build a routine{'\n'}that loves your kid back.</Text>
-              <Text style={styles.heroDesc}>
-                Tiny daily activities, big developmental wins.
-              </Text>
+              <Text style={styles.heroEyebrow}>{t('welcome_hero_eyebrow')}</Text>
+              <Text style={styles.heroTitle}>{t('welcome_hero_title')}</Text>
+              <Text style={styles.heroDesc}>{t('welcome_hero_desc')}</Text>
             </View>
             <Mascot kind="sun" size="lg" tint={colors.secondary} />
           </View>
@@ -77,18 +72,18 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.features}>
           <CrayonCard variant="sky" padding={18} style={styles.featureCard}>
             <Mascot kind="controller" size="sm" />
-            <Text style={styles.featureTitle}>Play & Learn</Text>
-            <Text style={styles.featureDesc}>13+ guided games tied to therapy goals.</Text>
+            <Text style={styles.featureTitle}>{t('welcome_feature_play_title')}</Text>
+            <Text style={styles.featureDesc}>{t('welcome_feature_play_desc')}</Text>
           </CrayonCard>
           <CrayonCard variant="pink" padding={18} style={styles.featureCard}>
             <Mascot kind="chart" size="sm" />
-            <Text style={styles.featureTitle}>Track Growth</Text>
-            <Text style={styles.featureDesc}>Friendly weekly reports — never clinical jargon.</Text>
+            <Text style={styles.featureTitle}>{t('welcome_feature_growth_title')}</Text>
+            <Text style={styles.featureDesc}>{t('welcome_feature_growth_desc')}</Text>
           </CrayonCard>
           <CrayonCard variant="teal" padding={18} style={styles.featureCard}>
             <Mascot kind="brain" size="sm" />
-            <Text style={styles.featureTitle}>On-device AI</Text>
-            <Text style={styles.featureDesc}>Vision insights stay private — nothing leaves the phone.</Text>
+            <Text style={styles.featureTitle}>{t('welcome_feature_ai_title')}</Text>
+            <Text style={styles.featureDesc}>{t('welcome_feature_ai_desc')}</Text>
           </CrayonCard>
         </View>
 
@@ -108,14 +103,12 @@ const WelcomeScreen: React.FC<Props> = ({ navigation }) => {
           >
             <Text style={styles.loginLinkText}>
               {t('welcome_have_account')}{' '}
-              <Text style={styles.loginLinkAccent}>Sign in</Text>
+              <Text style={styles.loginLinkAccent}>{t('welcome_sign_in')}</Text>
             </Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.disclaimer}>
-          NeuroChain offers screening tools and educational play. It is not a clinical diagnosis.
-        </Text>
+        <Text style={styles.disclaimer}>{t('welcome_disclaimer_full')}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -133,9 +126,9 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 22,
   },
   logoChip: {
@@ -152,7 +145,7 @@ const styles = StyleSheet.create({
     height: 30,
   },
   mascotsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 6,
     marginBottom: 18,
     marginLeft: -6,
@@ -181,8 +174,8 @@ const styles = StyleSheet.create({
     marginBottom: 18,
   },
   heroRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   heroEyebrow: {
@@ -206,7 +199,7 @@ const styles = StyleSheet.create({
     marginBottom: 22,
   },
   featureCard: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: 8,
   },
   featureTitle: {
@@ -225,7 +218,7 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   loginLinkText: {
     ...typography.body,
@@ -234,11 +227,11 @@ const styles = StyleSheet.create({
   },
   loginLinkAccent: {
     color: colors.primary,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   disclaimer: {
     ...typography.caption,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 4,
     paddingHorizontal: 12,
   },

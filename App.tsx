@@ -3,14 +3,14 @@ import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 import { useAuthStore, useUIStore, useChildStore, useGameStore } from './src/store/store';
 import { colors, radius, shadow } from './src/utils/colors';
 import { initDatabase } from './src/data/database';
-import { registerBackgroundSync } from './src/data/syncEngine';
+import { registerBackgroundSync, runManualSync } from './src/data/syncEngine';
 import * as ExpoSplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold } from '@expo-google-fonts/poppins';
@@ -164,27 +164,27 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 
 const tabStyles = StyleSheet.create({
   wrapper: {
-    position: 'absolute',
+    position: "absolute",
     left: 18,
     right: 18,
-    bottom: Platform.OS === 'ios' ? 28 : 18,
+    bottom: Platform.OS === "ios" ? 28 : 18,
   },
   bar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: colors.white,
     borderRadius: radius.full,
     paddingHorizontal: 8,
     paddingVertical: 8,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 1,
     borderColor: colors.border,
     ...shadow.lg,
   },
   tab: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: radius.full,
@@ -199,7 +199,7 @@ const tabStyles = StyleSheet.create({
     ...typography.badge,
     color: colors.white,
     fontSize: 11,
-    textTransform: 'none',
+    textTransform: "none",
     letterSpacing: 0.2,
   },
 });
@@ -294,6 +294,18 @@ function RootNavigator() {
   return <ParentStack />;
 }
 
+// ─── Safe area wrapper (must be inside SafeAreaProvider) ──────────────────────
+function AppContent() {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={{ flex: 1, paddingTop: insets.top }}>
+      <NavigationContainer>
+        <RootNavigator />
+      </NavigationContainer>
+    </View>
+  );
+}
+
 // ─── App Root ─────────────────────────────────────────────────────────────────
 export default function App() {
   const { hydrateLocale, hydrateOnboardingStatus } = useUIStore();
@@ -316,6 +328,7 @@ export default function App() {
         hydrateLocale();
         await initDatabase();
         registerBackgroundSync().catch(console.error);
+        runManualSync().catch(console.error);
 
         const user = useAuthStore.getState().user;
         if (user) {
@@ -344,9 +357,7 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
+        <AppContent />
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

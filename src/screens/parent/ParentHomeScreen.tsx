@@ -47,9 +47,9 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const greetingTime = () => {
     const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return t('home_greeting_morning');
+    if (h < 18) return t('home_greeting_afternoon');
+    return t('home_greeting_evening');
   };
 
   /* ───────── HEADER ───────── */
@@ -78,12 +78,12 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
       <View style={styles.tierBar}>
         <View style={[styles.tierChip, { backgroundColor: tierColor + '18' }]}>
           <Text style={{ fontSize: 12 }}>👑</Text>
-          <Text style={[styles.tierChipText, { color: tierColor }]}>{tierLabel} plan</Text>
+          <Text style={[styles.tierChipText, { color: tierColor }]}>{t('home_tier_plan', { tier: tierLabel })}</Text>
         </View>
         <View style={styles.streakChip}>
           <Text style={{ fontSize: 14 }}>🔥</Text>
           <Text style={styles.streakChipText}>
-            {streakData.current_streak} day streak
+            {t('home_day_streak_chip', { count: streakData.current_streak })}
           </Text>
         </View>
       </View>
@@ -96,10 +96,10 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
       (g) => !todaysSessions.some((s) => s.game_id === g.id),
     );
     const ctaLabel = tier === 'FREE'
-      ? 'Start free screening'
+      ? t('home_cta_screening')
       : nextGame
-      ? 'Continue today\'s plan'
-      : 'Browse games';
+      ? t('home_cta_continue_plan')
+      : t('home_cta_browse_games');
     const onCta = () => {
       if (tier === 'FREE') return navigation.navigate('AutismScreener');
       if (nextGame) return navigation.navigate('GameRunner', { gameId: nextGame.id });
@@ -111,21 +111,21 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.heroRow}>
           <View style={{ flex: 1 }}>
             <Text style={styles.heroEyebrow}>
-              {tier === 'FREE' ? 'first step' : 'today'}
+              {tier === 'FREE' ? t('home_hero_eyebrow_free') : t('home_hero_eyebrow_paid')}
             </Text>
             <Text style={styles.heroTitle}>
               {tier === 'FREE'
-                ? "Let's check in on\nyour little one."
+                ? t('home_hero_title_free')
                 : nextGame
-                ? `Let's play\n${nextGame.name}!`
-                : "You're all caught up!"}
+                ? t('home_hero_title_game', { name: nextGame.name })
+                : t('home_hero_title_done')}
             </Text>
             <Text style={styles.heroDesc}>
               {tier === 'FREE'
-                ? 'A quick, age-based autism screening to start your journey.'
+                ? t('home_hero_desc_free')
                 : nextGame
                 ? `${nextGame.target_skill} · ${nextGame.duration_minutes} min`
-                : 'Great work today. Explore more games or check the plan tomorrow.'}
+                : t('home_hero_desc_done')}
             </Text>
             <CrayonButton
               label={ctaLabel}
@@ -153,16 +153,16 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
     <CrayonCard variant="default" padding={18} style={{ marginBottom: 18 }}>
       <View style={styles.progressHeader}>
         <View>
-          <Text style={styles.progressEyebrow}>today's progress</Text>
+          <Text style={styles.progressEyebrow}>{t('home_progress_eyebrow')}</Text>
           <Text style={styles.progressValue}>
-            {progressPercent}% <Text style={styles.progressValueMuted}>complete</Text>
+            {progressPercent}% <Text style={styles.progressValueMuted}>{t('home_progress_complete')}</Text>
           </Text>
         </View>
         <View style={styles.progressMetric}>
           <Text style={styles.progressMetricValue}>
             {todaysSessions.length}/{totalPlan}
           </Text>
-          <Text style={styles.progressMetricLabel}>sessions</Text>
+          <Text style={styles.progressMetricLabel}>{t('home_progress_sessions')}</Text>
         </View>
       </View>
       <View style={styles.progressBar}>
@@ -176,21 +176,21 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.statRow}>
       <StatPill
         emoji="🔥"
-        label="Streak"
+        label={t('home_stat_streak')}
         value={`${streakData.current_streak}d`}
         iconBg={colors.secondaryLight}
         iconColor={colors.secondaryDark}
       />
       <StatPill
         emoji="🎮"
-        label="Games"
+        label={t('home_stat_games')}
         value={streakData.total_games_played}
         iconBg={colors.primaryLight}
         iconColor={colors.primary}
       />
       <StatPill
         emoji="⭐"
-        label="Points"
+        label={t('home_stat_points')}
         value={streakData.total_games_played * 12}
         iconBg={colors.accentLight}
         iconColor={colors.accentDark}
@@ -201,7 +201,7 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   /* ───────── FREE TIER BLOCK ───────── */
   const FreeTier = () => (
     <View>
-      <SectionTitle title="Quick actions" />
+      <SectionTitle title={t('home_quick_actions_title')} />
       <View style={styles.quickGrid}>
         <TouchableOpacity
           style={[styles.quickCard, styles.quickCardPurple]}
@@ -209,9 +209,9 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => navigation.navigate('AutismScreener')}
         >
           <Mascot kind="puzzle" size="md" tint={colors.white} />
-          <Text style={[styles.quickTitle, { color: colors.white }]}>Screen my child</Text>
+          <Text style={[styles.quickTitle, { color: colors.white }]}>{t('home_quick_screen_title')}</Text>
           <Text style={[styles.quickDesc, { color: colors.primaryLight }]}>
-            Age-appropriate screening in your language
+            {t('home_quick_screen_desc')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -220,27 +220,25 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           onPress={() => navigation.navigate('Games')}
         >
           <Mascot kind="controller" size="md" tint={colors.white} />
-          <Text style={[styles.quickTitle, { color: colors.textDark }]}>Preview games</Text>
+          <Text style={[styles.quickTitle, { color: colors.textDark }]}>{t('home_quick_preview_title')}</Text>
           <Text style={[styles.quickDesc, { color: colors.textBody }]}>
-            See what's inside before unlocking
+            {t('home_quick_preview_desc')}
           </Text>
         </TouchableOpacity>
       </View>
 
       <SectionTitle
-        title="Meet specialists"
-        action={{ label: 'See all', onPress: () => navigation.navigate('SubscriptionUpgrade') }}
+        title={t('home_specialists_section')}
+        action={{ label: t('home_see_all'), onPress: () => navigation.navigate('SubscriptionUpgrade') }}
       />
       <CrayonCard variant="teal" padding={20} style={{ marginBottom: 18 }}>
         <View style={styles.specRow}>
           <Mascot kind="heart" size="lg" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.specTitle}>Talk to a developmental specialist</Text>
-            <Text style={styles.specDesc}>
-              Bangla & English-speaking pediatric specialists, on your schedule.
-            </Text>
+            <Text style={styles.specTitle}>{t('home_specialist_card_title')}</Text>
+            <Text style={styles.specDesc}>{t('home_specialist_card_desc')}</Text>
             <CrayonButton
-              label="Learn more"
+              label={t('home_learn_more')}
               onPress={() => navigation.navigate('SubscriptionUpgrade')}
               variant="dark"
               size="small"
@@ -256,20 +254,20 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const PaidTier = () => (
     <View>
       <SectionTitle
-        title="Today's plan"
-        action={{ label: 'See all', onPress: () => navigation.navigate('Games') }}
+        title={t('home_todays_plan_section')}
+        action={{ label: t('home_see_all'), onPress: () => navigation.navigate('Games') }}
       />
       {dailyPlan.length === 0 ? (
         <CrayonCard padding={28} style={{ alignItems: 'center', marginBottom: 18 }}>
           <Mascot kind="cloud" size="lg" />
           <Text style={[styles.specTitle, { textAlign: 'center', marginTop: 14 }]}>
-            No plan today
+            {t('home_no_plan_title')}
           </Text>
           <Text style={[styles.specDesc, { textAlign: 'center' }]}>
-            Set up your child's profile and we'll auto-generate one.
+            {t('home_no_plan_desc')}
           </Text>
           <CrayonButton
-            label="Browse games"
+            label={t('home_cta_browse_games')}
             onPress={() => navigation.navigate('Games')}
             variant="primary"
             size="medium"
@@ -319,17 +317,15 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
       )}
 
       <View style={{ height: 22 }} />
-      <SectionTitle title="This week at a glance" />
+      <SectionTitle title={t('home_week_glance_title')} />
       <CrayonCard variant="sun" padding={20} style={{ marginBottom: 18 }}>
         <View style={styles.weekRow}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.weekEyebrow}>you did</Text>
+            <Text style={styles.weekEyebrow}>{t('home_week_eyebrow')}</Text>
             <Text style={styles.weekValue}>
               {streakData.current_streak} streak{streakData.current_streak === 1 ? '' : 's'}
             </Text>
-            <Text style={styles.weekDesc}>
-              Keep going — most kids see growth around the 7-day mark.
-            </Text>
+            <Text style={styles.weekDesc}>{t('home_week_desc')}</Text>
           </View>
           <Mascot kind="medal" size="lg" tint="rgba(255,255,255,0.4)" />
         </View>
@@ -341,16 +337,14 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           <Mascot kind="brain" size="md" />
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-              <Text style={styles.specTitle}>AI Behavioral Check</Text>
+              <Text style={styles.specTitle}>{t('home_ai_check_title')}</Text>
               <View style={{ backgroundColor: colors.primaryLight, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 2 }}>
-                <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, fontFamily: 'Poppins' }}>2 MIN</Text>
+                <Text style={{ fontSize: 10, fontWeight: '800', color: colors.primary, fontFamily: 'Poppins' }}>{t('home_ai_check_badge')}</Text>
               </View>
             </View>
-            <Text style={styles.specDesc}>
-              Use your camera to measure eye contact, engagement, and mood. Fully on-device — no video stored.
-            </Text>
+            <Text style={styles.specDesc}>{t('home_ai_check_desc')}</Text>
             <CrayonButton
-              label="Start AI Check-Up"
+              label={t('home_ai_check_cta')}
               onPress={() => navigation.navigate('AIScreening', { riskLevel: 'MODERATE' })}
               variant="primary"
               size="small"
@@ -366,12 +360,10 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.specRow}>
             <Mascot kind="brain" size="md" />
             <View style={{ flex: 1 }}>
-              <Text style={styles.specTitle}>AI insights ready</Text>
-              <Text style={styles.specDesc}>
-                Tap to see this week's GPT-4 generated progress summary.
-              </Text>
+              <Text style={styles.specTitle}>{t('home_ai_ready_title')}</Text>
+              <Text style={styles.specDesc}>{t('home_ai_ready_desc')}</Text>
               <CrayonButton
-                label="Open insights"
+                label={t('home_open_insights')}
                 onPress={() => navigation.navigate('Insights')}
                 variant="primary"
                 size="small"
