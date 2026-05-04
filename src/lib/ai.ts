@@ -22,7 +22,7 @@ const GROQ_BASE       = 'https://api.groq.com/openai/v1';
 
 /**
  * Best free models on OpenRouter (as of 2026).
- * Change MODEL_CHAT to any other free model if you hit rate limits.
+ * Use openrouter/free to auto-rotate through free providers.
  *
  * Tier-1 free models:
  *   openrouter/free                    ← Automatically selects best available free model (RECOMMENDED)
@@ -30,7 +30,7 @@ const GROQ_BASE       = 'https://api.groq.com/openai/v1';
  *   mistralai/mistral-7b-instruct:free
  *   google/gemma-2-9b-it:free
  */
-export const MODEL_CHAT = 'meta-llama/llama-3.2-3b-instruct:free';
+export const MODEL_CHAT = 'openrouter/free';
 export const MODEL_WHISPER = 'whisper-large-v3'; // Groq's free Whisper
 
 // ─── Chat Completion (OpenRouter) ─────────────────────────────────────────────
@@ -60,38 +60,54 @@ export async function chatCompletion(
     throw new Error('OPENROUTER_KEY_MISSING');
   }
 
-  const res = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-      // OpenRouter recommends these headers for attribution
-      'HTTP-Referer': 'https://neurochain.app',
-      'X-Title': 'NeuroChain Therapy Platform',
-    },
-    body: JSON.stringify({
-      model: options.model ?? MODEL_CHAT,
-      messages,
-      temperature: options.temperature ?? 0.4,
-      max_tokens: options.max_tokens ?? 800,
-    }),
-  });
+  const modelsToTry = Array.from(
+    new Set([
+      options.model ?? MODEL_CHAT,
+      'openrouter/free',
+      'mistralai/mistral-7b-instruct:free',
+      'google/gemma-2-9b-it:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
+    ])
+  );
 
-  if (!res.ok) {
-    const errorBody = await res.text();
-    console.error('[OpenRouter] Error Status:', res.status, errorBody);
-    throw new Error(`OPENROUTER_ERROR_${res.status}`);
+  for (const model of modelsToTry) {
+    const res = await fetch(`${OPENROUTER_BASE}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        // OpenRouter recommends these headers for attribution
+        'HTTP-Referer': 'https://neurochain.app',
+        'X-Title': 'NeuroChain Therapy Platform',
+      },
+      body: JSON.stringify({
+        model,
+        messages,
+        temperature: options.temperature ?? 0.4,
+        max_tokens: options.max_tokens ?? 800,
+      }),
+    });
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      console.error('[OpenRouter] Error Status:', res.status, errorBody);
+      if (res.status === 429) {
+        continue;
+      }
+      throw new Error(`OPENROUTER_ERROR_${res.status}`);
+    }
+
+    const data = await res.json();
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+      console.error('[OpenRouter] Empty Response Data:', JSON.stringify(data, null, 2));
+      throw new Error('OPENROUTER_EMPTY_RESPONSE');
+    }
+
+    return content;
   }
-
-  const data = await res.json();
-  const content = data?.choices?.[0]?.message?.content;
-
-  if (!content) {
-    console.error('[OpenRouter] Empty Response Data:', JSON.stringify(data, null, 2));
-    throw new Error('OPENROUTER_EMPTY_RESPONSE');
-  }
-
-  return content;
+  throw new Error('OPENROUTER_RATE_LIMIT');
 }
 
 /**

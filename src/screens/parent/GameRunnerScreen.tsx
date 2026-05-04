@@ -28,19 +28,22 @@ import { MandAndSeekGame } from '../../components/MandAndSeekGame';
 import { StoryNavigatorGame } from '../../components/StoryNavigatorGame';
 import { RhythmBurstGame } from '../../components/RhythmBurstGame';
 import { LabelLabGame } from '../../components/LabelLabGame';
+import { IconSymbol } from '../../components/IconSymbol';
 
-const SKILL_TINT: Record<string, { tint: string; accent: string; emoji: string }> = {
-  'Motor Skills':         { tint: colors.primaryLight, accent: colors.primary,    emoji: '🤸' },
-  'Eye Contact':          { tint: colors.accentLight,  accent: colors.accentDark, emoji: '👁️' },
-  'Emotion Recognition':  { tint: '#FFEDD5',           accent: '#F97316',         emoji: '😊' },
-  'Imitation':            { tint: '#F3E8FF',           accent: '#A855F7',         emoji: '🎭' },
-  'Sequencing':           { tint: '#FFF8ED',           accent: '#E17055',         emoji: '☀️' },
-  'Categorization':       { tint: '#FFEDD5',           accent: '#F97316',         emoji: '🗂️' },
-  'Auditory Processing':  { tint: '#D1FAE5',           accent: '#34D399',         emoji: '🎧' },
-  'Self Regulation':      { tint: '#DBEAFE',           accent: '#60A5FA',         emoji: '🧘' },
-  'Social Narrative':     { tint: '#FCE7F3',           accent: '#EC4899',         emoji: '📖' },
-  'Social Communication': { tint: '#E0F2FE',           accent: '#0EA5E9',         emoji: '💬' },
-  'Joint Attention':      { tint: colors.accentLight,  accent: colors.accent,     emoji: '👀' },
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+
+const SKILL_TINT: Record<string, { tint: string; accent: string; icon: IconName }> = {
+  'Motor Skills':         { tint: colors.primaryLight, accent: colors.primary,    icon: 'run' },
+  'Eye Contact':          { tint: colors.accentLight,  accent: colors.accentDark, icon: 'eye-outline' },
+  'Emotion Recognition':  { tint: '#FFEDD5',           accent: '#F97316',         icon: 'emoticon-outline' },
+  'Imitation':            { tint: '#F3E8FF',           accent: '#A855F7',         icon: 'mirror' },
+  'Sequencing':           { tint: '#FFF8ED',           accent: '#E17055',         icon: 'white-balance-sunny' },
+  'Categorization':       { tint: '#FFEDD5',           accent: '#F97316',         icon: 'shape-outline' },
+  'Auditory Processing':  { tint: '#D1FAE5',           accent: '#34D399',         icon: 'ear-hearing' },
+  'Self Regulation':      { tint: '#DBEAFE',           accent: '#60A5FA',         icon: 'meditation' },
+  'Social Narrative':     { tint: '#FCE7F3',           accent: '#EC4899',         icon: 'book-open-variant' },
+  'Social Communication': { tint: '#E0F2FE',           accent: '#0EA5E9',         icon: 'message-outline' },
+  'Joint Attention':      { tint: colors.accentLight,  accent: colors.accent,     icon: 'eye' },
 };
 
 const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
@@ -62,7 +65,7 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
   const meta = SKILL_TINT[game.target_skill] || {
     tint: colors.primaryLight,
     accent: colors.primary,
-    emoji: '✨',
+    icon: 'star-four-points' as IconName,
   };
 
   const simulateSession = () => {
@@ -229,7 +232,7 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
             Tap start when your child is calm and ready.
           </Text>
           <View style={styles.heroBlob}>
-            <Text style={styles.heroEmoji}>{meta.emoji}</Text>
+            <IconSymbol name={meta.icon} size={56} color={meta.accent} />
           </View>
         </View>
 

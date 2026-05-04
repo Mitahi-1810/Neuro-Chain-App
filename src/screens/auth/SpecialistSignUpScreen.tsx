@@ -177,13 +177,13 @@ const SpecialistSignUpScreen: React.FC<{ navigation: any }> = ({ navigation }) =
         const db = await getDatabase();
         const timestamp = new Date().toISOString();
         await db.runAsync(
-          `INSERT INTO specialists (
+          `INSERT OR REPLACE INTO specialists (
             id, user_id, full_name, medical_reg_number, specialty, clinic_name, city,
             consultation_fee_bdt, languages, bio, profile_photo_url, bank_account_encrypted,
             status, is_verified, created_at, updated_at, sync_status
           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 0, ?, ?, 0)`,
           [
-            Date.now().toString(),
+            createdUser.id,
             createdUser.id,
             fullName.trim(),
             medRegNumber.trim(),

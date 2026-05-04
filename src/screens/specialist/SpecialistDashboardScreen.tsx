@@ -30,13 +30,17 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
 
         if (!specialistProfile) {
           const timestamp = new Date().toISOString();
-          const newId = Date.now().toString();
+          const newId = user.id;
           await db.runAsync(
-            `INSERT INTO specialists (id, user_id, full_name, specialty, status, created_at, updated_at, sync_status)
+            `INSERT OR IGNORE INTO specialists (id, user_id, full_name, specialty, status, created_at, updated_at, sync_status)
              VALUES (?, ?, ?, ?, 'PENDING', ?, ?, 0)`,
             [newId, user.id, user.full_name || 'Specialist', 'General', timestamp, timestamp]
           );
-          specialistProfile = { id: newId, user_id: user.id, full_name: user.full_name, status: 'PENDING' };
+          const insertedRows: any[] = await db.getAllAsync(
+            'SELECT * FROM specialists WHERE user_id = ? LIMIT 1',
+            [user.id]
+          );
+          specialistProfile = (insertedRows?.[0] as any) ?? { id: newId, user_id: user.id, full_name: user.full_name, status: 'PENDING' };
         }
 
         setSpecialist(specialistProfile);

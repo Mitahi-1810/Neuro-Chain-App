@@ -159,9 +159,9 @@ const SpecialistProfileScreen: React.FC<any> = ({ navigation }) => {
           ]
         );
       } else if (user) {
-        const newId = Date.now().toString();
+        const newId = user.id;
         await db.runAsync(
-          `INSERT INTO specialists (
+          `INSERT OR REPLACE INTO specialists (
             id, user_id, full_name, medical_reg_number, specialty, clinic_name, city,
             consultation_fee_bdt, languages, bio, profile_photo_url, bank_account_encrypted,
             status, is_verified, created_at, updated_at, sync_status
