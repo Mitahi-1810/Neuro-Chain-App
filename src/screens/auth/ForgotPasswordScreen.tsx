@@ -9,8 +9,10 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { Mascot } from '../../components/Mascot';
 import { supabase } from '../../lib/supabase';
+import { useI18n } from '../../i18n/useI18n';
 
 const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -18,7 +20,7 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
 
   const handleReset = async () => {
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      Alert.alert(t('forgot_invalid_email_title'), t('forgot_invalid_email_msg'));
       return;
     }
     setLoading(true);
@@ -29,7 +31,7 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
       if (error) throw error;
       setSent(true);
     } catch (e: any) {
-      Alert.alert('Error', e.message || 'Could not send reset email. Please try again.');
+      Alert.alert(t('forgot_error_title'), e.message || t('forgot_error_msg'));
     } finally {
       setLoading(false);
     }
@@ -56,17 +58,15 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
 
           <View style={styles.header}>
             <Mascot kind="star" size="lg" />
-            <Text style={styles.eyebrow}>account recovery</Text>
-            <Text style={styles.title}>Reset your{'\n'}password.</Text>
-            <Text style={styles.subtitle}>
-              Enter the email address linked to your account and we'll send you a reset link.
-            </Text>
+            <Text style={styles.eyebrow}>{t('forgot_eyebrow')}</Text>
+            <Text style={styles.title}>{t('forgot_title')}</Text>
+            <Text style={styles.subtitle}>{t('forgot_subtitle')}</Text>
           </View>
 
           {!sent ? (
             <>
               <View style={styles.fieldGroup}>
-                <Text style={styles.label}>Email address</Text>
+                <Text style={styles.label}>{t('forgot_email_label')}</Text>
                 <View style={[styles.inputRow, focused && styles.inputFocused]}>
                   <MaterialCommunityIcons
                     name="email-outline" size={18}
@@ -87,7 +87,7 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
               </View>
 
               <CrayonButton
-                label="Send Reset Link"
+                label={t('forgot_send_link')}
                 onPress={handleReset}
                 loading={loading}
                 size="large"
@@ -98,14 +98,12 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
           ) : (
             <View style={styles.successCard}>
               <MaterialCommunityIcons name="email-check-outline" size={48} color={colors.success} />
-              <Text style={styles.successTitle}>Check your email</Text>
+              <Text style={styles.successTitle}>{t('forgot_success_title')}</Text>
               <Text style={styles.successDesc}>
-                We sent a password reset link to{' '}
-                <Text style={{ fontWeight: '700' }}>{email}</Text>.
-                {'\n\n'}The link expires in 60 minutes. Check your spam folder if you don't see it.
+                {t('forgot_success_desc', { email })}
               </Text>
               <CrayonButton
-                label="Back to Sign In"
+                label={t('forgot_back_signin')}
                 onPress={() => navigation.navigate('Login')}
                 variant="outline"
                 size="large"
@@ -122,7 +120,8 @@ const ForgotPasswordScreen: React.FC<{ navigation: any }> = ({ navigation }) => 
               activeOpacity={0.7}
             >
               <Text style={styles.backToLoginText}>
-                Remembered it? <Text style={styles.backToLoginLink}>Sign in</Text>
+                {t('forgot_remembered')}{' '}
+                <Text style={styles.backToLoginLink}>{t('forgot_sign_in')}</Text>
               </Text>
             </TouchableOpacity>
           )}

@@ -7,40 +7,34 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { LanguageToggle } from '../../components/LanguageToggle';
-
-interface RoleCard {
-  icon: string;
-  color: string;
-  bg: string;
-  title: string;
-  description: string;
-  onPress: () => void;
-}
+import { useI18n } from '../../i18n/useI18n';
 
 const RoleSelectScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const roles: RoleCard[] = [
+  const { t } = useI18n();
+
+  const roles = [
     {
       icon: 'account-heart-outline',
       color: colors.primary,
       bg: colors.primaryLight,
-      title: 'Parent / Guardian',
-      description: 'Track your child\'s therapy games, run screenings, and book specialist consultations.',
+      titleKey: 'role_parent_title' as const,
+      descKey: 'role_parent_desc' as const,
       onPress: () => navigation.navigate('SignUp', { role: 'PARENT' }),
     },
     {
       icon: 'stethoscope',
       color: '#0EA5E9',
       bg: '#E0F2FE',
-      title: 'Healthcare Professional',
-      description: 'Conduct telehealth sessions, generate AI-assisted SOAP notes, and manage your patient list.',
+      titleKey: 'role_specialist_title' as const,
+      descKey: 'role_specialist_desc' as const,
       onPress: () => navigation.navigate('SpecialistSignUp'),
     },
     {
       icon: 'hand-heart-outline',
       color: '#A855F7',
       bg: '#F3E8FF',
-      title: 'Caregiver / Support Worker',
-      description: 'Run daily therapy sessions assigned by the child\'s parent or guardian.',
+      titleKey: 'role_caregiver_title' as const,
+      descKey: 'role_caregiver_desc' as const,
       onPress: () => navigation.navigate('SignUp', { role: 'CAREGIVER' }),
     },
   ];
@@ -55,16 +49,14 @@ const RoleSelectScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           <LanguageToggle compact />
         </View>
 
-        <Text style={styles.eyebrow}>getting started</Text>
-        <Text style={styles.title}>Who are you?</Text>
-        <Text style={styles.subtitle}>
-          Choose your role so we can set up the right experience for you.
-        </Text>
+        <Text style={styles.eyebrow}>{t('role_eyebrow')}</Text>
+        <Text style={styles.title}>{t('role_title')}</Text>
+        <Text style={styles.subtitle}>{t('role_subtitle')}</Text>
 
         <View style={styles.cards}>
           {roles.map((r) => (
             <TouchableOpacity
-              key={r.title}
+              key={r.titleKey}
               style={styles.card}
               onPress={r.onPress}
               activeOpacity={0.88}
@@ -73,8 +65,8 @@ const RoleSelectScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
                 <MaterialCommunityIcons name={r.icon as any} size={28} color={r.color} />
               </View>
               <View style={styles.cardText}>
-                <Text style={styles.cardTitle}>{r.title}</Text>
-                <Text style={styles.cardDesc}>{r.description}</Text>
+                <Text style={styles.cardTitle}>{t(r.titleKey)}</Text>
+                <Text style={styles.cardDesc}>{t(r.descKey)}</Text>
               </View>
               <MaterialCommunityIcons name="chevron-right" size={20} color={colors.darkGrey} />
             </TouchableOpacity>
@@ -82,9 +74,9 @@ const RoleSelectScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
         </View>
 
         <View style={styles.loginRow}>
-          <Text style={styles.loginLabel}>Already have an account? </Text>
+          <Text style={styles.loginLabel}>{t('role_have_account')} </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.loginLink}>Sign in</Text>
+            <Text style={styles.loginLink}>{t('role_sign_in')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

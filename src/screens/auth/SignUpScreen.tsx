@@ -117,25 +117,22 @@ const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const validateInputs = (): boolean => {
     if (!fullName || fullName.trim().length < 2) {
-      Alert.alert('Invalid Name', 'Please enter your full name.');
+      Alert.alert(t('signup_name_empty_title'), t('signup_name_empty_msg'));
       return false;
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || !emailRegex.test(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      Alert.alert(t('signup_email_invalid_title'), t('signup_email_invalid_msg'));
       return false;
     }
     const hasUppercase = /[A-Z]/.test(password);
     const hasNumber = /\d/.test(password);
     if (!password || password.length < 8 || !hasUppercase || !hasNumber) {
-      Alert.alert(
-        'Weak Password',
-        'Password must be at least 8 characters and include an uppercase letter and a number.'
-      );
+      Alert.alert(t('signup_weak_password_title'), t('signup_password_weak_msg'));
       return false;
     }
     if (password !== confirmPassword) {
-      Alert.alert('Mismatch', 'Passwords do not match.');
+      Alert.alert(t('signup_passwords_mismatch_title'), t('signup_passwords_mismatch_msg'));
       return false;
     }
     return true;
@@ -147,11 +144,11 @@ const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
     try {
       await signup(email, password, fullName, role);
     } catch (error: any) {
-      let errorMessage = error.message || 'Check your internet or if email exists.';
+      let errorMessage = error.message || t('signup_failed_generic_msg');
       if (errorMessage.includes('rate limit')) {
-        errorMessage = 'Too many attempts. Please wait 5 minutes.';
+        errorMessage = t('signup_failed_rate_limit');
       }
-      Alert.alert('Sign Up Failed', errorMessage);
+      Alert.alert(t('signup_failed_title'), errorMessage);
     } finally {
       setLoading(false);
     }
@@ -184,9 +181,9 @@ const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
 
           <View style={styles.headerContainer}>
             <Mascot kind="rocket" size="lg" />
-            <Text style={styles.eyebrow}>let's get started</Text>
-            <Text style={styles.title}>Create your{'\n'}NeuroChain account.</Text>
-            <Text style={styles.subtitle}>It takes 30 seconds. Cancel anytime.</Text>
+            <Text style={styles.eyebrow}>{t('signup_eyebrow')}</Text>
+            <Text style={styles.title}>{t('signup_title_main')}{'\n'}{t('signup_title_sub')}</Text>
+            <Text style={styles.subtitle}>{t('signup_hero_subtitle')}</Text>
           </View>
 
           <View style={styles.formContainer}>
@@ -249,7 +246,7 @@ const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
                   />
                 ))}
                 <Text style={styles.strengthText}>
-                  {strength <= 1 ? 'Weak' : strength <= 2 ? 'Okay' : strength === 3 ? 'Strong' : 'Excellent'}
+                  {strength <= 1 ? t('signup_strength_weak') : strength <= 2 ? t('signup_strength_okay') : strength === 3 ? t('signup_strength_strong') : t('signup_strength_excellent')}
                 </Text>
               </View>
             )}
@@ -292,8 +289,8 @@ const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
               activeOpacity={0.7}
             >
               <Text style={styles.specialistLinkText}>
-                Are you a healthcare professional?{' '}
-                <Text style={styles.specialistLinkAccent}>Create specialist account</Text>
+                {t('signup_specialist_prompt')}{' '}
+                <Text style={styles.specialistLinkAccent}>{t('signup_specialist_link')}</Text>
               </Text>
             </TouchableOpacity>
           )}

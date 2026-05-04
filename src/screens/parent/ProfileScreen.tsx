@@ -16,8 +16,10 @@ import { CrayonCard } from '../../components/CrayonCard';
 import { Mascot } from '../../components/Mascot';
 import { AvatarBubble, SectionTitle } from '../../components/Decorations';
 import { ChildProfileModal } from '../../components/ChildProfileModal';
+import { useI18n } from '../../i18n/useI18n';
 
 const ProfileScreen: React.FC<any> = ({ navigation }) => {
+  const { t } = useI18n();
   const { user, logout } = useAuthStore();
   const { children, activeChild, setActiveChild, addChild } = useChildStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -100,7 +102,7 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.title}>My profile</Text>
+          <Text style={styles.title}>{t('profile_title')}</Text>
           <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
             <MaterialCommunityIcons name="cog-outline" size={20} color={colors.textDark} />
           </TouchableOpacity>
@@ -115,7 +117,7 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
               bg={colors.secondary}
             />
             <View style={{ flex: 1 }}>
-              <Text style={styles.idName}>{user?.full_name || 'Parent'}</Text>
+              <Text style={styles.idName}>{user?.full_name || t('profile_default_parent')}</Text>
               <Text style={styles.idEmail}>{user?.email}</Text>
               <TouchableOpacity
                 style={styles.idTier}
@@ -123,7 +125,7 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
                 activeOpacity={0.85}
               >
                 <Text style={styles.idTierText}>
-                  {tier} plan {tier !== 'PREMIUM' ? '· upgrade' : ''}
+                  {tier} plan {tier !== 'PREMIUM' ? t('profile_upgrade_btn') : ''}
                 </Text>
                 <MaterialCommunityIcons
                   name="arrow-right"
@@ -137,9 +139,9 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
 
         {/* Children */}
         <SectionTitle
-          title="My children"
+          title={t('profile_children_section')}
           action={{
-            label: '+ Add child',
+            label: t('profile_add_child_action'),
             onPress: () => setIsModalVisible(true),
           }}
         />
@@ -148,13 +150,13 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
           <CrayonCard padding={24} style={{ alignItems: 'center', marginBottom: 18 }}>
             <Mascot kind="puzzle" size="lg" />
             <Text style={[styles.emptyTitle, { marginTop: 14 }]}>
-              No children added yet
+              {t('profile_no_children_title')}
             </Text>
             <Text style={styles.emptySub}>
-              Add your child to start their personalized therapy plan.
+              {t('profile_no_children_desc')}
             </Text>
             <CrayonButton
-              label="Add a child"
+              label={t('profile_add_child_btn')}
               onPress={() => setIsModalVisible(true)}
               variant="primary"
               size="medium"
@@ -189,11 +191,11 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
                     >
                       {child.first_name}
                     </Text>
-                    <Text style={styles.childMeta}>{age} years old</Text>
+                    <Text style={styles.childMeta}>{t('profile_years_old', { age })}</Text>
                   </View>
                   {active ? (
                     <View style={styles.activePill}>
-                      <Text style={styles.activePillText}>Active</Text>
+                      <Text style={styles.activePillText}>{t('profile_active_pill')}</Text>
                     </View>
                   ) : (
                     <MaterialCommunityIcons
@@ -209,38 +211,38 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
         )}
 
         {/* Settings */}
-        <SectionTitle title="Account" />
+        <SectionTitle title={t('profile_account_section')} />
         <View style={styles.settingsCard}>
           <SettingRow
             icon="bell-outline"
-            label="Notifications"
-            sub="Daily reminders, streak nudges"
+            label={t('profile_notifications_label')}
+            sub={t('profile_notifications_sub')}
             onPress={() => {}}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="translate"
-            label="Language"
-            sub="English / বাংলা"
+            label={t('profile_language_label')}
+            sub={t('profile_language_sub')}
             onPress={() => {}}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="shield-check-outline"
-            label="Privacy"
-            sub="Vision AI runs on-device only"
+            label={t('profile_privacy_label')}
+            sub={t('profile_privacy_sub')}
             onPress={() => {}}
           />
           <View style={styles.divider} />
           <SettingRow
             icon="help-circle-outline"
-            label="Help & support"
+            label={t('profile_help_label')}
             onPress={() => {}}
           />
         </View>
 
         <CrayonButton
-          label="Log out"
+          label={t('profile_logout_btn')}
           onPress={handleLogout}
           variant="ghost"
           size="large"
@@ -248,7 +250,7 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
           style={{ marginTop: 20, marginBottom: 12 }}
         />
 
-        <Text style={styles.versionText}>NeuroChain · v3.0</Text>
+        <Text style={styles.versionText}>{t('profile_version_text')}</Text>
       </ScrollView>
 
       {isModalVisible && (

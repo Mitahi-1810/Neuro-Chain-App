@@ -32,8 +32,8 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       await login(email, password);
     } catch (error: any) {
       let msg = t('login_failed_message');
-      if (error.message?.includes('rate limit')) msg = 'Too many attempts. Please wait a few minutes.';
-      else if (error.message?.includes('Invalid login credentials')) msg = 'Incorrect email or password.';
+      if (error.message?.includes('rate limit')) msg = t('login_rate_limit');
+      else if (error.message?.includes('Invalid login credentials')) msg = t('login_wrong_creds');
       Alert.alert(t('login_failed_title'), msg);
     } finally {
       setLoading(false);
@@ -63,9 +63,9 @@ const LoginScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
 
           <View style={styles.header}>
             <Mascot kind="wave" size="lg" />
-            <Text style={styles.eyebrow}>welcome back</Text>
-            <Text style={styles.title}>Hi again,{'\n'}let's pick up where we left.</Text>
-            <Text style={styles.subtitle}>Sign in to continue your child's daily plan.</Text>
+            <Text style={styles.eyebrow}>{t('login_eyebrow')}</Text>
+            <Text style={styles.title}>{t('login_title_hi')}{'\n'}{t('login_title_sub')}</Text>
+            <Text style={styles.subtitle}>{t('login_hero_subtitle')}</Text>
           </View>
 
           <View style={styles.form}>

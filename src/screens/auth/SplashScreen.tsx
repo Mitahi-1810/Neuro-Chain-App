@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
+    
   },
   bgBlobOne: {
     position: 'absolute',
