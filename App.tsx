@@ -68,14 +68,19 @@ import ProfileScreen from "./src/screens/parent/ProfileScreen";
 import AIInsightsScreen from "./src/screens/parent/AIInsightsScreen";
 
 // Screener
-import AutismScreenerScreen from "./src/screens/screener/AutismScreenerScreen";
-import ScreenerResultsScreen from "./src/screens/screener/ScreenerResultsScreen";
-import AIScreeningScreen from "./src/screens/screener/AIScreeningScreen";
-import CSBSScreenerScreen from "./src/screens/screener/CSBSScreenerScreen";
-import QChatScreenerScreen from "./src/screens/screener/QChatScreenerScreen";
-import CastScreenerScreen from "./src/screens/screener/CastScreenerScreen";
-import OlderChildInfoScreen from "./src/screens/screener/OlderChildInfoScreen";
-import OlderChildArticleScreen from "./src/screens/screener/OlderChildArticleScreen";
+import AutismScreenerScreen from './src/screens/screener/AutismScreenerScreen';
+import ScreenerResultsScreen from './src/screens/screener/ScreenerResultsScreen';
+import AIScreeningScreen from './src/screens/screener/AIScreeningScreen';
+import CSBSScreenerScreen from './src/screens/screener/CSBSScreenerScreen';
+import QChatScreenerScreen from './src/screens/screener/QChatScreenerScreen';
+import CastScreenerScreen from './src/screens/screener/CastScreenerScreen';
+import OlderChildInfoScreen from './src/screens/screener/OlderChildInfoScreen';
+import OlderChildArticleScreen from './src/screens/screener/OlderChildArticleScreen';
+import VideoScreeningSetupScreen from './src/screens/screener/VideoScreeningSetupScreen';
+import TaskInstructionScreen from './src/screens/screener/TaskInstructionScreen';
+import TaskRecordingScreen from './src/screens/screener/TaskRecordingScreen';
+import TaskReviewScreen from './src/screens/screener/TaskReviewScreen';
+import BehavioralReportScreen from './src/screens/screener/BehavioralReportScreen';
 
 // Specialist Screens
 import SpecialistDashboardScreen from "./src/screens/specialist/SpecialistDashboardScreen";
@@ -300,18 +305,14 @@ function ParentStack() {
           component={ScreenerResultsScreen}
         />
         <Stack.Screen name="AIScreening" component={AIScreeningScreen} />
-        <Stack.Screen
-          name="SubscriptionUpgrade"
-          component={SubscriptionUpgradeScreen}
-        />
-        <Stack.Screen
-          name="TelehealthBooking"
-          component={TelehealthBookingScreen}
-        />
-        <Stack.Screen
-          name="CalendlyBooking"
-          component={CalendlyBookingScreen}
-        />
+        <Stack.Screen name="VideoScreeningSetup" component={VideoScreeningSetupScreen} />
+        <Stack.Screen name="TaskInstruction"     component={TaskInstructionScreen} />
+        <Stack.Screen name="TaskRecording"       component={TaskRecordingScreen} />
+        <Stack.Screen name="TaskReview"          component={TaskReviewScreen} />
+        <Stack.Screen name="BehavioralReport"    component={BehavioralReportScreen} />
+        <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
+        <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
+        <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />
       </Stack.Navigator>
     </>
   );

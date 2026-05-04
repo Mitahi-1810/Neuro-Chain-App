@@ -14,17 +14,20 @@ import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { Mascot } from '../../components/Mascot';
 import { HexBadge, StatPill, SectionTitle, AvatarBubble } from '../../components/Decorations';
+import { IconSymbol } from '../../components/IconSymbol';
 import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
 
-const SKILL_META: Record<string, { color: string; icon: string; emoji: string }> = {
-  'Motor Skills':       { color: '#FF6B6B', icon: 'hand-pointing-up', emoji: '🤸' },
-  'Eye Contact':        { color: '#4ECDC4', icon: 'eye-outline',      emoji: '👁️' },
-  'Emotion Recognition':{ color: '#FFB84D', icon: 'emoticon-outline', emoji: '😊' },
-  'Imitation':          { color: '#A78BFA', icon: 'mirror',           emoji: '🎭' },
-  'Categorization':     { color: '#F97316', icon: 'shape-outline',    emoji: '🗂️' },
-  'Auditory Processing':{ color: '#34D399', icon: 'ear-hearing',      emoji: '🎧' },
-  'Self Regulation':    { color: '#60A5FA', icon: 'meditation',       emoji: '🧘' },
-  'Social Narrative':   { color: '#F472B6', icon: 'book-open-variant',emoji: '📖' },
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+
+const SKILL_META: Record<string, { color: string; icon: IconName }> = {
+  'Motor Skills':       { color: '#FF6B6B', icon: 'hand-pointing-up' },
+  'Eye Contact':        { color: '#4ECDC4', icon: 'eye-outline' },
+  'Emotion Recognition':{ color: '#FFB84D', icon: 'emoticon-outline' },
+  'Imitation':          { color: '#A78BFA', icon: 'mirror' },
+  'Categorization':     { color: '#F97316', icon: 'shape-outline' },
+  'Auditory Processing':{ color: '#34D399', icon: 'ear-hearing' },
+  'Self Regulation':    { color: '#60A5FA', icon: 'meditation' },
+  'Social Narrative':   { color: '#F472B6', icon: 'book-open-variant' },
 };
 
 const GAME_SKILL_MAP: Record<string, string> = {
@@ -38,12 +41,20 @@ const GAME_SKILL_MAP: Record<string, string> = {
   story_builder: 'Social Narrative',
 };
 
-function levelFromXP(xp: number) {
-  if (xp >= 2000) return { name: 'Diamond', emoji: '💎', next: null,  current: xp, target: 2000 };
-  if (xp >= 1000) return { name: 'Platinum', emoji: '⭐', next: 2000, current: xp, target: 2000 };
-  if (xp >= 500)  return { name: 'Gold',     emoji: '🥇', next: 1000, current: xp, target: 1000 };
-  if (xp >= 200)  return { name: 'Silver',   emoji: '🥈', next: 500,  current: xp, target: 500 };
-  return            { name: 'Bronze',   emoji: '🥉', next: 200,  current: xp, target: 200 };
+type LevelMeta = {
+  name: string;
+  icon: IconName;
+  next: number | null;
+  current: number;
+  target: number;
+};
+
+function levelFromXP(xp: number): LevelMeta {
+  if (xp >= 2000) return { name: 'Diamond', icon: 'diamond-stone', next: null,  current: xp, target: 2000 };
+  if (xp >= 1000) return { name: 'Platinum', icon: 'star-circle', next: 2000, current: xp, target: 2000 };
+  if (xp >= 500)  return { name: 'Gold',     icon: 'medal', next: 1000, current: xp, target: 1000 };
+  if (xp >= 200)  return { name: 'Silver',   icon: 'medal-outline', next: 500,  current: xp, target: 500 };
+  return            { name: 'Bronze',   icon: 'medal-outline', next: 200,  current: xp, target: 200 };
 }
 
 function formatDate(iso: string) {
@@ -123,13 +134,13 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
   }, [childSessions]);
 
   // Earned vs locked badges
-  const earnedBadges = [
-    { key: 'first',     emoji: '🌟', label: 'First Steps',  color: colors.secondary, unlock: totalSessions >= 1 },
-    { key: 'streak3',   emoji: '🔥', label: '3-Day Streak', color: '#FB923C',        unlock: streak >= 3 },
-    { key: 'streak7',   emoji: '🏆', label: 'Week Hero',    color: colors.primary,   unlock: streak >= 7 },
-    { key: 'accurate',  emoji: '🎯', label: 'Sharp Shooter',color: colors.accent,    unlock: avgAccuracy >= 80 },
-    { key: 'explorer',  emoji: '🧭', label: 'Explorer',     color: colors.pink,      unlock: skillAccuracies.length >= 3 },
-    { key: 'master',    emoji: '👑', label: 'Skill Master', color: colors.secondaryDark, unlock: avgAccuracy >= 90 && totalSessions >= 20 },
+  const earnedBadges: Array<{ key: string; icon: IconName; label: string; color: string; unlock: boolean }> = [
+    { key: 'first',     icon: 'star-four-points', label: 'First Steps',  color: colors.secondary, unlock: totalSessions >= 1 },
+    { key: 'streak3',   icon: 'fire', label: '3-Day Streak', color: '#FB923C',        unlock: streak >= 3 },
+    { key: 'streak7',   icon: 'trophy', label: 'Week Hero',    color: colors.primary,   unlock: streak >= 7 },
+    { key: 'accurate',  icon: 'target', label: 'Sharp Shooter',color: colors.accent,    unlock: avgAccuracy >= 80 },
+    { key: 'explorer',  icon: 'compass-outline', label: 'Explorer',     color: colors.pink,      unlock: skillAccuracies.length >= 3 },
+    { key: 'master',    icon: 'crown-outline', label: 'Skill Master', color: colors.secondaryDark, unlock: avgAccuracy >= 90 && totalSessions >= 20 },
   ];
 
   const recentSessions = [...childSessions].reverse().slice(0, 20);
@@ -181,7 +192,7 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
               onPress={() => navigation.navigate('SubscriptionUpgrade')}
               activeOpacity={0.85}
             >
-              <Text style={{ fontSize: 12 }}>👑</Text>
+              <IconSymbol name="crown-outline" size={14} color={colors.secondaryDark} />
               <Text style={styles.upgradeChipText}>Premium</Text>
             </TouchableOpacity>
           )}
@@ -193,9 +204,10 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
             <View style={styles.levelRow}>
               <View style={{ flex: 1 }}>
                 <Text style={styles.levelEyebrow}>you reached</Text>
-                <Text style={styles.levelName}>
-                  {level.emoji} {level.name}
-                </Text>
+                <View style={styles.levelNameRow}>
+                  <IconSymbol name={level.icon} size={20} color={colors.textDark} />
+                  <Text style={styles.levelName}>{level.name}</Text>
+                </View>
                 <Text style={styles.levelXP}>
                   {xp} XP {level.next ? `· next at ${level.target}` : '· max level'}
                 </Text>
@@ -208,12 +220,12 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
           </CrayonCard>
 
           <View style={styles.statRow}>
-            <StatPill emoji="📊" label="Sessions"  value={totalSessions}     iconBg={colors.primaryLight} iconColor={colors.primary} />
-            <StatPill emoji="🎯" label="Avg score" value={`${avgAccuracy}%`} iconBg={colors.accentLight}  iconColor={colors.accentDark} />
+            <StatPill icon="chart-box-outline" label="Sessions"  value={totalSessions}     iconBg={colors.primaryLight} iconColor={colors.primary} />
+            <StatPill icon="target" label="Avg score" value={`${avgAccuracy}%`} iconBg={colors.accentLight}  iconColor={colors.accentDark} />
           </View>
           <View style={[styles.statRow, { marginTop: 8 }]}>
-            <StatPill emoji="⏱️" label="Minutes"  value={totalMinutes} iconBg="#FFE4ED"            iconColor={colors.pink} />
-            <StatPill emoji="🔥" label="Streak"   value={`${streak}d`} iconBg={colors.secondaryLight} iconColor={colors.secondaryDark} />
+            <StatPill icon="timer-outline" label="Minutes"  value={totalMinutes} iconBg="#FFE4ED"            iconColor={colors.pink} />
+            <StatPill icon="fire" label="Streak"   value={`${streak}d`} iconBg={colors.secondaryLight} iconColor={colors.secondaryDark} />
           </View>
         </View>
 
@@ -265,7 +277,7 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
                 {earnedBadges.slice(0, 4).map((b) => (
                   <HexBadge
                     key={b.key}
-                    emoji={b.emoji}
+                    icon={b.icon}
                     label={b.label}
                     color={b.color}
                     locked={!b.unlock}
@@ -279,7 +291,7 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
                 {earnedBadges.slice(4).map((b) => (
                   <HexBadge
                     key={b.key}
-                    emoji={b.emoji}
+                    icon={b.icon}
                     label={b.label}
                     color={b.color}
                     locked={!b.unlock}
@@ -294,11 +306,11 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
               {skillAccuracies.length > 0 ? (
                 <View style={{ gap: 10, marginBottom: 16 }}>
                   {skillAccuracies.map(({ skill, accuracy }) => {
-                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star', emoji: '✨' };
+                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star-four-points' as IconName };
                     return (
                       <View key={skill} style={styles.skillCard}>
                         <View style={[styles.skillEmoji, { backgroundColor: meta.color + '22' }]}>
-                          <Text style={{ fontSize: 18 }}>{meta.emoji}</Text>
+                          <MaterialCommunityIcons name={meta.icon} size={18} color={meta.color} />
                         </View>
                         <View style={{ flex: 1 }}>
                           <View style={styles.skillRowTop}>
@@ -363,7 +375,7 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
                 <View style={styles.historyCard}>
                   {recentSessions.map((session, i) => {
                     const skill = GAME_SKILL_MAP[session.game_id] || 'General';
-                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star', emoji: '✨' };
+                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star-four-points' as IconName };
                     return (
                       <View
                         key={session.id || i}
@@ -373,7 +385,7 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
                         ]}
                       >
                         <View style={[styles.historyDot, { backgroundColor: meta.color + '22' }]}>
-                          <Text style={{ fontSize: 16 }}>{meta.emoji}</Text>
+                          <MaterialCommunityIcons name={meta.icon} size={16} color={meta.color} />
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.historyTitle}>
@@ -493,6 +505,11 @@ const styles = StyleSheet.create({
     ...typography.h1,
     fontSize: 28,
     color: colors.textDark,
+  },
+  levelNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   levelXP: {
     ...typography.body,
