@@ -1,72 +1,99 @@
-import React, { useEffect } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet, Platform } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator, BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import React, { useEffect } from "react";
+import {
+  TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import {
+  createBottomTabNavigator,
+  BottomTabBarProps,
+} from "@react-navigation/bottom-tabs";
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
-import { useAuthStore, useUIStore, useChildStore, useGameStore } from './src/store/store';
-import { colors, radius, shadow } from './src/utils/colors';
-import { initDatabase } from './src/data/database';
-import { registerBackgroundSync, runManualSync } from './src/data/syncEngine';
-import * as ExpoSplashScreen from 'expo-splash-screen';
-import { useFonts, Inter_400Regular, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
-import { Poppins_400Regular, Poppins_600SemiBold, Poppins_700Bold, Poppins_800ExtraBold } from '@expo-google-fonts/poppins';
-import { typography } from './src/utils/typography';
+import {
+  useAuthStore,
+  useUIStore,
+  useChildStore,
+  useGameStore,
+} from "./src/store/store";
+import { colors, radius, shadow } from "./src/utils/colors";
+import { initDatabase } from "./src/data/database";
+import { registerBackgroundSync, runManualSync } from "./src/data/syncEngine";
+import * as ExpoSplashScreen from "expo-splash-screen";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
+import {
+  Poppins_400Regular,
+  Poppins_600SemiBold,
+  Poppins_700Bold,
+  Poppins_800ExtraBold,
+} from "@expo-google-fonts/poppins";
+import { typography } from "./src/utils/typography";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
 // Auth Screens
-import AuthSplashScreen from './src/screens/auth/SplashScreen';
-import WelcomeScreen from './src/screens/auth/WelcomeScreen';
-import LoginScreen from './src/screens/auth/LoginScreen';
-import SignUpScreen from './src/screens/auth/SignUpScreen';
-import RoleSelectScreen from './src/screens/auth/RoleSelectScreen';
-import SpecialistSignUpScreen from './src/screens/auth/SpecialistSignUpScreen';
-import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
+import AuthSplashScreen from "./src/screens/auth/SplashScreen";
+import WelcomeScreen from "./src/screens/auth/WelcomeScreen";
+import LoginScreen from "./src/screens/auth/LoginScreen";
+import SignUpScreen from "./src/screens/auth/SignUpScreen";
+import RoleSelectScreen from "./src/screens/auth/RoleSelectScreen";
+import SpecialistSignUpScreen from "./src/screens/auth/SpecialistSignUpScreen";
+import ForgotPasswordScreen from "./src/screens/auth/ForgotPasswordScreen";
 
 // Onboarding
-import ParentOnboardingScreen from './src/screens/onboarding/ParentOnboardingScreen';
+import ParentOnboardingScreen from "./src/screens/onboarding/ParentOnboardingScreen";
 
 // Parent Screens
-import ParentHomeScreen from './src/screens/parent/ParentHomeScreen';
-import GamesGalleryScreen from './src/screens/parent/GamesGalleryScreen';
-import GameRunnerScreen from './src/screens/parent/GameRunnerScreen';
-import ReportsScreen from './src/screens/parent/ReportsScreen';
-import StoreScreen from './src/screens/parent/StoreScreen';
-import SubscriptionUpgradeScreen from './src/screens/parent/SubscriptionUpgradeScreen';
-import ProfileScreen from './src/screens/parent/ProfileScreen';
-import AIInsightsScreen from './src/screens/parent/AIInsightsScreen';
+import ParentHomeScreen from "./src/screens/parent/ParentHomeScreen";
+import GamesGalleryScreen from "./src/screens/parent/GamesGalleryScreen";
+import GameRunnerScreen from "./src/screens/parent/GameRunnerScreen";
+import ReportsScreen from "./src/screens/parent/ReportsScreen";
+import StoreScreen from "./src/screens/parent/StoreScreen";
+import SubscriptionUpgradeScreen from "./src/screens/parent/SubscriptionUpgradeScreen";
+import ProfileScreen from "./src/screens/parent/ProfileScreen";
+import AIInsightsScreen from "./src/screens/parent/AIInsightsScreen";
 
 // Screener
-import AutismScreenerScreen from './src/screens/screener/AutismScreenerScreen';
-import ScreenerResultsScreen from './src/screens/screener/ScreenerResultsScreen';
-import AIScreeningScreen from './src/screens/screener/AIScreeningScreen';
-import CSBSScreenerScreen from './src/screens/screener/CSBSScreenerScreen';
-import QChatScreenerScreen from './src/screens/screener/QChatScreenerScreen';
-import CastScreenerScreen from './src/screens/screener/CastScreenerScreen';
-import OlderChildInfoScreen from './src/screens/screener/OlderChildInfoScreen';
-import OlderChildArticleScreen from './src/screens/screener/OlderChildArticleScreen';
+import AutismScreenerScreen from "./src/screens/screener/AutismScreenerScreen";
+import ScreenerResultsScreen from "./src/screens/screener/ScreenerResultsScreen";
+import AIScreeningScreen from "./src/screens/screener/AIScreeningScreen";
+import CSBSScreenerScreen from "./src/screens/screener/CSBSScreenerScreen";
+import QChatScreenerScreen from "./src/screens/screener/QChatScreenerScreen";
+import CastScreenerScreen from "./src/screens/screener/CastScreenerScreen";
+import OlderChildInfoScreen from "./src/screens/screener/OlderChildInfoScreen";
+import OlderChildArticleScreen from "./src/screens/screener/OlderChildArticleScreen";
 
 // Specialist Screens
-import SpecialistDashboardScreen from './src/screens/specialist/SpecialistDashboardScreen';
-import TelehealthSessionScreen from './src/screens/specialist/TelehealthSessionScreen';
-import SoapNoteGeneratorScreen from './src/screens/specialist/SoapNoteGeneratorScreen';
-import SpecialistProfileScreen from './src/screens/specialist/SpecialistProfileScreen';
-import SpecialistCalendarScreen from './src/screens/specialist/SpecialistCalendarScreen';
-import SpecialistEarningsScreen from './src/screens/specialist/SpecialistEarningsScreen';
-import SpecialistPatientScreen from './src/screens/specialist/SpecialistPatientScreen';
+import SpecialistDashboardScreen from "./src/screens/specialist/SpecialistDashboardScreen";
+import TelehealthSessionScreen from "./src/screens/specialist/TelehealthSessionScreen";
+import SoapNoteGeneratorScreen from "./src/screens/specialist/SoapNoteGeneratorScreen";
+import SpecialistProfileScreen from "./src/screens/specialist/SpecialistProfileScreen";
+import SpecialistCalendarScreen from "./src/screens/specialist/SpecialistCalendarScreen";
+import SpecialistEarningsScreen from "./src/screens/specialist/SpecialistEarningsScreen";
+import SpecialistPatientScreen from "./src/screens/specialist/SpecialistPatientScreen";
 
 // Caregiver
-import CaregiverHomeScreen from './src/screens/caregiver/CaregiverHomeScreen';
+import CaregiverHomeScreen from "./src/screens/caregiver/CaregiverHomeScreen";
 
 // Telehealth
-import TelehealthBookingScreen from './src/screens/telehealth/TelehealthBookingScreen';
-import CalendlyBookingScreen from './src/screens/telehealth/CalendlyBookingScreen';
+import TelehealthBookingScreen from "./src/screens/telehealth/TelehealthBookingScreen";
+import CalendlyBookingScreen from "./src/screens/telehealth/CalendlyBookingScreen";
 
-import { ChildProfileGate } from './src/components/ChildProfileGate';
+import { ChildProfileGate } from "./src/components/ChildProfileGate";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -81,7 +108,10 @@ function AuthStack() {
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="RoleSelect" component={RoleSelectScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="SpecialistSignUp" component={SpecialistSignUpScreen} />
+      <Stack.Screen
+        name="SpecialistSignUp"
+        component={SpecialistSignUpScreen}
+      />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </Stack.Navigator>
@@ -91,8 +121,13 @@ function AuthStack() {
 // ─── Onboarding Stack (new parents only) ───────────────────────────────────────
 function OnboardingStack() {
   return (
-    <Stack.Navigator screenOptions={{ ...screenOptions, gestureEnabled: false }}>
-      <Stack.Screen name="ParentOnboarding" component={ParentOnboardingScreen} />
+    <Stack.Navigator
+      screenOptions={{ ...screenOptions, gestureEnabled: false }}
+    >
+      <Stack.Screen
+        name="ParentOnboarding"
+        component={ParentOnboardingScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -100,20 +135,21 @@ function OnboardingStack() {
 // ─── Floating tab bar ─────────────────────────────────────────────────────────
 function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const { user } = useAuthStore();
-  const tier = user?.tier_level || 'FREE';
-  const isFree = tier === 'FREE';
+  const tier = user?.tier_level || "FREE";
+  const isFree = tier === "FREE";
 
   const getIcon = (routeName: string, focused: boolean): string => {
-    if (routeName === 'Home') return focused ? 'home' : 'home-outline';
-    if (routeName === 'Games') return focused ? 'puzzle' : 'puzzle-outline';
-    if (routeName === 'Reports') return isFree ? 'lock-outline' : 'chart-line';
-    if (routeName === 'Store') return focused ? 'tag' : 'tag-outline';
-    if (routeName === 'Insights') return 'brain';
-    if (routeName === 'Profile') return focused ? 'account-circle' : 'account-circle-outline';
-    return 'home-outline';
+    if (routeName === "Home") return focused ? "home" : "home-outline";
+    if (routeName === "Games") return focused ? "puzzle" : "puzzle-outline";
+    if (routeName === "Reports") return isFree ? "lock-outline" : "chart-line";
+    if (routeName === "Store") return focused ? "tag" : "tag-outline";
+    if (routeName === "Insights") return "brain";
+    if (routeName === "Profile")
+      return focused ? "account-circle" : "account-circle-outline";
+    return "home-outline";
   };
 
-  const isLocked = (routeName: string) => isFree && routeName === 'Reports';
+  const isLocked = (routeName: string) => isFree && routeName === "Reports";
 
   return (
     <View pointerEvents="box-none" style={tabStyles.wrapper}>
@@ -121,13 +157,16 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
           const { options } = descriptors[route.key];
-          const label = typeof options.tabBarLabel === 'string' ? options.tabBarLabel : route.name;
+          const label =
+            typeof options.tabBarLabel === "string"
+              ? options.tabBarLabel
+              : route.name;
           const locked = isLocked(route.name);
           const iconName = getIcon(route.name, isFocused);
 
           const onPress = () => {
             const event = navigation.emit({
-              type: 'tabPress',
+              type: "tabPress",
               target: route.key,
               canPreventDefault: true,
             });
@@ -149,10 +188,18 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               <MaterialCommunityIcons
                 name={iconName as any}
                 size={22}
-                color={locked ? colors.darkGrey : isFocused ? colors.white : colors.textBody}
+                color={
+                  locked
+                    ? colors.darkGrey
+                    : isFocused
+                      ? colors.white
+                      : colors.textBody
+                }
               />
               {isFocused && (
-                <Text style={tabStyles.tabLabel} numberOfLines={1}>{label}</Text>
+                <Text style={tabStyles.tabLabel} numberOfLines={1}>
+                  {label}
+                </Text>
               )}
             </TouchableOpacity>
           );
@@ -207,8 +254,8 @@ const tabStyles = StyleSheet.create({
 // ─── Parent Tabs ───────────────────────────────────────────────────────────────
 function ParentTabs() {
   const { user } = useAuthStore();
-  const tier = user?.tier_level || 'FREE';
-  const isPremium = tier === 'PREMIUM';
+  const tier = user?.tier_level || "FREE";
+  const isPremium = tier === "PREMIUM";
 
   return (
     <Tab.Navigator
@@ -220,7 +267,11 @@ function ParentTabs() {
       <Tab.Screen name="Reports" component={ReportsScreen} />
       <Tab.Screen name="Store" component={StoreScreen} />
       {isPremium && (
-        <Tab.Screen name="Insights" component={AIInsightsScreen} options={{ tabBarLabel: 'AI' }} />
+        <Tab.Screen
+          name="Insights"
+          component={AIInsightsScreen}
+          options={{ tabBarLabel: "AI" }}
+        />
       )}
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -236,16 +287,31 @@ function ParentStack() {
         <Stack.Screen name="ParentTabs" component={ParentTabs} />
         <Stack.Screen name="GameRunner" component={GameRunnerScreen} />
         <Stack.Screen name="AutismScreener" component={AutismScreenerScreen} />
-  <Stack.Screen name="CSBSScreener" component={CSBSScreenerScreen} />
-  <Stack.Screen name="QChatScreener" component={QChatScreenerScreen} />
-  <Stack.Screen name="CastScreener" component={CastScreenerScreen} />
-  <Stack.Screen name="OlderChildInfo" component={OlderChildInfoScreen} />
-  <Stack.Screen name="OlderChildArticle" component={OlderChildArticleScreen} />
-        <Stack.Screen name="ScreenerResults" component={ScreenerResultsScreen} />
+        <Stack.Screen name="CSBSScreener" component={CSBSScreenerScreen} />
+        <Stack.Screen name="QChatScreener" component={QChatScreenerScreen} />
+        <Stack.Screen name="CastScreener" component={CastScreenerScreen} />
+        <Stack.Screen name="OlderChildInfo" component={OlderChildInfoScreen} />
+        <Stack.Screen
+          name="OlderChildArticle"
+          component={OlderChildArticleScreen}
+        />
+        <Stack.Screen
+          name="ScreenerResults"
+          component={ScreenerResultsScreen}
+        />
         <Stack.Screen name="AIScreening" component={AIScreeningScreen} />
-        <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
-        <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
-        <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />
+        <Stack.Screen
+          name="SubscriptionUpgrade"
+          component={SubscriptionUpgradeScreen}
+        />
+        <Stack.Screen
+          name="TelehealthBooking"
+          component={TelehealthBookingScreen}
+        />
+        <Stack.Screen
+          name="CalendlyBooking"
+          component={CalendlyBookingScreen}
+        />
       </Stack.Navigator>
     </>
   );
@@ -257,13 +323,34 @@ function ParentStack() {
 function SpecialistStack() {
   return (
     <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name="SpecialistDashboard" component={SpecialistDashboardScreen} />
-      <Stack.Screen name="SpecialistProfile" component={SpecialistProfileScreen} />
-      <Stack.Screen name="SpecialistCalendar" component={SpecialistCalendarScreen} />
-      <Stack.Screen name="SpecialistEarnings" component={SpecialistEarningsScreen} />
-      <Stack.Screen name="SpecialistPatient" component={SpecialistPatientScreen} />
-      <Stack.Screen name="TelehealthSession" component={TelehealthSessionScreen} />
-      <Stack.Screen name="SoapNoteGenerator" component={SoapNoteGeneratorScreen} />
+      <Stack.Screen
+        name="SpecialistDashboard"
+        component={SpecialistDashboardScreen}
+      />
+      <Stack.Screen
+        name="SpecialistProfile"
+        component={SpecialistProfileScreen}
+      />
+      <Stack.Screen
+        name="SpecialistCalendar"
+        component={SpecialistCalendarScreen}
+      />
+      <Stack.Screen
+        name="SpecialistEarnings"
+        component={SpecialistEarningsScreen}
+      />
+      <Stack.Screen
+        name="SpecialistPatient"
+        component={SpecialistPatientScreen}
+      />
+      <Stack.Screen
+        name="TelehealthSession"
+        component={TelehealthSessionScreen}
+      />
+      <Stack.Screen
+        name="SoapNoteGenerator"
+        component={SoapNoteGeneratorScreen}
+      />
     </Stack.Navigator>
   );
 }
@@ -285,8 +372,8 @@ function RootNavigator() {
 
   if (!user) return <AuthStack />;
 
-  if (user.role === 'SPECIALIST') return <SpecialistStack />;
-  if (user.role === 'CAREGIVER') return <CaregiverStack />;
+  if (user.role === "SPECIALIST") return <SpecialistStack />;
+  if (user.role === "CAREGIVER") return <CaregiverStack />;
 
   // PARENT: require onboarding before home
   if (!onboardingComplete) return <OnboardingStack />;
@@ -311,13 +398,13 @@ export default function App() {
   const { hydrateLocale, hydrateOnboardingStatus } = useUIStore();
 
   const [fontsLoaded] = useFonts({
-    'Inter': Inter_400Regular,
-    'Inter-SemiBold': Inter_600SemiBold,
-    'Inter-Bold': Inter_700Bold,
-    'Poppins': Poppins_400Regular,
-    'Poppins-SemiBold': Poppins_600SemiBold,
-    'Poppins-Bold': Poppins_700Bold,
-    'Poppins-ExtraBold': Poppins_800ExtraBold,
+    Inter: Inter_400Regular,
+    "Inter-SemiBold": Inter_600SemiBold,
+    "Inter-Bold": Inter_700Bold,
+    Poppins: Poppins_400Regular,
+    "Poppins-SemiBold": Poppins_600SemiBold,
+    "Poppins-Bold": Poppins_700Bold,
+    "Poppins-ExtraBold": Poppins_800ExtraBold,
   });
 
   useEffect(() => {
@@ -339,7 +426,7 @@ export default function App() {
           }
         }
       } catch (e) {
-        console.error('Init error', e);
+        console.error("Init error", e);
       } finally {
         if (fontsLoaded) {
           await ExpoSplashScreen.hideAsync();
