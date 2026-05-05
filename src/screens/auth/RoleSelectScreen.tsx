@@ -29,14 +29,6 @@ const RoleSelectScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
       descKey: 'role_specialist_desc' as const,
       onPress: () => navigation.navigate('SpecialistSignUp'),
     },
-    {
-      icon: 'hand-heart-outline',
-      color: '#A855F7',
-      bg: '#F3E8FF',
-      titleKey: 'role_caregiver_title' as const,
-      descKey: 'role_caregiver_desc' as const,
-      onPress: () => navigation.navigate('SignUp', { role: 'CAREGIVER' }),
-    },
   ];
 
   return (

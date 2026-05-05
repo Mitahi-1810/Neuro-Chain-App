@@ -4,7 +4,7 @@
 
 export type TierLevel = 'FREE' | 'BASIC' | 'PREMIUM';
 export type Locale = 'en' | 'bn';
-export type UserRole = 'PARENT' | 'SPECIALIST' | 'CAREGIVER' | 'ADMIN';
+export type UserRole = 'PARENT' | 'SPECIALIST' | 'ADMIN';
 export type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH';
 
 export interface User {
@@ -139,15 +139,6 @@ export interface SOAPNote {
   signed_at?: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface CaregiverAssignment {
-  id: string;
-  caregiver_id: string;
-  child_id: string;
-  assigned_by_parent_id: string;
-  is_active: boolean;
-  created_at: string;
 }
 
 export interface ScreenerQuestion {

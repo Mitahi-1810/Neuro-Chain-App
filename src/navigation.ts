@@ -3,7 +3,7 @@ export type RootStackParamList = {
   Welcome: undefined;
   RoleSelect: undefined;
   Login: undefined;
-  SignUp: { role?: 'PARENT' | 'CAREGIVER' };
+  SignUp: { role?: 'PARENT' };
   SpecialistSignUp: undefined;
   ForgotPassword: undefined;
   ParentOnboarding: undefined;

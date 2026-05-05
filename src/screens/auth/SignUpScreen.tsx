@@ -93,7 +93,7 @@ const SignUpField: React.FC<{
 
 const SignUpScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useI18n();
-  const role = (route?.params?.role as 'PARENT' | 'CAREGIVER') || 'PARENT';
+  const role = (route?.params?.role as 'PARENT') || 'PARENT';
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

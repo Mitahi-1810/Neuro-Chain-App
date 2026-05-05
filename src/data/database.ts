@@ -18,7 +18,7 @@ export const initDatabase = async () => {
       id TEXT PRIMARY KEY,
       email TEXT UNIQUE,
       full_name TEXT,
-      role TEXT CHECK(role IN ('PARENT', 'SPECIALIST', 'CAREGIVER')),
+      role TEXT CHECK(role IN ('PARENT', 'SPECIALIST')),
       tier_level TEXT CHECK(tier_level IN ('FREE', 'BASIC', 'PREMIUM')),
       created_at TEXT,
       updated_at TEXT,

@@ -38,8 +38,6 @@ export const translations = {
     role_parent_desc: "Track your child's therapy games, run screenings, and book specialist consultations.",
     role_specialist_title: 'Healthcare Professional',
     role_specialist_desc: 'Conduct telehealth sessions, generate AI-assisted SOAP notes, and manage your patient list.',
-    role_caregiver_title: 'Caregiver / Support Worker',
-    role_caregiver_desc: "Run daily therapy sessions assigned by the child's parent or guardian.",
     role_have_account: 'Already have an account?',
     role_sign_in: 'Sign in',
 
@@ -277,10 +275,6 @@ export const translations = {
     specialist_todays_appointments: "Today's Appointments",
     specialist_join_call: 'Join Call',
     specialist_view_patient: 'View Patient Data',
-
-    // ─── Caregiver ────────────────────────────────────────────────────────────
-    caregiver_today: "Today's Mission",
-    caregiver_child: 'Child: {name}',
 
     // ─── Tiers ────────────────────────────────────────────────────────────────
     tier_free: 'Free',
@@ -629,10 +623,6 @@ export const translations = {
     calendly_success_desc: 'Your appointment request has been sent. The specialist will confirm shortly. Check your email for details.',
     calendly_back_home: 'Back to Home',
 
-    // ─── Caregiver Home Screen (extra) ────────────────────────────────────────
-    caregiver_completed: 'Completed',
-    caregiver_start_activity: 'Start activity',
-
     // ─── Specialist Dashboard (extra) ─────────────────────────────────────────
     specialist_loading: 'Loading dashboard…',
     specialist_status_active: 'Active',
@@ -794,8 +784,6 @@ export const translations = {
     role_parent_desc: 'শিশুর থেরাপি গেম ট্র্যাক করুন, স্ক্রিনিং করুন ও বিশেষজ্ঞ বুক করুন।',
     role_specialist_title: 'স্বাস্থ্যসেবা পেশাদার',
     role_specialist_desc: 'টেলিহেলথ সেশন পরিচালনা করুন, এআই-সহ SOAP নোট তৈরি করুন ও রোগীর তালিকা সামলান।',
-    role_caregiver_title: 'কেয়ারগিভার / সহায়তাকারী',
-    role_caregiver_desc: 'শিশুর অভিভাবকের দেওয়া দৈনিক থেরাপি সেশন পরিচালনা করুন।',
     role_have_account: 'ইতিমধ্যে অ্যাকাউন্ট আছে?',
     role_sign_in: 'সাইন ইন',
 
@@ -1034,9 +1022,6 @@ export const translations = {
     specialist_join_call: 'কল জয়েন করুন',
     specialist_view_patient: 'পেশেন্ট ডেটা দেখুন',
 
-    // ─── Caregiver ────────────────────────────────────────────────────────────
-    caregiver_today: 'আজকের মিশন',
-    caregiver_child: 'শিশু: {name}',
 
     // ─── Tiers ────────────────────────────────────────────────────────────────
     tier_free: 'ফ্রি',
@@ -1384,10 +1369,6 @@ export const translations = {
     calendly_success_title: 'বুকিং অনুরোধ!',
     calendly_success_desc: 'আপনার অ্যাপয়েন্টমেন্ট অনুরোধ পাঠানো হয়েছে। বিশেষজ্ঞ শীঘ্রই নিশ্চিত করবেন। বিবরণের জন্য আপনার ইমেইল চেক করুন।',
     calendly_back_home: 'হোমে ফিরুন',
-
-    // ─── Caregiver Home Screen (extra) ────────────────────────────────────────
-    caregiver_completed: 'সম্পন্ন',
-    caregiver_start_activity: 'কার্যকলাপ শুরু করুন',
 
     // ─── Specialist Dashboard (extra) ─────────────────────────────────────────
     specialist_loading: 'ড্যাশবোর্ড লোড করা হচ্ছে…',

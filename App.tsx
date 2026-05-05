@@ -92,9 +92,6 @@ import SpecialistCalendarScreen from "./src/screens/specialist/SpecialistCalenda
 import SpecialistEarningsScreen from "./src/screens/specialist/SpecialistEarningsScreen";
 import SpecialistPatientScreen from "./src/screens/specialist/SpecialistPatientScreen";
 
-// Caregiver
-import CaregiverHomeScreen from "./src/screens/caregiver/CaregiverHomeScreen";
-
 // Telehealth
 import TelehealthBookingScreen from "./src/screens/telehealth/TelehealthBookingScreen";
 import CalendlyBookingScreen from "./src/screens/telehealth/CalendlyBookingScreen";
@@ -342,16 +339,6 @@ function SpecialistStack() {
   );
 }
 
-// ─── Caregiver Stack ──────────────────────────────────────────────────────────
-function CaregiverStack() {
-  return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name="CaregiverHome" component={CaregiverHomeScreen} />
-      <Stack.Screen name="GameRunner" component={GameRunnerScreen} />
-    </Stack.Navigator>
-  );
-}
-
 // ─── Root Navigator ────────────────────────────────────────────────────────────
 function RootNavigator() {
   const { user } = useAuthStore();
@@ -360,7 +347,6 @@ function RootNavigator() {
   if (!user) return <AuthStack />;
 
   if (user.role === "SPECIALIST") return <SpecialistStack />;
-  if (user.role === "CAREGIVER") return <CaregiverStack />;
 
   // PARENT: require onboarding before home
   if (!onboardingComplete) return <OnboardingStack />;
