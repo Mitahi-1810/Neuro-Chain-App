@@ -24,7 +24,8 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { TASKS } from '../../data/taskDefinitions';
-import { processTaskVideo, TaskAnalysisResult } from '../../services/geminiVideoAnalysis';
+import { TaskAnalysisResult } from '../../services/geminiVideoAnalysis';
+import { processTaskVideoViaBackend } from '../../services/backendAnalysis';
 import { screeningSession } from '../../store/screeningSession';
 import { useChildStore } from '../../store/store';
 
@@ -65,8 +66,8 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
     setAnalysisState('uploading');
     setErrorText(null);
     try {
-      const res = await withTimeout(processTaskVideo(videoUri, task, activeChild), 180000);
-      setResult(res);
+      const res = await withTimeout(processTaskVideoViaBackend(videoUri, task, activeChild), 180000);
+      setResult(res as TaskAnalysisResult);
       setAnalysisState('done');
     } catch (e) {
       console.warn('Gemini analysis failed:', e);
@@ -115,8 +116,8 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [taskIndex, navigation]);
 
   const stateLabel = {
-  uploading: 'Uploading & processing video…',
-  analysing: 'Analysing behaviour…',
+    uploading: 'Uploading to server & analysing…',
+    analysing: 'Analysing behaviour…',
     done:      'Analysis complete',
     failed:    'Analysis unavailable',
   }[analysisState];
@@ -177,7 +178,7 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
           {analysisState === 'uploading' && (
             <Text style={styles.uploadNote}>
-              This runs while you review the video — usually finished before you are.
+              Video is being sent to the server for analysis. This usually finishes while you review.
             </Text>
           )}
         </CrayonCard>

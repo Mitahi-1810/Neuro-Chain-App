@@ -1,319 +1,260 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View,
+  SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View,
 } from 'react-native';
-import { CameraView, useCameraPermissions, useMicrophonePermissions } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors, radius } from '../../utils/colors';
+import { colors, radius, shadow } from '../../utils/colors';
+import { typography } from '../../utils/typography';
+import { CrayonButton } from '../../components/CrayonButton';
+import { CrayonCard } from '../../components/CrayonCard';
 import { TASKS } from '../../data/taskDefinitions';
-
-const { width: SW } = Dimensions.get('window');
-
-// Cue appears at cueAt seconds, then again at cueAt+15 and cueAt+30
-const CUE_OFFSETS = [0, 15, 30];
 
 interface Props { navigation: any; route: any; }
 
+const TASK_ICONS: Record<string, string> = {
+  name_response:    'account-voice',
+  free_play:        'toy-brick-outline',
+  face_interaction: 'emoticon-happy-outline',
+  joint_attention:  'gesture-tap-hold',
+};
+
 const TaskRecordingScreen: React.FC<Props> = ({ navigation, route }) => {
   const { taskIndex } = route.params as { taskIndex: number };
-  const task          = TASKS[taskIndex];
+  const task = TASKS[taskIndex];
 
-  const [camPerm,  requestCam]  = useCameraPermissions();
-  const [micPerm,  requestMic]  = useMicrophonePermissions();
-  const [ready,    setReady]    = useState(false);
-  const [recording,setRecording]= useState(false);
-  const [elapsed,  setElapsed]  = useState(0);
-  const [showCue,  setShowCue]  = useState(false);
+  const [videoUri,  setVideoUri]  = useState<string | null>(null);
+  const [videoName, setVideoName] = useState<string | null>(null);
+  const [picking,   setPicking]   = useState(false);
 
-  const cameraRef        = useRef<CameraView>(null);
-  const recordingPromise = useRef<Promise<{ uri: string }> | null>(null);
-  const elapsedRef       = useRef(0);
-  const cueOpacity       = useRef(new Animated.Value(0)).current;
-  const recordDot        = useRef(new Animated.Value(1)).current;
-
-  // Permissions
-  useEffect(() => {
-    (async () => {
-      if (!camPerm?.granted) await requestCam();
-      if (!micPerm?.granted) await requestMic();
-      setReady(true);
-    })();
-  }, []);
-
-  // Pulse the record dot
-  useEffect(() => {
-    if (!recording) return;
-    const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(recordDot, { toValue: 0.3, duration: 600, useNativeDriver: true }),
-        Animated.timing(recordDot, { toValue: 1,   duration: 600, useNativeDriver: true }),
-      ]),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [recording]);
-
-  // Cue flash animation
-  const flashCue = useCallback(() => {
-    setShowCue(true);
-    Animated.sequence([
-      Animated.timing(cueOpacity, { toValue: 1,   duration: 200, useNativeDriver: true }),
-      Animated.delay(2500),
-      Animated.timing(cueOpacity, { toValue: 0,   duration: 400, useNativeDriver: true }),
-    ]).start(() => setShowCue(false));
-  }, []);
-
-  // Timer + cue triggers
-  useEffect(() => {
-    if (!recording) return;
-    elapsedRef.current = 0;
-
-    const interval = setInterval(() => {
-      elapsedRef.current += 1;
-      setElapsed(elapsedRef.current);
-
-      // Fire cue for name_response task at cueAt, cueAt+15, cueAt+30
-      if (task.cueAt !== undefined) {
-        if (CUE_OFFSETS.some(o => elapsedRef.current === task.cueAt! + o)) {
-          flashCue();
-        }
+  const pickVideo = async () => {
+    setPicking(true);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        allowsEditing: false,
+        quality: 1,
+      });
+      if (!result.canceled && result.assets[0]) {
+        setVideoUri(result.assets[0].uri);
+        setVideoName(result.assets[0].fileName ?? 'Selected video');
       }
-
-      // Auto-stop at task duration
-      if (elapsedRef.current >= task.duration) {
-        clearInterval(interval);
-        stopRecording();
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [recording]);
-
-  const startRecording = async () => {
-    if (!cameraRef.current) return;
-    setElapsed(0);
-    setRecording(true);
-    recordingPromise.current = cameraRef.current.recordAsync({
-      maxDuration: task.duration + 5,
-    }) as Promise<{ uri: string }>;
+    } finally {
+      setPicking(false);
+    }
   };
 
-  const stopRecording = useCallback(async () => {
-    if (!cameraRef.current || !recordingPromise.current) return;
-    cameraRef.current.stopRecording();
-    try {
-      const result = await recordingPromise.current;
-      setRecording(false);
-      navigation.navigate('TaskReview', {
-        taskIndex,
-        videoUri: result?.uri ?? '',
-      });
-    } catch {
-      setRecording(false);
-      navigation.navigate('TaskReview', { taskIndex, videoUri: '' });
-    }
-  }, [taskIndex, navigation]);
-
-  const timeLeft   = task.duration - elapsed;
-  const progress   = Math.min(1, elapsed / task.duration);
-  const canStop    = elapsed >= 10;
-
-  if (!ready || !camPerm?.granted) {
-    return (
-      <View style={styles.permContainer}>
-        <MaterialCommunityIcons name="camera-off" size={48} color={colors.textMuted} />
-        <Text style={styles.permText}>Camera and microphone access is required for video recording.</Text>
-      </View>
-    );
-  }
+  const proceed = () => {
+    navigation.navigate('TaskReview', { taskIndex, videoUri: videoUri ?? '' });
+  };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
 
-      {/* Full-screen camera — back-facing records the child */}
-      <CameraView
-        ref={cameraRef}
-        style={StyleSheet.absoluteFill}
-        facing="back"
-        mode="video"
-        videoQuality="480p"
-      />
+      {/* Accent strip */}
+      <View style={[styles.strip, { backgroundColor: task.accentColor }]} />
 
-      {/* Dark overlay gradient at top */}
-      <View style={styles.topOverlay}>
-        <View style={styles.hud}>
-          {/* Task label */}
-          <View style={styles.taskBadge}>
-            <Text style={styles.taskBadgeText}>
-              Task {taskIndex + 1} · {task.title}
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <View style={[styles.iconBadge, { backgroundColor: task.accentColor + '22' }]}>
+            <MaterialCommunityIcons
+              name={TASK_ICONS[task.type] as any}
+              size={28}
+              color={task.accentColor}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.taskTitle, { color: task.accentColor }]}>{task.title}</Text>
+            <Text style={styles.taskSubtitle}>{task.subtitle}</Text>
+          </View>
+          <View style={[styles.durationBadge, { backgroundColor: task.accentColor + '22' }]}>
+            <Text style={[styles.durationText, { color: task.accentColor }]}>
+              {task.duration}s
             </Text>
           </View>
-
-          {/* Record indicator */}
-          {recording && (
-            <View style={styles.recRow}>
-              <Animated.View style={[styles.recDot, { opacity: recordDot }]} />
-              <Text style={styles.recText}>REC</Text>
-            </View>
-          )}
         </View>
 
-        {/* Progress bar */}
-        {recording && (
-          <View style={styles.progressWrap}>
-            <View style={styles.progressBg}>
-              <View style={[styles.progressFill, {
-                width: `${Math.round(progress * 100)}%`,
-                backgroundColor: task.accentColor,
-              }]} />
+        {/* Prompt list */}
+        <CrayonCard padding={20} style={styles.card}>
+          <Text style={styles.cardTitle}>Recording prompts</Text>
+          {task.steps.map((step, i) => (
+            <View key={i} style={styles.stepRow}>
+              <View style={[styles.stepNum, { backgroundColor: task.accentColor + '22' }]}>
+                <Text style={[styles.stepNumText, { color: task.accentColor }]}>{i + 1}</Text>
+              </View>
+              <Text style={styles.stepText}>{step}</Text>
             </View>
-            <Text style={styles.timeText}>{timeLeft}s</Text>
-          </View>
-        )}
-      </View>
+          ))}
+        </CrayonCard>
 
-      {/* Name-response CUE — flash overlay */}
-      {showCue && task.cueText && (
-        <Animated.View style={[styles.cueOverlay, { opacity: cueOpacity }]}>
-          <View style={[styles.cueBadge, { backgroundColor: task.accentColor }]}>
-            <Text style={styles.cueText}>{task.cueText}</Text>
-          </View>
-        </Animated.View>
-      )}
-
-      {/* Bottom controls */}
-      <View style={styles.bottomControls}>
-        {!recording ? (
-          <>
-            <Text style={styles.hint}>
-              Position your child in the frame, then tap Record.
-            </Text>
-            <TouchableOpacity style={styles.recordBtn} onPress={startRecording}>
-              <View style={styles.recordBtnInner} />
-            </TouchableOpacity>
-          </>
-        ) : (
-          <>
-            <Text style={styles.hint}>
-              {task.cueAt !== undefined
-                ? 'Watch for the flash — that\'s when to say the name.'
-                : 'Recording in progress…'}
-            </Text>
-            <TouchableOpacity
-              style={[styles.stopBtn, !canStop && styles.stopBtnDisabled]}
-              onPress={canStop ? stopRecording : undefined}
-              activeOpacity={canStop ? 0.7 : 1}
-            >
-              <View style={styles.stopBtnInner} />
-              {!canStop && (
-                <Text style={styles.stopHint}>Wait {10 - elapsed}s</Text>
-              )}
-            </TouchableOpacity>
-          </>
+        {/* Cue timing reminder for name_response */}
+        {task.cueAt !== undefined && task.cueText && (
+          <CrayonCard variant="sun" padding={16} style={styles.card}>
+            <View style={styles.tipRow}>
+              <MaterialCommunityIcons name="timer-outline" size={20} color={colors.secondaryDark} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.tipTitle}>Name-call timing</Text>
+                <Text style={styles.tipText}>
+                  Say your child's name at approximately{' '}
+                  <Text style={styles.bold}>{task.cueAt}s</Text>,{' '}
+                  <Text style={styles.bold}>{task.cueAt + 15}s</Text>, and{' '}
+                  <Text style={styles.bold}>{task.cueAt + 30}s</Text> into the recording.
+                </Text>
+              </View>
+            </View>
+          </CrayonCard>
         )}
 
-        {!recording && (
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-            <MaterialCommunityIcons name="arrow-left" size={22} color="rgba(255,255,255,0.8)" />
-          </TouchableOpacity>
-        )}
-      </View>
+        {/* Video picker area */}
+        <TouchableOpacity
+          style={[styles.pickerBox, videoUri && styles.pickerBoxDone]}
+          onPress={pickVideo}
+          activeOpacity={0.75}
+          disabled={picking}
+        >
+          {videoUri ? (
+            <>
+              <MaterialCommunityIcons name="check-circle" size={40} color={colors.success} />
+              <Text style={styles.pickerDoneText}>Video selected</Text>
+              <Text style={styles.pickerFileName} numberOfLines={1}>{videoName}</Text>
+              <Text style={styles.pickerChangeHint}>Tap to choose a different video</Text>
+            </>
+          ) : (
+            <>
+              <MaterialCommunityIcons name="video-plus-outline" size={40} color={colors.primary} />
+              <Text style={styles.pickerMainText}>Pick video from gallery</Text>
+              <Text style={styles.pickerHint}>
+                Record the task with your camera app first, then select it here.
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
 
-    </View>
+        {/* Actions */}
+        <CrayonButton
+          label="Use this video — continue"
+          onPress={proceed}
+          variant="primary"
+          size="large"
+          fullWidth
+          disabled={!videoUri}
+          style={{ marginBottom: 10 }}
+          iconRight={
+            <MaterialCommunityIcons name="arrow-right" size={20} color={colors.white} />
+          }
+        />
+        <CrayonButton
+          label="Back"
+          onPress={() => navigation.goBack()}
+          variant="ghost"
+          size="medium"
+          fullWidth
+          style={{ marginBottom: 28 }}
+        />
+
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
-const BTN = 72;
-
 const styles = StyleSheet.create({
-  container:     { flex: 1, backgroundColor: '#000' },
-  permContainer: {
-    flex: 1, backgroundColor: colors.cream,
-    alignItems: 'center', justifyContent: 'center', padding: 40, gap: 16,
+  container: { flex: 1, backgroundColor: colors.cream },
+  strip:     { height: 4 },
+  scroll:    { paddingHorizontal: 20, paddingTop: 20 },
+
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    marginBottom: 20,
   },
-  permText: { ...{fontFamily: 'Inter'}, textAlign: 'center', color: colors.textBody, lineHeight: 22 },
-
-  topOverlay: {
-    position: 'absolute', top: 0, left: 0, right: 0,
-    paddingTop: 52, paddingHorizontal: 20, paddingBottom: 16,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  hud:          { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  taskBadge:    { backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 14, paddingVertical: 6, borderRadius: radius.full },
-  taskBadgeText:{ color: colors.white, fontSize: 13, fontWeight: '700', fontFamily: 'Poppins' },
-  recRow:       { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  recDot:       { width: 10, height: 10, borderRadius: 5, backgroundColor: '#FF3B30' },
-  recText:      { color: colors.white, fontSize: 12, fontWeight: '800', fontFamily: 'Poppins', letterSpacing: 1 },
-
-  progressWrap: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  progressBg:   { flex: 1, height: 4, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 2, overflow: 'hidden' },
-  progressFill: { height: 4, borderRadius: 2 },
-  timeText:     { color: 'rgba(255,255,255,0.7)', fontSize: 13, fontWeight: '700', fontFamily: 'Poppins', minWidth: 32, textAlign: 'right' },
-
-  cueOverlay: {
-    position: 'absolute',
-    top: 0, bottom: 0, left: 0, right: 0,
+  iconBadge: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    pointerEvents: 'none',
   },
-  cueBadge: {
-    paddingHorizontal: 28,
-    paddingVertical: 18,
-    borderRadius: radius.xl,
-    ...{shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 12, shadowOffset: {width:0,height:4}, elevation: 8},
+  taskTitle:    { ...typography.h2, fontSize: 20 },
+  taskSubtitle: { ...typography.body, color: colors.textMuted, marginTop: 2, fontSize: 13 },
+  durationBadge:{
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: radius.full,
   },
-  cueText: {
-    color: '#000',
-    fontSize: 22,
-    fontWeight: '900',
-    fontFamily: 'Poppins',
-    letterSpacing: 1,
-  },
+  durationText: { fontFamily: 'Poppins', fontWeight: '800', fontSize: 14 },
 
-  bottomControls: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    paddingBottom: 48, paddingTop: 24,
+  card:       { marginBottom: 14 },
+  cardTitle:  { ...typography.h4, marginBottom: 16 },
+  stepRow:    {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    marginBottom: 14,
+  },
+  stepNum: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    gap: 16,
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginTop: 1,
   },
-  hint: { color: 'rgba(255,255,255,0.75)', fontSize: 13, fontFamily: 'Inter', textAlign: 'center', paddingHorizontal: 40 },
+  stepNumText: { fontFamily: 'Poppins', fontWeight: '900', fontSize: 12 },
+  stepText:    { flex: 1, ...typography.body, fontSize: 14, lineHeight: 21 },
 
-  recordBtn: {
-    width: BTN, height: BTN, borderRadius: BTN / 2,
-    borderWidth: 4, borderColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  recordBtnInner: {
-    width: BTN - 20, height: BTN - 20, borderRadius: (BTN - 20) / 2,
-    backgroundColor: '#FF3B30',
-  },
+  tipRow:  { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
+  tipTitle:{ ...typography.h4, fontSize: 13, color: colors.secondaryDark, marginBottom: 4 },
+  tipText: { ...typography.body, fontSize: 13, color: colors.textBody, lineHeight: 19 },
+  bold:    { fontWeight: '700' },
 
-  stopBtn: {
-    width: BTN, height: BTN, borderRadius: radius.lg,
-    borderWidth: 4, borderColor: colors.white,
-    alignItems: 'center', justifyContent: 'center',
+  pickerBox: {
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderStyle: 'dashed',
+    borderRadius: radius.xl,
+    paddingVertical: 36,
+    paddingHorizontal: 24,
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 20,
+    backgroundColor: colors.primary + '08',
   },
-  stopBtnDisabled: { opacity: 0.45 },
-  stopBtnInner: {
-    width: 26, height: 26, borderRadius: 4,
-    backgroundColor: colors.white,
+  pickerBoxDone: {
+    borderStyle: 'solid',
+    borderColor: colors.success,
+    backgroundColor: colors.successLight,
   },
-  stopHint: {
-    position: 'absolute',
-    bottom: -22,
-    color: 'rgba(255,255,255,0.6)',
-    fontSize: 11,
-    fontFamily: 'Inter',
+  pickerMainText: {
+    ...typography.h4,
+    color: colors.primary,
+    textAlign: 'center',
   },
-
-  backBtn: {
-    position: 'absolute',
-    left: 20,
-    bottom: 52,
-    padding: 8,
+  pickerHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 18,
+  },
+  pickerDoneText: {
+    ...typography.h4,
+    color: colors.success,
+    textAlign: 'center',
+  },
+  pickerFileName: {
+    ...typography.body,
+    fontSize: 13,
+    color: colors.textBody,
+    textAlign: 'center',
+    maxWidth: 260,
+  },
+  pickerChangeHint: {
+    ...typography.caption,
+    color: colors.textMuted,
+    textAlign: 'center',
   },
 });
 

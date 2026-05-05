@@ -8,17 +8,18 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius } from '../utils/colors';
 
 const { width: SW } = Dimensions.get('window');
 
-const STEPS = [
-  { id: 1, label: 'Wake Up',      emoji: '🌅', color: '#FFD93D' },
-  { id: 2, label: 'Bathroom',     emoji: '🚽', color: '#74B9FF' },
-  { id: 3, label: 'Wash Hands',   emoji: '🙌', color: '#55EFC4' },
-  { id: 4, label: 'Breakfast',    emoji: '🥣', color: '#FDCB6E' },
-  { id: 5, label: 'Get Dressed',  emoji: '👕', color: '#A29BFE' },
-  { id: 6, label: 'Brush Teeth',  emoji: '🦷', color: '#FD79A8' },
+const STEPS: { id: number; label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string }[] = [
+  { id: 1, label: 'Wake Up',      icon: 'white-balance-sunny', color: '#FFD93D' },
+  { id: 2, label: 'Bathroom',     icon: 'toilet', color: '#74B9FF' },
+  { id: 3, label: 'Wash Hands',   icon: 'hand-wash', color: '#55EFC4' },
+  { id: 4, label: 'Breakfast',    icon: 'silverware-fork-knife', color: '#FDCB6E' },
+  { id: 5, label: 'Get Dressed',  icon: 'tshirt-crew-outline', color: '#A29BFE' },
+  { id: 6, label: 'Brush Teeth',  icon: 'tooth-outline', color: '#FD79A8' },
 ];
 
 const shuffle = <T,>(arr: T[]): T[] => {
@@ -97,7 +98,7 @@ export const MorningMissionGame: React.FC<Props> = ({ onFinish }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Morning Mission!</Text>
-        <Text style={styles.subtitle}>Tap steps in the right order ☀️</Text>
+  <Text style={styles.subtitle}>Tap steps in the right order</Text>
       </View>
 
       <View style={styles.progressBar}>
@@ -109,7 +110,7 @@ export const MorningMissionGame: React.FC<Props> = ({ onFinish }) => {
         {nextExpected <= STEPS.length && (
           <>
             <Text style={styles.nextHintLabel}>Next step:</Text>
-            <Text style={styles.nextHintEmoji}>{STEPS[nextExpected - 1].emoji}</Text>
+            <MaterialCommunityIcons name={STEPS[nextExpected - 1].icon} size={20} color={colors.primary} />
             <Text style={styles.nextHintName}>{STEPS[nextExpected - 1].label}</Text>
           </>
         )}
@@ -138,14 +139,14 @@ export const MorningMissionGame: React.FC<Props> = ({ onFinish }) => {
                 disabled={isCompleted}
               >
                 <Animated.View style={{ transform: [{ scale: card.scaleAnim }] }}>
-                  <Text style={styles.cardEmoji}>{card.step.emoji}</Text>
+                  <MaterialCommunityIcons name={card.step.icon} size={32} color={colors.white} />
                 </Animated.View>
                 <Text style={[styles.cardLabel, isCompleted && styles.cardLabelDone]}>
                   {card.step.label}
                 </Text>
                 {isCompleted && (
                   <Animated.View style={[styles.checkBadge, { opacity: card.checkAnim }]}>
-                    <Text style={styles.checkText}>✓</Text>
+                    <MaterialCommunityIcons name="check" size={14} color={colors.white} />
                   </Animated.View>
                 )}
                 {!isCompleted && (
@@ -161,7 +162,7 @@ export const MorningMissionGame: React.FC<Props> = ({ onFinish }) => {
 
       {done && (
         <View style={styles.winOverlay}>
-          <Text style={styles.winEmoji}>🌟</Text>
+          <MaterialCommunityIcons name="star-four-points" size={36} color={colors.primary} />
           <Text style={styles.winTitle}>Morning done!</Text>
           <Text style={styles.winSub}>Great sequencing skills!</Text>
         </View>

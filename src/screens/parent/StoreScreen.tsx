@@ -9,22 +9,13 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors, radius, shadow } from '../../utils/colors';
-import { typography } from '../../utils/typography';
-import { CrayonButton } from '../../components/CrayonButton';
-import { Mascot } from '../../components/Mascot';
-import { SectionTitle } from '../../components/Decorations';
 import { useI18n } from '../../i18n/useI18n';
 
 interface Product {
   id: string;
   name: string;
   price: string;
-  emoji: string;
-  category: 'sensory' | 'fine-motor' | 'comfort';
-  bg: string;
-  accent: string;
-  desc: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
 }
 
 const PRODUCTS: Product[] = [
@@ -32,45 +23,46 @@ const PRODUCTS: Product[] = [
     id: 'weighted-blanket',
     name: 'Weighted Blanket',
     price: 'BDT 2,200',
-    emoji: '🛌',
-    category: 'comfort',
-    bg: colors.primaryLight,
-    accent: colors.primary,
-    desc: 'Calming pressure for self-regulation routines.',
+    icon: 'bed-queen-outline',
   },
   {
     id: 'chew-set',
     name: 'Sensory Chew Set',
     price: 'BDT 650',
-    emoji: '🦷',
-    category: 'sensory',
-    bg: colors.skyLight,
-    accent: '#0EA5E9',
-    desc: 'Three textures for oral input regulation.',
+    icon: 'tooth-outline',
   },
   {
     id: 'fidget-bundle',
     name: 'Fidget Bundle',
     price: 'BDT 480',
-    emoji: '🌀',
-    category: 'fine-motor',
-    bg: colors.pinkLight,
-    accent: colors.pink,
-    desc: 'Six tools for fine-motor & focus.',
+    icon: 'gesture-tap',
   },
   {
     id: 'visual-cards',
     name: 'Visual Schedule Cards',
     price: 'BDT 350',
-    emoji: '🗂️',
-    category: 'comfort',
-    bg: colors.accentLight,
-    accent: colors.accent,
-    desc: '40 picture cards for daily routines.',
+    icon: 'clipboard-text-outline',
   },
 ];
 
-const StoreScreen: React.FC<any> = () => {
+const designColors = {
+  surfaceContainer: '#eeeeee',
+  surfaceLowest: '#ffffff',
+  surfaceLow: '#f4f3f3',
+  surfaceVariant: '#e2e2e2',
+  onSurface: '#1a1c1c',
+  onSurfaceVariant: '#474552',
+  primary: '#554db7',
+  secondaryContainer: '#fdcc22',
+  outline: '#787584',
+  outlineVariant: '#c8c4d4',
+  headerBg: '#7B74E0',
+  chipActive: '#F5C518',
+};
+
+const CATEGORIES = ['All', 'Sensory', 'Weighted', 'Oral', 'Lamps'];
+
+const StoreScreen: React.FC<any> = ({ navigation }) => {
   const { t } = useI18n();
   const handleCheckout = () => {
     Alert.alert(
@@ -79,199 +71,293 @@ const StoreScreen: React.FC<any> = () => {
     );
   };
 
+  const handleBack = () => {
+    navigation?.goBack?.();
+  };
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeTop} />
+      <View style={styles.topBar}>
+        <View style={styles.topBarLeft}>
+          <TouchableOpacity
+            style={styles.backButton}
+            activeOpacity={0.85}
+            onPress={handleBack}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>NeuroGrow</Text>
+        </View>
+        <View style={styles.xpPill}>
+          <MaterialCommunityIcons
+            name="star"
+            size={16}
+            color={designColors.secondaryContainer}
+          />
+          <Text style={styles.xpText}>2,450 XP</Text>
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
-        <View style={styles.headerRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.eyebrow}>therapy store</Text>
-            <Text style={styles.title}>{t('store_title')}</Text>
-            <Text style={styles.subtitle}>{t('store_subtitle')}</Text>
-          </View>
-          <Mascot kind="heart" size="lg" />
-        </View>
-
-        {/* Featured banner */}
-        <TouchableOpacity activeOpacity={0.92} style={styles.banner}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.bannerEyebrow}>this week</Text>
-            <Text style={styles.bannerTitle}>15% off{'\n'}sensory bundles</Text>
-            <Text style={styles.bannerDesc}>
-              Curated for South Asian families · cash-on-delivery available.
+        <View style={styles.mainContent}>
+          <View style={styles.headerSection}>
+            <Text style={styles.pageTitle}>NeuroStore</Text>
+            <Text style={styles.pageSubtitle}>
+              Redeem your XP for real rewards.
             </Text>
           </View>
-          <Mascot kind="star" size="xl" tint="rgba(255,255,255,0.4)" />
-        </TouchableOpacity>
 
-        {/* Products */}
-        <SectionTitle title="Picked for you" />
-        <View style={styles.grid}>
-          {PRODUCTS.map((p) => (
-            <View key={p.id} style={styles.card}>
-              <View style={[styles.cardThumb, { backgroundColor: p.bg }]}>
-                <Text style={{ fontSize: 40 }}>{p.emoji}</Text>
-              </View>
-              <View style={styles.cardBody}>
-                <Text style={[styles.cardCategory, { color: p.accent }]}>
-                  {p.category}
-                </Text>
-                <Text style={styles.cardName}>{p.name}</Text>
-                <Text style={styles.cardDesc} numberOfLines={2}>
-                  {p.desc}
-                </Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.cardPrice}>{p.price}</Text>
-                  <TouchableOpacity
-                    style={[styles.buyBtn, { backgroundColor: p.accent }]}
-                    onPress={handleCheckout}
-                    activeOpacity={0.85}
-                  >
-                    <MaterialCommunityIcons name="plus" size={16} color={colors.white} />
-                  </TouchableOpacity>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipRow}
+            style={styles.chipScroll}
+          >
+            {CATEGORIES.map((chip, index) => {
+              const active = index === 0;
+              return (
+                <TouchableOpacity
+                  key={chip}
+                  activeOpacity={0.85}
+                  style={[styles.chip, active && styles.chipActive]}
+                >
+                  <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                    {chip}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+
+          <View style={styles.productList}>
+            {PRODUCTS.map((product) => (
+              <TouchableOpacity
+                key={product.id}
+                activeOpacity={0.9}
+                style={styles.productRow}
+                onPress={handleCheckout}
+              >
+                <View style={styles.thumbWrapper}>
+                  <View style={styles.thumb}>
+                    <MaterialCommunityIcons
+                      name={product.icon}
+                      size={28}
+                      color={designColors.primary}
+                    />
+                  </View>
                 </View>
-              </View>
-            </View>
-          ))}
+                <View style={styles.productInfo}>
+                  <Text style={styles.productTitle} numberOfLines={1}>
+                    {product.name}
+                  </Text>
+                  <View style={styles.productMetaRow}>
+                    <MaterialCommunityIcons
+                      name="star"
+                      size={16}
+                      color={designColors.primary}
+                    />
+                    <Text style={styles.productMetaText}>{product.price}</Text>
+                  </View>
+                </View>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={20}
+                  color={designColors.outlineVariant}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text style={styles.note}>{t('store_note')}</Text>
         </View>
-
-        <CrayonButton
-          label="Shop all 24 items"
-          onPress={handleCheckout}
-          variant="dark"
-          size="large"
-          fullWidth
-          style={{ marginTop: 12, marginBottom: 12 }}
-        />
-
-        <Text style={styles.note}>{t('store_note')}</Text>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream },
-  scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 120,
+  container: {
+    flex: 1,
+    backgroundColor: designColors.surfaceContainer,
   },
-  headerRow: {
+  safeTop: {
+    backgroundColor: designColors.headerBg,
+  },
+  topBar: {
+    height: 64,
+    backgroundColor: designColors.headerBg,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 18,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 40,
   },
-  eyebrow: {
-    ...typography.eyebrow,
-    color: colors.primary,
-    marginBottom: 6,
-  },
-  title: {
-    ...typography.h1,
-    fontSize: 26,
-  },
-  subtitle: {
-    ...typography.body,
-    color: colors.textMuted,
-    marginTop: 4,
-  },
-
-  /* Banner */
-  banner: {
+  topBarLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: radius.xl,
-    padding: 22,
-    marginBottom: 22,
-    overflow: 'hidden',
-    ...shadow.primary,
-  },
-  bannerEyebrow: {
-    ...typography.eyebrow,
-    color: colors.secondary,
-    marginBottom: 8,
-  },
-  bannerTitle: {
-    ...typography.h1,
-    fontSize: 24,
-    lineHeight: 28,
-    color: colors.white,
-  },
-  bannerDesc: {
-    ...typography.body,
-    fontSize: 13,
-    color: colors.primaryLight,
-    marginTop: 6,
-    paddingRight: 80,
-  },
-
-  /* Grid */
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 12,
   },
-  card: {
-    width: '48%',
-    backgroundColor: colors.white,
-    borderRadius: radius.xl,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.sm,
-  },
-  cardThumb: {
-    height: 100,
+  backButton: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 20,
   },
-  cardBody: {
-    padding: 12,
+  topBarTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 18,
+    color: '#FFF',
   },
-  cardCategory: {
-    ...typography.badge,
-    fontSize: 9,
+  xpPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 9999,
+  },
+  xpText: {
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 13,
+    color: '#FFF',
+  },
+  scroll: {
+    paddingBottom: 90,
+  },
+  mainContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  headerSection: {
+    marginBottom: 24,
+  },
+  pageTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 24,
+    lineHeight: 30,
+    color: designColors.onSurface,
+    marginBottom: 8,
+  },
+  pageSubtitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 20,
+    color: designColors.onSurfaceVariant,
+  },
+  chipScroll: {
+    marginHorizontal: -20,
+    marginBottom: 24,
+  },
+  chipRow: {
+    paddingHorizontal: 20,
+    gap: 12,
+    paddingBottom: 8,
+  },
+  chip: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 50,
+    backgroundColor: '#FFF',
+    borderWidth: 1,
+    borderColor: designColors.surfaceVariant,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  chipActive: {
+    backgroundColor: designColors.chipActive,
+    borderColor: designColors.chipActive,
+    shadowColor: designColors.chipActive,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  chipText: {
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 13,
+    lineHeight: 18,
+    color: designColors.onSurfaceVariant,
+  },
+  chipTextActive: {
+    color: '#FFF',
+  },
+  productList: {
+    gap: 12,
+  },
+  productRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: designColors.surfaceLowest,
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  thumbWrapper: {
+    marginRight: 16,
+  },
+  thumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: designColors.surfaceLow,
+  },
+  productInfo: {
+    flex: 1,
+  },
+  productTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '700',
+    fontSize: 17,
+    lineHeight: 24,
+    color: designColors.onSurface,
     marginBottom: 4,
   },
-  cardName: {
-    ...typography.h4,
-    fontSize: 14,
-  },
-  cardDesc: {
-    ...typography.caption,
-    marginTop: 4,
-    lineHeight: 16,
-  },
-  cardFooter: {
+  productMetaRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 12,
+    gap: 4,
   },
-  cardPrice: {
-    ...typography.h4,
+  productMetaText: {
+    fontFamily: 'Nunito',
+    fontWeight: '600',
     fontSize: 13,
-    color: colors.textDark,
+    lineHeight: 18,
+    color: designColors.primary,
   },
-  buyBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   note: {
-    ...typography.caption,
-    fontSize: 11,
+    fontFamily: 'Nunito',
+    fontWeight: '400',
+    fontSize: 12,
+    lineHeight: 16,
+    color: designColors.outline,
     textAlign: 'center',
-    marginTop: 12,
+    marginTop: 16,
   },
 });
 
 export default StoreScreen;
+

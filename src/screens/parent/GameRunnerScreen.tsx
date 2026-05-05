@@ -29,6 +29,7 @@ import { StoryNavigatorGame } from '../../components/StoryNavigatorGame';
 import { RhythmBurstGame } from '../../components/RhythmBurstGame';
 import { LabelLabGame } from '../../components/LabelLabGame';
 import { IconSymbol } from '../../components/IconSymbol';
+import { ChildProfileRequired } from '../../components/ChildProfileRequired';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -49,11 +50,20 @@ const SKILL_TINT: Record<string, { tint: string; accent: string; icon: IconName 
 const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
   const { gameId } = route.params || {};
   const { user } = useAuthStore();
-  const { activeChild } = useChildStore();
+  const { activeChild, children } = useChildStore();
   const { addGameSession } = useGameStore();
   const { t } = useI18n();
 
   const [isPlaying, setIsPlaying] = React.useState(false);
+
+  if (children.length === 0) {
+    return (
+      <ChildProfileRequired
+        featureName="games"
+        description="Create a child profile in Profile to start therapy games."
+      />
+    );
+  }
 
   const isPremium = user?.tier_level === 'PREMIUM';
   const bgCameraRef = useRef<BackgroundCameraHandle>(null);

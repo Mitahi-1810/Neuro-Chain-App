@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../utils/colors';
 
 type MascotKind =
@@ -18,21 +19,21 @@ type MascotKind =
   | 'chart'       // reports
   | 'crown';      // premium
 
-const KIND_TO_EMOJI: Record<MascotKind, string> = {
-  wave: '👋',
-  star: '🌟',
-  spark: '✨',
-  rocket: '🚀',
-  puzzle: '🧩',
-  heart: '💜',
-  brain: '🧠',
-  medal: '🏅',
-  sun: '☀️',
-  cloud: '☁️',
-  pencil: '✏️',
-  controller: '🎮',
-  chart: '📊',
-  crown: '👑',
+const KIND_TO_ICON: Record<MascotKind, keyof typeof MaterialCommunityIcons.glyphMap> = {
+  wave: 'hand-wave',
+  star: 'star-four-points',
+  spark: 'star-four-points',
+  rocket: 'rocket-launch',
+  puzzle: 'puzzle',
+  heart: 'heart',
+  brain: 'brain',
+  medal: 'medal',
+  sun: 'weather-sunny',
+  cloud: 'weather-cloudy',
+  pencil: 'pencil',
+  controller: 'gamepad-variant',
+  chart: 'chart-line',
+  crown: 'crown',
 };
 
 const KIND_TO_TINT: Record<MascotKind, string> = {
@@ -91,16 +92,22 @@ export const Mascot: React.FC<MascotProps> = ({
           },
         ]}
       />
-      <Text style={{ fontSize: dim.emoji }}>{KIND_TO_EMOJI[kind]}</Text>
+      <MaterialCommunityIcons name={KIND_TO_ICON[kind]} size={dim.emoji} color={colors.textDark} />
       {withSparkle && (
-        <Text style={[styles.sparkle, { right: -4, top: -2, fontSize: dim.emoji * 0.32 }]}>
-          ✦
-        </Text>
+        <MaterialCommunityIcons
+          name="star-four-points"
+          size={dim.emoji * 0.32}
+          color={colors.primary}
+          style={[styles.sparkle, { right: -4, top: -2 }]}
+        />
       )}
       {withSparkle && (
-        <Text style={[styles.sparkle, { left: 4, bottom: 2, fontSize: dim.emoji * 0.22 }]}>
-          ·
-        </Text>
+        <MaterialCommunityIcons
+          name="circle"
+          size={dim.emoji * 0.18}
+          color={colors.primary}
+          style={[styles.sparkle, { left: 4, bottom: 2 }]}
+        />
       )}
     </View>
   );

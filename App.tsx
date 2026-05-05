@@ -98,7 +98,6 @@ import CaregiverHomeScreen from "./src/screens/caregiver/CaregiverHomeScreen";
 import TelehealthBookingScreen from "./src/screens/telehealth/TelehealthBookingScreen";
 import CalendlyBookingScreen from "./src/screens/telehealth/CalendlyBookingScreen";
 
-import { ChildProfileGate } from "./src/components/ChildProfileGate";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -155,6 +154,8 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   };
 
   const isLocked = (routeName: string) => isFree && routeName === "Reports";
+  const inactiveColor = colors.white;
+  const activeColor = colors.secondary;
 
   return (
     <View pointerEvents="box-none" style={tabStyles.wrapper}>
@@ -188,24 +189,16 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
               accessibilityLabel={`${label} tab`}
               onPress={onPress}
               activeOpacity={0.85}
-              style={[tabStyles.tab, isFocused && tabStyles.tabActive]}
+              style={tabStyles.tab}
             >
               <MaterialCommunityIcons
                 name={iconName as any}
                 size={22}
-                color={
-                  locked
-                    ? colors.darkGrey
-                    : isFocused
-                      ? colors.white
-                      : colors.textBody
-                }
+                color={isFocused ? activeColor : inactiveColor}
               />
-              {isFocused && (
-                <Text style={tabStyles.tabLabel} numberOfLines={1}>
-                  {label}
-                </Text>
-              )}
+              <Text style={[tabStyles.tabLabel, { color: isFocused ? activeColor : inactiveColor }]} numberOfLines={1}>
+                {label}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -223,34 +216,28 @@ const tabStyles = StyleSheet.create({
   },
   bar: {
     flexDirection: "row",
-    backgroundColor: colors.white,
+    backgroundColor: "#7B74E0",
     borderRadius: radius.full,
     paddingHorizontal: 8,
     paddingVertical: 8,
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderWidth: 0,
     ...shadow.lg,
   },
   tab: {
     flex: 1,
-    flexDirection: "row",
+    flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
     paddingHorizontal: 6,
     borderRadius: radius.full,
-    gap: 6,
+    gap: 4,
     minHeight: 44,
-  },
-  tabActive: {
-    backgroundColor: colors.primary,
-    ...shadow.primary,
   },
   tabLabel: {
     ...typography.badge,
-    color: colors.white,
-    fontSize: 11,
+    fontSize: 10,
     textTransform: "none",
     letterSpacing: 0.2,
   },
@@ -275,7 +262,7 @@ function ParentTabs() {
         <Tab.Screen
           name="Insights"
           component={AIInsightsScreen}
-          options={{ tabBarLabel: "AI" }}
+          options={{ tabBarLabel: "Insights" }}
         />
       )}
       <Tab.Screen name="Profile" component={ProfileScreen} />
@@ -286,9 +273,7 @@ function ParentTabs() {
 // ─── Parent Stack ──────────────────────────────────────────────────────────────
 function ParentStack() {
   return (
-    <>
-      <ChildProfileGate />
-      <Stack.Navigator screenOptions={screenOptions}>
+    <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name="ParentTabs" component={ParentTabs} />
         <Stack.Screen name="GameRunner" component={GameRunnerScreen} />
         <Stack.Screen name="AutismScreener" component={AutismScreenerScreen} />
@@ -313,8 +298,7 @@ function ParentStack() {
         <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
         <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
         <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />
-      </Stack.Navigator>
-    </>
+    </Stack.Navigator>
   );
 }
 

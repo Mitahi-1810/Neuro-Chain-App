@@ -13,10 +13,10 @@ const { width } = Dimensions.get('window');
 
 // Sequence of colors/shapes the child must repeat
 const COLORS = [
-  { id: 'red', label: '🔴', color: '#FF3B30' },
-  { id: 'blue', label: '🔵', color: '#007AFF' },
-  { id: 'green', label: '🟢', color: '#34C759' },
-  { id: 'yellow', label: '🟡', color: '#FFD60A' },
+  { id: 'red', label: 'R', color: '#FF3B30' },
+  { id: 'blue', label: 'B', color: '#007AFF' },
+  { id: 'green', label: 'G', color: '#34C759' },
+  { id: 'yellow', label: 'Y', color: '#FFD60A' },
 ];
 
 interface Props {
@@ -119,7 +119,7 @@ export const CopyCatGame: React.FC<Props> = ({ onFinish }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Copy Cat!</Text>
       <Text style={styles.subtitle}>
-        {phase === 'watch' ? '👀 Watch carefully...' : '🎯 Now you repeat it!'}
+  {phase === 'watch' ? 'Watch carefully...' : 'Now you repeat it!'}
       </Text>
       <Text style={styles.round}>Round {round} / {MAX_ROUNDS}</Text>
 

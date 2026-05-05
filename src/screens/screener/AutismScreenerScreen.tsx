@@ -6,15 +6,27 @@ import {
   SafeAreaView,
   TouchableOpacity,
   Alert,
+  ScrollView,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
-import { CrayonCard } from '../../components/CrayonCard';
 import { ScreenerQuestion } from '../../types';
 import { useAuthStore, useChildStore } from '../../store/store';
 import { getDatabase } from '../../data/database';
 import { MCHAT_QUESTIONS } from './screenerData';
+
+const designColors = {
+  background: '#7B74E0',
+  surfaceLowest: '#ffffff',
+  surfaceVariant: '#e2e2e2',
+  onPrimary: '#ffffff',
+  onSurface: '#1a1c1c',
+  onSurfaceVariant: '#474552',
+  primary: '#554db7',
+  secondaryContainer: '#fdcc22',
+  outlineVariant: '#c8c4d4',
+  progressInactive: 'rgba(255,255,255,0.3)',
+};
 
 interface Props {
   navigation: any;
@@ -141,14 +153,14 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={designColors.onPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <Text style={styles.headerTitle}>NeuroGrow</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.content}>
-          <View style={styles.ineligibleContainer}>
-            <MaterialCommunityIcons name="account-alert" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+          <View style={styles.ineligibleCard}>
+            <MaterialCommunityIcons name="account-alert" size={56} color={designColors.primary} style={{ marginBottom: 16 }} />
             <Text style={styles.ineligibleTitle}>Add a child profile</Text>
             <Text style={styles.ineligibleDesc}>
               Please add your child's profile to start the right age-specific screening.
@@ -172,14 +184,14 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={designColors.onPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <Text style={styles.headerTitle}>NeuroGrow</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.content}>
-          <View style={styles.ineligibleContainer}>
-            <MaterialCommunityIcons name="clock-outline" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+          <View style={styles.ineligibleCard}>
+            <MaterialCommunityIcons name="clock-outline" size={56} color={designColors.primary} style={{ marginBottom: 16 }} />
             <Text style={styles.ineligibleTitle}>Preparing your screener</Text>
             <Text style={styles.ineligibleDesc}>Checking your child's eligibility…</Text>
           </View>
@@ -193,14 +205,14 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={designColors.onPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <Text style={styles.headerTitle}>NeuroGrow</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.content}>
-          <View style={styles.ineligibleContainer}>
-            <MaterialCommunityIcons name="lock" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+          <View style={styles.ineligibleCard}>
+            <MaterialCommunityIcons name="lock" size={56} color={designColors.primary} style={{ marginBottom: 16 }} />
             <Text style={styles.ineligibleTitle}>Screening locked</Text>
             <Text style={styles.ineligibleDesc}>{lockInfo.reason}</Text>
             <CrayonButton
@@ -263,14 +275,14 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={24} color={colors.textDark} />
+            <MaterialCommunityIcons name="arrow-left" size={22} color={designColors.onPrimary} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Autism Screening</Text>
+          <Text style={styles.headerTitle}>NeuroGrow</Text>
           <View style={styles.headerSpacer} />
         </View>
         <View style={styles.content}>
-          <View style={styles.ineligibleContainer}>
-            <MaterialCommunityIcons name="clipboard-text" size={64} color={colors.primary} style={{ marginBottom: 16 }} />
+          <View style={styles.ineligibleCard}>
+            <MaterialCommunityIcons name="clipboard-text" size={56} color={designColors.primary} style={{ marginBottom: 16 }} />
             <Text style={styles.ineligibleTitle}>{ineligibleCopy.title}</Text>
             <Text style={styles.ineligibleDesc}>{ineligibleCopy.desc}</Text>
             <CrayonButton
@@ -340,77 +352,64 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={handleBack}
-          style={styles.backButton}
-        >
-          <MaterialCommunityIcons
-            name="arrow-left"
-            size={24}
-            color={colors.textDark}
-          />
+        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+          <MaterialCommunityIcons name="arrow-left" size={22} color={designColors.onPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Autism Screening</Text>
+        <Text style={styles.headerTitle}>NeuroGrow</Text>
         <View style={styles.headerSpacer} />
       </View>
 
-      {/* Progress Bar */}
-      <View style={styles.progressBar}>
-        <View
-          style={[styles.progressFill, { width: `${progressPercent}%` }]}
-        />
-      </View>
-
-      <View style={styles.content}>
-        {/* Question Counter */}
-        <Text style={styles.questionCounter}>
-          Question {currentQuestionIndex + 1} of {SCREENER_QUESTIONS.length}
-        </Text>
-
-        {/* Question Card */}
-        <CrayonCard style={styles.questionCard} variant="default">
-          <Text style={styles.question}>{currentQuestion.question}</Text>
-        </CrayonCard>
-
-        {/* Answer Buttons */}
-        <View style={styles.buttonContainer}>
-          <CrayonButton
-            label="Yes"
-            onPress={() => handleAnswer(true)}
-            variant="success"
-            size="large"
-            fullWidth
-          />
-          <CrayonButton
-            label="No"
-            onPress={() => handleAnswer(false)}
-            variant="danger"
-            size="large"
-            fullWidth
-            style={{ marginTop: 12 }}
-          />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.progressHeader}>
+          <Text style={styles.screenTitle}>Autism Screener</Text>
+          <View style={styles.progressMetaRow}>
+            <Text style={styles.questionLabel}>
+              Question {String(currentQuestionIndex + 1).padStart(2, '0')}
+            </Text>
+            <View style={styles.progressPill}>
+              <Text style={styles.progressPillText}>
+                {currentQuestionIndex + 1} of {SCREENER_QUESTIONS.length}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.segmentedBar}>
+            {SCREENER_QUESTIONS.map((_, idx) => {
+              const isActive = idx <= currentQuestionIndex;
+              return (
+                <View
+                  key={idx}
+                  style={[
+                    styles.segment,
+                    isActive ? styles.segmentActive : styles.segmentInactive,
+                    idx === 0 && styles.segmentFirst,
+                    idx === SCREENER_QUESTIONS.length - 1 && styles.segmentLast,
+                  ]}
+                />
+              );
+            })}
+          </View>
         </View>
 
-        {/* Progress Indicator */}
-        <View style={styles.dotsContainer}>
-          {SCREENER_QUESTIONS.map((_, idx) => (
-            <View
-              key={idx}
-              style={[
-                styles.dot,
-                {
-                  backgroundColor:
-                    idx < currentQuestionIndex
-                      ? colors.success
-                      : idx === currentQuestionIndex
-                      ? colors.primary
-                      : colors.mediumGrey,
-                },
-              ]}
-            />
-          ))}
+        <View style={styles.questionArea}>
+          <Text style={styles.questionText}>{currentQuestion.question}</Text>
+          <View style={styles.answerGroup}>
+            <TouchableOpacity
+              style={styles.answerPrimary}
+              activeOpacity={0.9}
+              onPress={() => handleAnswer(true)}
+            >
+              <Text style={styles.answerPrimaryText}>Yes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.answerSecondary}
+              activeOpacity={0.9}
+              onPress={() => handleAnswer(false)}
+            >
+              <Text style={styles.answerSecondaryText}>No</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -418,107 +417,197 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.cream,
+    backgroundColor: designColors.background,
   },
   header: {
+    height: 64,
+    backgroundColor: designColors.background,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.mediumGrey,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.lightGrey,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   headerTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
     fontSize: 18,
-    fontWeight: '700',
-    color: colors.textDark,
-    fontFamily: 'Poppins',
+    color: designColors.onPrimary,
   },
   headerSpacer: {
     width: 40,
   },
-  progressBar: {
-    height: 4,
-    backgroundColor: colors.mediumGrey,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 96,
+    flexGrow: 1,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
+  progressHeader: {
+    marginBottom: 24,
+  },
+  screenTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 24,
+    lineHeight: 30,
+    color: designColors.onPrimary,
+    marginBottom: 12,
+  },
+  progressMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  questionLabel: {
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 13,
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    color: 'rgba(255,255,255,0.8)',
+  },
+  progressPill: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 9999,
+  },
+  progressPillText: {
+    fontFamily: 'Nunito',
+    fontWeight: '700',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.85)',
+  },
+  segmentedBar: {
+    flexDirection: 'row',
+    gap: 4,
+  },
+  segment: {
+    flex: 1,
+    height: 8,
+  },
+  segmentActive: {
+    backgroundColor: designColors.onPrimary,
+  },
+  segmentInactive: {
+    backgroundColor: designColors.progressInactive,
+  },
+  segmentFirst: {
+    borderTopLeftRadius: 9999,
+    borderBottomLeftRadius: 9999,
+  },
+  segmentLast: {
+    borderTopRightRadius: 9999,
+    borderBottomRightRadius: 9999,
+  },
+  questionArea: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 24,
+  },
+  questionText: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 24,
+    lineHeight: 32,
+    color: designColors.onPrimary,
+    textAlign: 'center',
+  },
+  answerGroup: {
+    gap: 16,
+    marginTop: 12,
+  },
+  answerPrimary: {
+    backgroundColor: designColors.secondaryContainer,
+    borderRadius: 24,
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: designColors.secondaryContainer,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  answerPrimaryText: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 18,
+    color: '#241a00',
+  },
+  answerSecondary: {
+    backgroundColor: designColors.surfaceLowest,
+    borderRadius: 24,
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  answerSecondaryText: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 18,
+    color: designColors.primary,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 24,
-    justifyContent: 'space-between',
-  },
-  questionCounter: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.primary,
-    marginBottom: 12,
-    fontFamily: 'Inter',
-  },
-  questionCard: {
-    padding: 20,
-    marginBottom: 32,
-  },
-  question: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: colors.textDark,
-    lineHeight: 28,
-    fontFamily: 'Poppins',
-  },
-  buttonContainer: {
-    marginBottom: 24,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    gap: 6,
-    flexWrap: 'wrap',
   },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  ineligibleContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  ineligibleCard: {
+    backgroundColor: designColors.surfaceLowest,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
-    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
   },
   ineligibleTitle: {
-    fontSize: 24,
+    fontFamily: 'Nunito',
     fontWeight: '800',
-    color: colors.textDark,
-    marginBottom: 12,
+    fontSize: 22,
+    color: designColors.onSurface,
     textAlign: 'center',
-    fontFamily: 'Poppins',
+    marginBottom: 12,
   },
   ineligibleDesc: {
-    fontSize: 16,
-    color: colors.textWarmBrown,
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 14,
+    lineHeight: 20,
+    color: designColors.onSurfaceVariant,
     textAlign: 'center',
     marginBottom: 8,
-    fontFamily: 'Inter',
-    lineHeight: 24,
   },
   ineligibleDesc2: {
-    fontSize: 14,
-    color: colors.darkGrey,
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 13,
+    color: designColors.onSurfaceVariant,
     textAlign: 'center',
-    fontFamily: 'Inter',
     marginBottom: 12,
   },
 });

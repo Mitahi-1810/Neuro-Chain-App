@@ -7,13 +7,14 @@ import {
   Animated,
   SafeAreaView,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius } from '../utils/colors';
 
-const MOVES = [
-  { id: 'clap',  label: 'CLAP',  emoji: '👏', color: '#FFD93D' },
-  { id: 'up',    label: 'UP',    emoji: '⬆️',  color: '#74B9FF' },
-  { id: 'stomp', label: 'STOMP', emoji: '👣', color: '#55EFC4' },
-  { id: 'spin',  label: 'SPIN',  emoji: '🌀', color: '#FD79A8' },
+const MOVES: { id: string; label: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string }[] = [
+  { id: 'clap',  label: 'CLAP',  icon: 'hand-clap', color: '#FFD93D' },
+  { id: 'up',    label: 'UP',    icon: 'arrow-up-bold',  color: '#74B9FF' },
+  { id: 'stomp', label: 'STOMP', icon: 'shoe-print', color: '#55EFC4' },
+  { id: 'spin',  label: 'SPIN',  icon: 'rotate-right', color: '#FD79A8' },
 ];
 
 const TOTAL_ROUNDS = 6;
@@ -119,9 +120,9 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
   }, [phase, done, playerInput, sequence, round, totalCorrect, totalWrong, highlightAnims, onFinish, playSequence]);
 
   const phaseText = phase === 'watch'
-    ? '👀 Watch carefully!'
-    : resultCorrect === true ? '🎉 Perfect!'
-    : resultCorrect === false ? '😅 Try again!'
+    ? 'Watch carefully!'
+    : resultCorrect === true ? 'Perfect!'
+    : resultCorrect === false ? 'Try again!'
     : `Your turn! (${playerInput.length}/${sequence.length})`;
 
   const phaseColor = resultCorrect === true ? colors.success : resultCorrect === false ? colors.danger : colors.primary;
@@ -135,7 +136,7 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
       </View>
 
       <View style={styles.mascotArea}>
-        <Text style={styles.mascotEmoji}>🤖</Text>
+  <MaterialCommunityIcons name="robot" size={60} color={colors.primary} />
         <View style={[styles.phaseTag, { backgroundColor: phaseColor + '22', borderColor: phaseColor + '66' }]}>
           <Text style={[styles.phaseText, { color: phaseColor }]}>{phaseText}</Text>
         </View>
@@ -158,7 +159,11 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
               ]}
             >
               {filled ? (
-                <Text style={styles.seqDotText}>{wrong ? '✗' : move.emoji}</Text>
+                wrong ? (
+                  <MaterialCommunityIcons name="close" size={18} color={colors.white} />
+                ) : (
+                  <MaterialCommunityIcons name={move.icon} size={18} color={colors.white} />
+                )
               ) : (
                 <Text style={styles.seqDotNum}>{i + 1}</Text>
               )}
@@ -185,7 +190,7 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
                 activeOpacity={0.7}
                 disabled={phase !== 'play'}
               >
-                <Text style={styles.moveBtnEmoji}>{move.emoji}</Text>
+                <MaterialCommunityIcons name={move.icon} size={26} color={colors.white} />
                 <Text style={styles.moveBtnLabel}>{move.label}</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -195,7 +200,7 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
 
       {done && (
         <View style={styles.doneOverlay}>
-          <Text style={styles.doneEmoji}>🌟</Text>
+          <MaterialCommunityIcons name="star-four-points" size={42} color={colors.primary} />
           <Text style={styles.doneTitle}>Groove master!</Text>
           <Text style={styles.doneSub}>{totalCorrect} / {TOTAL_ROUNDS} rounds perfect</Text>
         </View>

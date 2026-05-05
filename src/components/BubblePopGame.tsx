@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions, Text } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -67,7 +68,7 @@ const BubbleEntity = ({ entity, onPop }: { entity: Entity; onPop: (id: string, t
           animatedStyle,
         ]}
       >
-        {isBomb && <Text style={styles.bombText}>💣</Text>}
+  {isBomb && <MaterialCommunityIcons name="bomb" size={28} color={colors.white} />}
       </Animated.View>
     </TouchableOpacity>
   );

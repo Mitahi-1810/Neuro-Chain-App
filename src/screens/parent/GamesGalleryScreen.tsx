@@ -7,10 +7,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { GAME_CATALOG, GameCatalogItem } from '../../data/games';
-import { useAuthStore } from '../../store/store';
+import { useAuthStore, useChildStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
 import { PillTabs } from '../../components/Decorations';
 import { IconSymbol } from '../../components/IconSymbol';
+import { ChildProfileRequired } from '../../components/ChildProfileRequired';
 
 type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
@@ -37,9 +38,19 @@ type FilterKey = 'all' | string;
 
 const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
+  const { children } = useChildStore();
   const { t } = useI18n();
   const tier = user?.tier_level || 'FREE';
   const [filter, setFilter] = useState<FilterKey>('all');
+
+  if (children.length === 0) {
+    return (
+      <ChildProfileRequired
+        featureName="games"
+        description="Create a child profile in Profile to unlock games and personalized plans."
+      />
+    );
+  }
 
   const skillKeys = useMemo(() => {
     const set = new Set<string>();

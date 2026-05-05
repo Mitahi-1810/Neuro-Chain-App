@@ -7,15 +7,16 @@ import {
   Animated,
   SafeAreaView,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius } from '../utils/colors';
 
-const EMOTIONS = [
-  { name: 'Happy',     emoji: '😊', color: '#FFD93D' },
-  { name: 'Sad',       emoji: '😢', color: '#74B9FF' },
-  { name: 'Angry',     emoji: '😠', color: '#FF7675' },
-  { name: 'Surprised', emoji: '😲', color: '#FDCB6E' },
-  { name: 'Scared',    emoji: '😨', color: '#A29BFE' },
-  { name: 'Excited',   emoji: '🤩', color: '#FD79A8' },
+const EMOTIONS: { name: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string }[] = [
+  { name: 'Happy',     icon: 'emoticon-happy-outline', color: '#FFD93D' },
+  { name: 'Sad',       icon: 'emoticon-sad-outline', color: '#74B9FF' },
+  { name: 'Angry',     icon: 'emoticon-angry-outline', color: '#FF7675' },
+  { name: 'Surprised', icon: 'emoticon-neutral-outline', color: '#FDCB6E' },
+  { name: 'Scared',    icon: 'emoticon-cry-outline', color: '#A29BFE' },
+  { name: 'Excited',   icon: 'emoticon-happy-outline', color: '#FD79A8' },
 ];
 
 const TOTAL_ROUNDS = 15;
@@ -136,7 +137,7 @@ export const SnapMatchGame: React.FC<Props> = ({ onFinish }) => {
     feedback === 'false_snap' ? '#FF9F43' : 'transparent';
 
   const feedbackText =
-    feedback === 'correct'    ? '⚡ SNAP! +1' :
+    feedback === 'correct'    ? 'SNAP! +1' :
     feedback === 'miss'       ? 'Too slow!' :
     feedback === 'false_snap' ? 'Not a match!' : '';
 
@@ -145,7 +146,7 @@ export const SnapMatchGame: React.FC<Props> = ({ onFinish }) => {
       <View style={styles.header}>
         <Text style={styles.title}>Snap Match!</Text>
         <Text style={styles.roundLabel}>Round {Math.min(currentRound + 1, TOTAL_ROUNDS)} / {TOTAL_ROUNDS}</Text>
-        <Text style={styles.scoreText}>⚡ {snapCount} snaps</Text>
+  <Text style={styles.scoreText}>Snaps: {snapCount}</Text>
       </View>
 
       <Text style={styles.instruction}>
@@ -154,14 +155,14 @@ export const SnapMatchGame: React.FC<Props> = ({ onFinish }) => {
 
       <Animated.View style={[styles.cardsRow, { opacity: cardOpacity, transform: [{ scale: cardScale }] }]}>
         <View style={[styles.card, { backgroundColor: round.left.color + 'DD' }]}>
-          <Text style={styles.cardEmoji}>{round.left.emoji}</Text>
+          <MaterialCommunityIcons name={round.left.icon} size={36} color={colors.white} />
           <Text style={styles.cardLabel}>{round.left.name}</Text>
         </View>
         <View style={styles.vsCircle}>
           <Text style={styles.vsText}>VS</Text>
         </View>
         <View style={[styles.card, { backgroundColor: round.right.color + 'DD' }]}>
-          <Text style={styles.cardEmoji}>{round.right.emoji}</Text>
+          <MaterialCommunityIcons name={round.right.icon} size={36} color={colors.white} />
           <Text style={styles.cardLabel}>{round.right.name}</Text>
         </View>
       </Animated.View>
@@ -176,20 +177,20 @@ export const SnapMatchGame: React.FC<Props> = ({ onFinish }) => {
         {snapVisible && (
           <Animated.View style={{ transform: [{ scale: snapScale }] }}>
             <TouchableOpacity style={styles.snapBtn} onPress={handleSnap} activeOpacity={0.75}>
-              <Text style={styles.snapBtnText}>⚡ SNAP!</Text>
+              <Text style={styles.snapBtnText}>SNAP!</Text>
             </TouchableOpacity>
           </Animated.View>
         )}
         {!round.isMatch && (
           <TouchableOpacity style={styles.nextBtn} onPress={handleNext} activeOpacity={0.8}>
-            <Text style={styles.nextBtnText}>NEXT ▶</Text>
+            <Text style={styles.nextBtnText}>NEXT</Text>
           </TouchableOpacity>
         )}
       </View>
 
       {done && (
         <View style={styles.doneOverlay}>
-          <Text style={styles.doneTitle}>Well done! ⚡</Text>
+          <Text style={styles.doneTitle}>Well done!</Text>
           <Text style={styles.doneSub}>{snapCount} correct snaps out of {TOTAL_ROUNDS} rounds</Text>
         </View>
       )}

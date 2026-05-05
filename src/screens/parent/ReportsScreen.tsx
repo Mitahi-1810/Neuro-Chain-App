@@ -1,265 +1,343 @@
 import React, { useMemo, useState } from 'react';
-import {
-  View,
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors, radius, shadow } from '../../utils/colors';
-import { typography } from '../../utils/typography';
-import { CrayonButton } from '../../components/CrayonButton';
-import { CrayonCard } from '../../components/CrayonCard';
-import { Mascot } from '../../components/Mascot';
-import { HexBadge, StatPill, SectionTitle, AvatarBubble } from '../../components/Decorations';
-import { IconSymbol } from '../../components/IconSymbol';
-import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
+  import {
+    View,
+    StyleSheet,
+    Text,
+    SafeAreaView,
+    ScrollView,
+    TouchableOpacity,
+  } from 'react-native';
+  import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+  import Svg, { Path } from 'react-native-svg';
+  import { CrayonButton } from '../../components/CrayonButton';
+  import { Mascot } from '../../components/Mascot';
+  import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
 
-type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
+  type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
-const SKILL_META: Record<string, { color: string; icon: IconName }> = {
-  'Motor Skills':       { color: '#FF6B6B', icon: 'hand-pointing-up' },
-  'Eye Contact':        { color: '#4ECDC4', icon: 'eye-outline' },
-  'Emotion Recognition':{ color: '#FFB84D', icon: 'emoticon-outline' },
-  'Imitation':          { color: '#A78BFA', icon: 'mirror' },
-  'Categorization':     { color: '#F97316', icon: 'shape-outline' },
-  'Auditory Processing':{ color: '#34D399', icon: 'ear-hearing' },
-  'Self Regulation':    { color: '#60A5FA', icon: 'meditation' },
-  'Social Narrative':   { color: '#F472B6', icon: 'book-open-variant' },
-};
+  const SKILL_META: Record<string, { color: string; icon: IconName }> = {
+    'Motor Skills': { color: '#FF6B6B', icon: 'hand-pointing-up' },
+    'Eye Contact': { color: '#4ECDC4', icon: 'eye-outline' },
+    'Emotion Recognition': { color: '#FFB84D', icon: 'emoticon-outline' },
+    Imitation: { color: '#A78BFA', icon: 'mirror' },
+    Categorization: { color: '#F97316', icon: 'shape-outline' },
+    'Auditory Processing': { color: '#34D399', icon: 'ear-hearing' },
+    'Self Regulation': { color: '#60A5FA', icon: 'meditation' },
+    'Social Narrative': { color: '#F472B6', icon: 'book-open-variant' },
+  };
 
-const GAME_SKILL_MAP: Record<string, string> = {
-  bubble_pop: 'Motor Skills',
-  waiting_game: 'Eye Contact',
-  emotion_mirror: 'Emotion Recognition',
-  copy_cat: 'Imitation',
-  sort_the_world: 'Categorization',
-  name_that_sound: 'Auditory Processing',
-  calm_corner: 'Self Regulation',
-  story_builder: 'Social Narrative',
-};
+  const GAME_SKILL_MAP: Record<string, string> = {
+    bubble_pop: 'Motor Skills',
+    waiting_game: 'Eye Contact',
+    emotion_mirror: 'Emotion Recognition',
+    copy_cat: 'Imitation',
+    sort_the_world: 'Categorization',
+    name_that_sound: 'Auditory Processing',
+    calm_corner: 'Self Regulation',
+    story_builder: 'Social Narrative',
+  };
 
-type LevelMeta = {
-  name: string;
-  icon: IconName;
-  next: number | null;
-  current: number;
-  target: number;
-};
-
-function levelFromXP(xp: number): LevelMeta {
-  if (xp >= 2000) return { name: 'Diamond', icon: 'diamond-stone', next: null,  current: xp, target: 2000 };
-  if (xp >= 1000) return { name: 'Platinum', icon: 'star-circle', next: 2000, current: xp, target: 2000 };
-  if (xp >= 500)  return { name: 'Gold',     icon: 'medal', next: 1000, current: xp, target: 1000 };
-  if (xp >= 200)  return { name: 'Silver',   icon: 'medal-outline', next: 500,  current: xp, target: 500 };
-  return            { name: 'Bronze',   icon: 'medal-outline', next: 200,  current: xp, target: 200 };
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatDuration(ms: number) {
-  const s = Math.round(ms / 1000);
-  if (s < 60) return `${s}s`;
-  return `${Math.floor(s / 60)}m ${s % 60}s`;
-}
-
-const ReportsScreen: React.FC<any> = ({ navigation }) => {
-  const { user } = useAuthStore();
-  const { activeChild } = useChildStore();
-  const { completedGames } = useGameStore();
-  const tier = user?.tier_level || 'FREE';
-  const [activeTab, setActiveTab] = useState<'overview' | 'sessions'>('overview');
-
-  const childSessions = useMemo(
-    () => completedGames.filter((s) => !activeChild || s.child_id === activeChild.id),
-    [completedGames, activeChild],
-  );
-
-  const totalSessions = childSessions.length;
-  const avgAccuracy =
-    totalSessions > 0
-      ? Math.round(childSessions.reduce((a, s) => a + (s.accuracy_percentage || 0), 0) / totalSessions)
-      : 0;
-  const totalMinutes = Math.round(
-    childSessions.reduce((a, s) => a + (s.duration_ms || 0), 0) / 60000,
-  );
-  const streak = totalSessions > 0 ? Math.min(7, Math.ceil(totalSessions / 2)) : 0;
-  const xp = totalSessions * 18 + avgAccuracy * 2;
-  const level = levelFromXP(xp);
-  const levelProgress = level.next
-    ? Math.min(100, Math.round((xp / level.target) * 100))
-    : 100;
-
-  const skillMap = useMemo(() => {
-    const map: Record<string, { total: number; count: number }> = {};
-    childSessions.forEach((s) => {
-      const skill = GAME_SKILL_MAP[s.game_id] || 'General';
-      if (!map[skill]) map[skill] = { total: 0, count: 0 };
-      map[skill].total += s.accuracy_percentage || 0;
-      map[skill].count += 1;
-    });
-    return map;
-  }, [childSessions]);
-
-  const skillAccuracies = Object.entries(skillMap).map(([skill, { total, count }]) => ({
-    skill,
-    accuracy: Math.round(total / count),
-  }));
-
-  // Last 7 days bars
-  const weeklyData = useMemo(() => {
-    const result: { label: string; value: number; color: string }[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().slice(0, 10);
-      const daySessions = childSessions.filter((s) => s.timestamp?.slice(0, 10) === dateStr);
-      const avg =
-        daySessions.length > 0
-          ? Math.round(
-              daySessions.reduce((a, s) => a + (s.accuracy_percentage || 0), 0) / daySessions.length,
-            )
-          : 0;
-      result.push({
-        label: d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1),
-        value: avg,
-        color: avg >= 80 ? '#34D399' : avg >= 60 ? colors.secondary : avg > 0 ? '#FF6B6B' : colors.lightGrey,
-      });
-    }
-    return result;
-  }, [childSessions]);
-
-  // Earned vs locked badges
-  const earnedBadges: Array<{ key: string; icon: IconName; label: string; color: string; unlock: boolean }> = [
-    { key: 'first',     icon: 'star-four-points', label: 'First Steps',  color: colors.secondary, unlock: totalSessions >= 1 },
-    { key: 'streak3',   icon: 'fire', label: '3-Day Streak', color: '#FB923C',        unlock: streak >= 3 },
-    { key: 'streak7',   icon: 'trophy', label: 'Week Hero',    color: colors.primary,   unlock: streak >= 7 },
-    { key: 'accurate',  icon: 'target', label: 'Sharp Shooter',color: colors.accent,    unlock: avgAccuracy >= 80 },
-    { key: 'explorer',  icon: 'compass-outline', label: 'Explorer',     color: colors.pink,      unlock: skillAccuracies.length >= 3 },
-    { key: 'master',    icon: 'crown-outline', label: 'Skill Master', color: colors.secondaryDark, unlock: avgAccuracy >= 90 && totalSessions >= 20 },
-  ];
-
-  const recentSessions = [...childSessions].reverse().slice(0, 20);
-
-  /* ───────── FREE TIER GATE ───────── */
-  if (tier === 'FREE') {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.gateContainer}>
-          <Mascot kind="chart" size="xl" />
-          <Text style={styles.gateTitle}>Unlock progress reports</Text>
-          <Text style={styles.gateSub}>
-            Detailed charts, friendly weekly summaries, badges & session history — all on the Basic plan.
-          </Text>
-          <CrayonButton
-            label="Upgrade to Basic"
-            onPress={() => navigation.navigate('SubscriptionUpgrade')}
-            variant="primary"
-            size="large"
-            fullWidth
-            style={{ marginTop: 24 }}
-          />
-        </View>
-      </SafeAreaView>
-    );
+  function formatDate(iso: string) {
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <AvatarBubble
-              initial={activeChild?.first_name?.charAt(0) || '?'}
-              size={42}
-              bg={colors.primaryLight}
-            />
-            <View>
-              <Text style={styles.headerTitle}>Progress</Text>
-              <Text style={styles.headerSub}>
-                {activeChild?.first_name || 'Your child'} · {tier} plan
-              </Text>
-            </View>
-          </View>
-          {tier === 'BASIC' && (
-            <TouchableOpacity
-              style={styles.upgradeChip}
+  function formatDuration(ms: number) {
+    const s = Math.round(ms / 1000);
+    if (s < 60) return `${s}s`;
+    return `${Math.floor(s / 60)}m ${s % 60}s`;
+  }
+
+  const designColors = {
+    background: '#f9f9f9',
+    surfaceContainer: '#eeeeee',
+    surfaceLow: '#f4f3f3',
+    surfaceLowest: '#ffffff',
+    surfaceVariant: '#e2e2e2',
+    onSurface: '#1a1c1c',
+    onSurfaceVariant: '#474552',
+    primary: '#554db7',
+    secondary: '#745b00',
+    secondaryContainer: '#fdcc22',
+    tertiaryContainer: '#6e66d7',
+    primaryFixed: '#e3dfff',
+    outline: '#787584',
+    outlineVariant: '#c8c4d4',
+    headerBg: '#7B74E0',
+  };
+
+  const ACHIEVEMENT_REWARDS = [50, 30, 40, 20, 10, 60];
+
+  const formatTimeSummary = (minutes: number) => {
+    if (minutes >= 60) return `${Math.round(minutes / 60)}h`;
+    return `${minutes}m`;
+  };
+
+  const ReportsScreen: React.FC<any> = ({ navigation }) => {
+    const { user } = useAuthStore();
+    const { activeChild } = useChildStore();
+    const { completedGames } = useGameStore();
+    const tier = user?.tier_level || 'FREE';
+    const [activeTab, setActiveTab] = useState<'overview' | 'sessions'>('overview');
+
+    const childSessions = useMemo(
+      () => completedGames.filter((s) => !activeChild || s.child_id === activeChild.id),
+      [completedGames, activeChild],
+    );
+
+    const totalSessions = childSessions.length;
+    const avgAccuracy =
+      totalSessions > 0
+        ? Math.round(childSessions.reduce((a, s) => a + (s.accuracy_percentage || 0), 0) / totalSessions)
+        : 0;
+    const totalMinutes = Math.round(
+      childSessions.reduce((a, s) => a + (s.duration_ms || 0), 0) / 60000,
+    );
+
+    const skillMap = useMemo(() => {
+      const map: Record<string, { total: number; count: number }> = {};
+      childSessions.forEach((s) => {
+        const skill = GAME_SKILL_MAP[s.game_id] || 'General';
+        if (!map[skill]) map[skill] = { total: 0, count: 0 };
+        map[skill].total += s.accuracy_percentage || 0;
+        map[skill].count += 1;
+      });
+      return map;
+    }, [childSessions]);
+
+    const skillAccuracies = Object.entries(skillMap).map(([skill, { total, count }]) => ({
+      skill,
+      accuracy: Math.round(total / count),
+    }));
+
+    const weeklyData = useMemo(() => {
+      const result: { label: string; value: number; color: string }[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0, 10);
+        const daySessions = childSessions.filter((s) => s.timestamp?.slice(0, 10) === dateStr);
+        const avg =
+          daySessions.length > 0
+            ? Math.round(
+                daySessions.reduce((a, s) => a + (s.accuracy_percentage || 0), 0) / daySessions.length,
+              )
+            : 0;
+        result.push({
+          label: d.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 1),
+          value: avg,
+          color: avg >= 80 ? designColors.secondaryContainer : avg >= 60 ? designColors.primary : designColors.surfaceVariant,
+        });
+      }
+      return result;
+    }, [childSessions]);
+
+    const earnedBadges: Array<{ key: string; icon: IconName; label: string; color: string; unlock: boolean }> = [
+      { key: 'first', icon: 'star-four-points', label: 'First Steps', color: designColors.secondaryContainer, unlock: totalSessions >= 1 },
+      { key: 'streak3', icon: 'fire', label: '3-Day Streak', color: '#FB923C', unlock: totalSessions >= 3 },
+    ];
+
+    const recentSessions = [...childSessions].reverse().slice(0, 20);
+    const topSkills = skillAccuracies.slice(0, 3);
+
+    if (tier === 'FREE') {
+      return (
+        <SafeAreaView style={styles.container}>
+          <View style={styles.gateContainer}>
+            <Mascot kind="chart" size="xl" />
+            <Text style={styles.gateTitle}>Unlock progress reports</Text>
+            <Text style={styles.gateSub}>
+              Detailed charts, friendly weekly summaries, badges & session history — all on the Basic plan.
+            </Text>
+            <CrayonButton
+              label="Upgrade to Basic"
               onPress={() => navigation.navigate('SubscriptionUpgrade')}
-              activeOpacity={0.85}
-            >
-              <IconSymbol name="crown-outline" size={14} color={colors.secondaryDark} />
-              <Text style={styles.upgradeChipText}>Premium</Text>
-            </TouchableOpacity>
-          )}
+              variant="primary"
+              size="large"
+              fullWidth
+              style={{ marginTop: 24 }}
+            />
+          </View>
+        </SafeAreaView>
+      );
+    }
+
+    return (
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeTop} />
+        <View style={styles.topBar}>
+          <TouchableOpacity style={styles.topBarButton} onPress={() => navigation?.goBack?.()} activeOpacity={0.85}>
+            <MaterialCommunityIcons name="arrow-left" size={22} color="#FFF" />
+          </TouchableOpacity>
+          <Text style={styles.topBarTitle}>NeuroGrow</Text>
+          <View style={{ width: 40 }} />
         </View>
 
-        {/* Level / streak hero */}
-        <View style={{ paddingHorizontal: 20 }}>
-          <CrayonCard variant="sun" padding={20} style={{ marginBottom: 16 }}>
-            <View style={styles.levelRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.levelEyebrow}>you reached</Text>
-                <View style={styles.levelNameRow}>
-                  <IconSymbol name={level.icon} size={20} color={colors.textDark} />
-                  <Text style={styles.levelName}>{level.name}</Text>
-                </View>
-                <Text style={styles.levelXP}>
-                  {xp} XP {level.next ? `· next at ${level.target}` : '· max level'}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+          <View style={styles.mainContent}>
+            <View style={styles.screenHeader}>
+              <Text style={styles.screenTitle}>Reports</Text>
+              <Text style={styles.screenSubtitle}>Your cognitive journey at a glance.</Text>
+            </View>
+
+            <View style={styles.statsRow}>
+              <View style={styles.statCard}>
+                <MaterialCommunityIcons name="calendar-month" size={28} color={designColors.primary} />
+                <Text style={styles.statLabel}>Sessions</Text>
+                <Text style={styles.statValue}>{totalSessions}</Text>
+              </View>
+              <View style={styles.statCard}>
+                <MaterialCommunityIcons name="clock-outline" size={28} color={designColors.secondary} />
+                <Text style={styles.statLabel}>Time</Text>
+                <Text style={[styles.statValue, { color: designColors.secondary }]}>
+                  {formatTimeSummary(totalMinutes)}
                 </Text>
-                <View style={styles.levelTrack}>
-                  <View style={[styles.levelFill, { width: `${levelProgress}%` }]} />
+              </View>
+            </View>
+
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>Weekly Activity</Text>
+                <TouchableOpacity style={styles.cardLink} activeOpacity={0.85}>
+                  <Text style={styles.cardLinkText}>Details</Text>
+                  <MaterialCommunityIcons name="chevron-right" size={16} color={designColors.primary} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.chartArea}>
+                <View style={styles.chartGrid}>
+                  <View style={styles.chartGridLine} />
+                  <View style={styles.chartGridLine} />
+                  <View style={styles.chartGridLine} />
+                </View>
+                <View style={styles.chartBars}>
+                  {weeklyData.map((d, i) => {
+                    const barHeight = Math.max(4, (d.value / 100) * 120);
+                    const isActive = d.value >= 80;
+                    return (
+                      <View key={i} style={styles.chartBarCol}>
+                        <View style={styles.chartBarTrack}>
+                          <View style={[styles.chartBarFill, { height: barHeight, backgroundColor: d.color }]} />
+                          {isActive && (
+                            <View style={styles.chartTooltip}>
+                              <Text style={styles.chartTooltipText}>Peak Focus</Text>
+                            </View>
+                          )}
+                        </View>
+                        <Text style={[styles.chartLabel, isActive && styles.chartLabelActive]}>{d.label}</Text>
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
-              <Mascot kind="medal" size="lg" tint="rgba(255,255,255,0.45)" />
             </View>
-          </CrayonCard>
 
-          <View style={styles.statRow}>
-            <StatPill icon="chart-box-outline" label="Sessions"  value={totalSessions}     iconBg={colors.primaryLight} iconColor={colors.primary} />
-            <StatPill icon="target" label="Avg score" value={`${avgAccuracy}%`} iconBg={colors.accentLight}  iconColor={colors.accentDark} />
-          </View>
-          <View style={[styles.statRow, { marginTop: 8 }]}>
-            <StatPill icon="timer-outline" label="Minutes"  value={totalMinutes} iconBg="#FFE4ED"            iconColor={colors.pink} />
-            <StatPill icon="fire" label="Streak"   value={`${streak}d`} iconBg={colors.secondaryLight} iconColor={colors.secondaryDark} />
-          </View>
-        </View>
-
-        {/* Tab bar */}
-        <View style={styles.tabBar}>
-          {(['overview', 'sessions'] as const).map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.tab, activeTab === tab && styles.tabActive]}
-              onPress={() => setActiveTab(tab)}
-              activeOpacity={0.85}
-            >
-              <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
-                {tab === 'overview' ? 'Overview' : 'Sessions'}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        <View style={{ paddingHorizontal: 20 }}>
-          {activeTab === 'overview' ? (
-            <>
-              <SectionTitle title="This week" />
-              <View style={styles.weekCard}>
-                {totalSessions > 0 ? (
-                  <View style={styles.weekBars}>
-                    {weeklyData.map((d, i) => {
-                      const barH = Math.max(4, (d.value / 100) * 90);
-                      return (
-                        <View key={i} style={styles.weekBarCol}>
-                          <View style={styles.weekBarTrack}>
-                            <View style={[styles.weekBarFill, { height: barH, backgroundColor: d.color }]} />
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Skill Progress</Text>
+              <View style={styles.skillGrid}>
+                {topSkills.length > 0 ? (
+                  topSkills.map(({ skill, accuracy }) => {
+                    const meta = SKILL_META[skill] || { color: designColors.primary, icon: 'star-four-points' as IconName };
+                    const dash = `${Math.round(accuracy)}, 100`;
+                    return (
+                      <View key={skill} style={styles.skillItem}>
+                        <View style={styles.skillRing}>
+                          <Svg width={64} height={64} viewBox="0 0 36 36" style={styles.skillSvg}>
+                            <Path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke={designColors.surfaceVariant}
+                              strokeWidth={4}
+                            />
+                            <Path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke={meta.color}
+                              strokeWidth={4}
+                              strokeDasharray={dash}
+                              strokeLinecap="round"
+                            />
+                          </Svg>
+                          <View style={styles.skillIconWrap}>
+                            <MaterialCommunityIcons name={meta.icon} size={18} color={meta.color} />
                           </View>
-                          <Text style={styles.weekBarLabel}>{d.label}</Text>
+                        </View>
+                        <Text style={styles.skillLabel}>{skill}</Text>
+                      </View>
+                    );
+                  })
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Mascot kind="puzzle" size="md" />
+                    <Text style={styles.emptyText}>Complete sessions to unlock skill rings.</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Recent Achievements</Text>
+              <View style={styles.achievementList}>
+                {earnedBadges.map((badge, index) => (
+                  <View key={badge.key} style={styles.achievementRow}>
+                    <View style={[styles.achievementIcon, { backgroundColor: badge.color }]}>
+                      <MaterialCommunityIcons name={badge.icon} size={20} color={designColors.onSurface} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.achievementTitle}>{badge.label}</Text>
+                      <Text style={styles.achievementMeta}>
+                        {badge.unlock ? 'Unlocked achievement' : 'Complete more sessions'}
+                      </Text>
+                    </View>
+                    <View style={styles.achievementPill}>
+                      <Text style={styles.achievementPillText}>
+                        {badge.unlock ? `+${ACHIEVEMENT_REWARDS[index] || 20} XP` : 'Locked'}
+                      </Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            <View style={styles.tabBar}>
+              {(['overview', 'sessions'] as const).map((tab) => (
+                <TouchableOpacity
+                  key={tab}
+                  style={[styles.tab, activeTab === tab && styles.tabActive]}
+                  onPress={() => setActiveTab(tab)}
+                  activeOpacity={0.85}
+                >
+                  <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>
+                    {tab === 'overview' ? 'Overview' : 'Sessions'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {activeTab === 'sessions' && (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Session history</Text>
+                {recentSessions.length > 0 ? (
+                  <View style={styles.historyList}>
+                    {recentSessions.map((session, i) => {
+                      const skill = GAME_SKILL_MAP[session.game_id] || 'General';
+                      const meta = SKILL_META[skill] || { color: designColors.primary, icon: 'star-four-points' as IconName };
+                      return (
+                        <View key={session.id || i} style={styles.historyRow}>
+                          <View style={[styles.historyIcon, { backgroundColor: meta.color + '22' }]}>
+                            <MaterialCommunityIcons name={meta.icon} size={16} color={meta.color} />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.historyTitle}>
+                              {session.game_id?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase())}
+                            </Text>
+                            <Text style={styles.historyMeta}>
+                              {formatDate(session.timestamp)} · {formatDuration(session.duration_ms)}
+                            </Text>
+                          </View>
+                          <View style={[styles.historyScore, { backgroundColor: meta.color + '22' }]}>
+                            <Text style={[styles.historyScoreText, { color: meta.color }]}>
+                              {session.accuracy_percentage}%
+                            </Text>
+                          </View>
                         </View>
                       );
                     })}
@@ -267,478 +345,389 @@ const ReportsScreen: React.FC<any> = ({ navigation }) => {
                 ) : (
                   <View style={styles.emptyState}>
                     <Mascot kind="cloud" size="md" />
-                    <Text style={styles.emptyText}>Play your first session to fill the chart!</Text>
+                    <Text style={styles.emptyText}>No sessions yet — start playing to build a history.</Text>
                   </View>
                 )}
               </View>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+    );
+  };
 
-              <SectionTitle title="My badges" action={{ label: 'See all', onPress: () => {} }} />
-              <View style={styles.badgeRow}>
-                {earnedBadges.slice(0, 4).map((b) => (
-                  <HexBadge
-                    key={b.key}
-                    icon={b.icon}
-                    label={b.label}
-                    color={b.color}
-                    locked={!b.unlock}
-                    size={70}
-                  />
-                ))}
-              </View>
+  const styles = StyleSheet.create({
+    container: { flex: 1, backgroundColor: designColors.background },
+    safeTop: { backgroundColor: designColors.headerBg },
+    topBar: {
+      height: 64,
+      backgroundColor: designColors.headerBg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+      elevation: 2,
+    },
+    topBarButton: {
+      width: 40,
+      height: 40,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 20,
+    },
+    topBarTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '800',
+      fontSize: 20,
+      color: '#FFF',
+      letterSpacing: -0.4,
+    },
+    scrollContent: {
+      paddingBottom: 96,
+    },
+    mainContent: {
+      paddingHorizontal: 20,
+      paddingTop: 24,
+      gap: 24,
+    },
+    screenHeader: {
+      marginBottom: 8,
+    },
+    screenTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '800',
+      fontSize: 24,
+      lineHeight: 30,
+      color: designColors.onSurface,
+    },
+    screenSubtitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 14,
+      lineHeight: 20,
+      color: designColors.onSurfaceVariant,
+      marginTop: 6,
+    },
+    statsRow: {
+      flexDirection: 'row',
+      gap: 16,
+    },
+    statCard: {
+      flex: 1,
+      backgroundColor: designColors.surfaceLowest,
+      borderRadius: 20,
+      padding: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 2,
+    },
+    statLabel: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      lineHeight: 16,
+      color: designColors.outline,
+      marginTop: 6,
+    },
+    statValue: {
+      fontFamily: 'Nunito',
+      fontWeight: '800',
+      fontSize: 24,
+      lineHeight: 30,
+      color: designColors.primary,
+      marginTop: 4,
+    },
+    card: {
+      backgroundColor: designColors.surfaceLowest,
+      borderRadius: 20,
+      padding: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.06,
+      shadowRadius: 12,
+      elevation: 2,
+    },
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 16,
+    },
+    cardTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '700',
+      fontSize: 17,
+      lineHeight: 24,
+      color: designColors.onSurface,
+    },
+    cardLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+    },
+    cardLinkText: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 13,
+      lineHeight: 18,
+      color: designColors.primary,
+    },
+    chartArea: {
+      backgroundColor: designColors.surfaceLow,
+      borderRadius: 16,
+      padding: 16,
+      height: 200,
+      justifyContent: 'flex-end',
+    },
+    chartGrid: {
+      position: 'absolute',
+      left: 16,
+      right: 16,
+      top: 16,
+      bottom: 32,
+      justifyContent: 'space-between',
+    },
+    chartGridLine: {
+      borderTopWidth: 1,
+      borderTopColor: 'rgba(0,0,0,0.08)',
+    },
+    chartBars: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-end',
+      height: 140,
+    },
+    chartBarCol: {
+      width: 32,
+      alignItems: 'center',
+      gap: 8,
+    },
+    chartBarTrack: {
+      width: '100%',
+      height: 140,
+      justifyContent: 'flex-end',
+      borderRadius: 8,
+      overflow: 'hidden',
+    },
+    chartBarFill: {
+      width: '100%',
+      borderRadius: 8,
+    },
+    chartTooltip: {
+      position: 'absolute',
+      top: -32,
+      left: -8,
+      backgroundColor: designColors.onSurface,
+      borderRadius: 8,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+    },
+    chartTooltipText: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      color: designColors.surfaceLowest,
+    },
+    chartLabel: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      color: designColors.outline,
+    },
+    chartLabelActive: {
+      color: designColors.onSurface,
+    },
+    skillGrid: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 12,
+    },
+    skillItem: {
+      flex: 1,
+      alignItems: 'center',
+    },
+    skillRing: {
+      backgroundColor: designColors.surfaceLow,
+      borderRadius: 16,
+      padding: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    skillSvg: {
+      transform: [{ rotate: '-90deg' }],
+    },
+    skillIconWrap: {
+      position: 'absolute',
+      width: 64,
+      height: 64,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    skillLabel: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 13,
+      color: designColors.onSurface,
+      marginTop: 8,
+      textAlign: 'center',
+    },
+    achievementList: {
+      gap: 12,
+      marginTop: 12,
+    },
+    achievementRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: designColors.surfaceLow,
+      borderRadius: 16,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: designColors.surfaceVariant,
+    },
+    achievementIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    achievementTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 14,
+      color: designColors.onSurface,
+    },
+    achievementMeta: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      color: designColors.outline,
+      marginTop: 4,
+    },
+    achievementPill: {
+      backgroundColor: designColors.primaryFixed,
+      borderRadius: 9999,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+    },
+    achievementPillText: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      color: designColors.primary,
+    },
+    tabBar: {
+      flexDirection: 'row',
+      backgroundColor: designColors.surfaceLow,
+      borderRadius: 9999,
+      padding: 4,
+    },
+    tab: {
+      flex: 1,
+      paddingVertical: 10,
+      alignItems: 'center',
+      borderRadius: 9999,
+    },
+    tabActive: {
+      backgroundColor: designColors.surfaceLowest,
+    },
+    tabText: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 13,
+      color: designColors.onSurfaceVariant,
+    },
+    tabTextActive: {
+      color: designColors.onSurface,
+    },
+    historyList: {
+      marginTop: 12,
+      gap: 12,
+    },
+    historyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      padding: 12,
+      borderRadius: 16,
+      backgroundColor: designColors.surfaceLow,
+      borderWidth: 1,
+      borderColor: designColors.surfaceVariant,
+    },
+    historyIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    historyTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 14,
+      color: designColors.onSurface,
+    },
+    historyMeta: {
+      fontFamily: 'Nunito',
+      fontWeight: '400',
+      fontSize: 12,
+      color: designColors.outline,
+      marginTop: 4,
+    },
+    historyScore: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 9999,
+    },
+    historyScoreText: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 12,
+    },
+    gateContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+    },
+    gateTitle: {
+      fontFamily: 'Nunito',
+      fontWeight: '800',
+      fontSize: 24,
+      color: designColors.onSurface,
+      textAlign: 'center',
+      marginTop: 16,
+    },
+    gateSub: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 14,
+      color: designColors.onSurfaceVariant,
+      textAlign: 'center',
+      marginTop: 10,
+    },
+    emptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 16,
+    },
+    emptyText: {
+      fontFamily: 'Nunito',
+      fontWeight: '600',
+      fontSize: 13,
+      color: designColors.outline,
+      textAlign: 'center',
+      marginTop: 8,
+    },
+  });
 
-              <SectionTitle title="Locked badges" />
-              <View style={styles.badgeRow}>
-                {earnedBadges.slice(4).map((b) => (
-                  <HexBadge
-                    key={b.key}
-                    icon={b.icon}
-                    label={b.label}
-                    color={b.color}
-                    locked={!b.unlock}
-                    size={70}
-                  />
-                ))}
-                <HexBadge label="???"  color={colors.darkGrey} locked size={70} />
-                <HexBadge label="???"  color={colors.darkGrey} locked size={70} />
-              </View>
-
-              <SectionTitle title="Skill breakdown" />
-              {skillAccuracies.length > 0 ? (
-                <View style={{ gap: 10, marginBottom: 16 }}>
-                  {skillAccuracies.map(({ skill, accuracy }) => {
-                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star-four-points' as IconName };
-                    return (
-                      <View key={skill} style={styles.skillCard}>
-                        <View style={[styles.skillEmoji, { backgroundColor: meta.color + '22' }]}>
-                          <MaterialCommunityIcons name={meta.icon} size={18} color={meta.color} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <View style={styles.skillRowTop}>
-                            <Text style={styles.skillName}>{skill}</Text>
-                            <Text style={[styles.skillPct, { color: meta.color }]}>{accuracy}%</Text>
-                          </View>
-                          <View style={styles.skillTrack}>
-                            <View
-                              style={[
-                                styles.skillFill,
-                                { width: `${accuracy}%`, backgroundColor: meta.color },
-                              ]}
-                            />
-                          </View>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <View style={[styles.weekCard, styles.emptyState]}>
-                  <Mascot kind="puzzle" size="md" />
-                  <Text style={styles.emptyText}>Complete sessions to unlock skill rings.</Text>
-                </View>
-              )}
-
-              {tier === 'BASIC' && (
-                <TouchableOpacity
-                  style={styles.premiumTeaser}
-                  onPress={() => navigation.navigate('SubscriptionUpgrade')}
-                  activeOpacity={0.9}
-                >
-                  <Mascot kind="brain" size="md" />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.premiumTeaserTitle}>AI Progress Insights</Text>
-                    <Text style={styles.premiumTeaserDesc}>
-                      Unlock GPT-4 weekly summaries & adaptive recommendations.
-                    </Text>
-                  </View>
-                  <MaterialCommunityIcons
-                    name="chevron-right"
-                    size={20}
-                    color={colors.secondaryDark}
-                  />
-                </TouchableOpacity>
-              )}
-            </>
-          ) : (
-            <>
-              <SectionTitle
-                title="Session history"
-                action={
-                  totalSessions > 0
-                    ? {
-                        label: `${totalSessions} total`,
-                        onPress: () => {},
-                      }
-                    : undefined
-                }
-              />
-              {recentSessions.length > 0 ? (
-                <View style={styles.historyCard}>
-                  {recentSessions.map((session, i) => {
-                    const skill = GAME_SKILL_MAP[session.game_id] || 'General';
-                    const meta = SKILL_META[skill] || { color: colors.primary, icon: 'star-four-points' as IconName };
-                    return (
-                      <View
-                        key={session.id || i}
-                        style={[
-                          styles.historyRow,
-                          i === recentSessions.length - 1 && { borderBottomWidth: 0 },
-                        ]}
-                      >
-                        <View style={[styles.historyDot, { backgroundColor: meta.color + '22' }]}>
-                          <MaterialCommunityIcons name={meta.icon} size={16} color={meta.color} />
-                        </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.historyTitle}>
-                            {session.game_id?.replace(/_/g, ' ').replace(/\b\w/g, (c: string) =>
-                              c.toUpperCase(),
-                            )}
-                          </Text>
-                          <Text style={styles.historyMeta}>
-                            {formatDate(session.timestamp)} · {formatDuration(session.duration_ms)}
-                          </Text>
-                        </View>
-                        <View
-                          style={[
-                            styles.historyScore,
-                            { backgroundColor: meta.color + '22' },
-                          ]}
-                        >
-                          <Text style={[styles.historyScoreText, { color: meta.color }]}>
-                            {session.accuracy_percentage}%
-                          </Text>
-                        </View>
-                      </View>
-                    );
-                  })}
-                </View>
-              ) : (
-                <View style={[styles.weekCard, styles.emptyState]}>
-                  <Mascot kind="cloud" size="md" />
-                  <Text style={styles.emptyText}>
-                    No sessions yet — start playing to build a history.
-                  </Text>
-                </View>
-              )}
-            </>
-          )}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream },
-
-  /* Gate */
-  gateContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 32,
-  },
-  gateTitle: {
-    ...typography.h1,
-    fontSize: 26,
-    textAlign: 'center',
-    marginTop: 16,
-  },
-  gateSub: {
-    ...typography.bodyLg,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 10,
-  },
-
-  /* Header */
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 14,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  headerTitle: {
-    ...typography.h1,
-    fontSize: 24,
-  },
-  headerSub: {
-    ...typography.caption,
-    marginTop: 2,
-  },
-  upgradeChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.surfaceWarm,
-    borderRadius: radius.full,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: '#F8E2A4',
-  },
-  upgradeChipText: {
-    ...typography.badge,
-    color: colors.secondaryDark,
-    textTransform: 'none',
-    letterSpacing: 0.2,
-  },
-
-  /* Level card */
-  levelRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  levelEyebrow: {
-    ...typography.eyebrow,
-    color: colors.textDark,
-    opacity: 0.7,
-    marginBottom: 4,
-  },
-  levelName: {
-    ...typography.h1,
-    fontSize: 28,
-    color: colors.textDark,
-  },
-  levelNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  levelXP: {
-    ...typography.body,
-    fontSize: 12,
-    color: colors.textBody,
-    marginTop: 2,
-    marginBottom: 10,
-  },
-  levelTrack: {
-    height: 8,
-    backgroundColor: 'rgba(0,0,0,0.12)',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  levelFill: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.textDark,
-  },
-
-  /* Stats */
-  statRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-
-  /* Tab bar */
-  tabBar: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    backgroundColor: colors.surfaceAlt,
-    borderRadius: radius.full,
-    padding: 4,
-    marginVertical: 18,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: radius.full,
-    alignItems: 'center',
-  },
-  tabActive: {
-    backgroundColor: colors.white,
-    ...shadow.sm,
-  },
-  tabText: {
-    ...typography.btnText,
-    fontSize: 13,
-    color: colors.textMuted,
-  },
-  tabTextActive: {
-    color: colors.textDark,
-  },
-
-  /* Week card */
-  weekCard: {
-    backgroundColor: colors.white,
-    borderRadius: radius.xl,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 18,
-    ...shadow.sm,
-  },
-  weekBars: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 110,
-  },
-  weekBarCol: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  weekBarTrack: {
-    width: 16,
-    height: 90,
-    backgroundColor: colors.lightGrey,
-    borderRadius: 8,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-  },
-  weekBarFill: {
-    width: '100%',
-    borderRadius: 8,
-  },
-  weekBarLabel: {
-    ...typography.badge,
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 6,
-    textTransform: 'none',
-  },
-
-  /* Empty state */
-  emptyState: {
-    alignItems: 'center',
-    paddingVertical: 24,
-  },
-  emptyText: {
-    ...typography.body,
-    color: colors.textMuted,
-    fontSize: 13,
-    marginTop: 10,
-    textAlign: 'center',
-  },
-
-  /* Badges */
-  badgeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 18,
-    rowGap: 16,
-  },
-
-  /* Skill cards */
-  skillCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    padding: 14,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.sm,
-  },
-  skillEmoji: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  skillRowTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  skillName: {
-    ...typography.h4,
-    fontSize: 14,
-  },
-  skillPct: {
-    ...typography.h4,
-    fontSize: 13,
-  },
-  skillTrack: {
-    height: 6,
-    backgroundColor: colors.lightGrey,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  skillFill: {
-    height: 6,
-    borderRadius: 3,
-  },
-
-  /* Premium teaser */
-  premiumTeaser: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.surfaceWarm,
-    borderRadius: radius.xl,
-    padding: 18,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#F8E2A4',
-    ...shadow.sm,
-  },
-  premiumTeaserTitle: {
-    ...typography.h4,
-    fontSize: 15,
-    color: colors.secondaryDark,
-  },
-  premiumTeaserDesc: {
-    ...typography.body,
-    fontSize: 13,
-    color: colors.textBody,
-    marginTop: 2,
-  },
-
-  /* History */
-  historyCard: {
-    backgroundColor: colors.white,
-    borderRadius: radius.xl,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 20,
-    ...shadow.sm,
-  },
-  historyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  historyDot: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  historyTitle: {
-    ...typography.h4,
-    fontSize: 14,
-  },
-  historyMeta: {
-    ...typography.caption,
-    marginTop: 2,
-  },
-  historyScore: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: radius.full,
-  },
-  historyScoreText: {
-    ...typography.badge,
-    fontSize: 11,
-    textTransform: 'none',
-    letterSpacing: 0.2,
-  },
-});
-
-export default ReportsScreen;
+  export default ReportsScreen;

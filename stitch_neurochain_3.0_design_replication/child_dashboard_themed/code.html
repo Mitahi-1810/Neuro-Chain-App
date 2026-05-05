@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hex-badge {
+            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        }
+        body {
+            background-color: #EBEBEB; /* Brand Background from Instructions */
+            font-family: 'Nunito', sans-serif;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#f9f9f9",
+                      "on-tertiary-fixed": "#130067",
+                      "primary-fixed-dim": "#c5c0ff",
+                      "on-tertiary-container": "#fffbff",
+                      "on-surface": "#1a1c1c",
+                      "on-background": "#1a1c1c",
+                      "surface-container-high": "#e8e8e8",
+                      "error": "#ba1a1a",
+                      "tertiary": "#544cbc",
+                      "primary-container": "#6e67d2",
+                      "surface-container": "#eeeeee",
+                      "secondary-fixed-dim": "#f0c110",
+                      "surface-container-low": "#f4f3f3",
+                      "on-secondary-container": "#6e5700",
+                      "on-tertiary": "#ffffff",
+                      "outline": "#787584",
+                      "secondary-container": "#fdcc22",
+                      "outline-variant": "#c8c4d4",
+                      "on-secondary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#dadada",
+                      "secondary": "#745b00",
+                      "inverse-primary": "#c5c0ff",
+                      "tertiary-fixed": "#e3dfff",
+                      "on-primary": "#ffffff",
+                      "tertiary-fixed-dim": "#c5c0ff",
+                      "surface": "#f9f9f9",
+                      "primary-fixed": "#e3dfff",
+                      "surface-tint": "#5750ba",
+                      "on-secondary-fixed-variant": "#584400",
+                      "on-error": "#ffffff",
+                      "tertiary-container": "#6e66d7",
+                      "primary": "#554db7",
+                      "on-secondary-fixed": "#241a00",
+                      "on-primary-fixed-variant": "#3f36a0",
+                      "surface-container-highest": "#e2e2e2",
+                      "on-primary-container": "#fffbff",
+                      "secondary-fixed": "#ffe08b",
+                      "on-error-container": "#93000a",
+                      "surface-bright": "#f9f9f9",
+                      "on-primary-fixed": "#130067",
+                      "inverse-on-surface": "#f1f1f1",
+                      "error-container": "#ffdad6",
+                      "inverse-surface": "#2f3131",
+                      "on-surface-variant": "#474552",
+                      "surface-variant": "#e2e2e2",
+                      "on-tertiary-fixed-variant": "#3f34a5"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "list-item-gap": "12px",
+                      "gutter": "16px",
+                      "unit": "4px",
+                      "container-margin": "20px",
+                      "card-padding": "16px"
+              },
+              "fontFamily": {
+                      "question-text": ["Nunito"],
+                      "metadata-small": ["Nunito"],
+                      "label-secondary": ["Nunito"],
+                      "section-subtitle": ["Nunito"],
+                      "headline-title": ["Nunito"],
+                      "body-default": ["Nunito"]
+              },
+              "fontSize": {
+                      "question-text": ["26px", {"lineHeight": "32px", "fontWeight": "800"}],
+                      "metadata-small": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "label-secondary": ["13px", {"lineHeight": "18px", "fontWeight": "600"}],
+                      "section-subtitle": ["17px", {"lineHeight": "24px", "fontWeight": "700"}],
+                      "headline-title": ["24px", {"lineHeight": "30px", "fontWeight": "800"}],
+                      "body-default": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#EBEBEB] min-h-screen pb-24">
+<!-- Top Branding & Profile Cohesive Card -->
+<header class="dark:bg-violet-900 text-white rounded-b-3xl shadow-md px-6 py-6 w-full flex flex-col gap-6" style="background-color: #7B74E0;">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border-2 border-yellow-400 overflow-hidden bg-white">
+<img class="w-full h-full object-cover" data-alt="A friendly and professional studio portrait of a South Asian child with a warm smile, wearing modern casual clothing. The background is a soft, out-of-focus educational setting with pastel tones. The lighting is bright and high-key, reflecting an energetic and intellectually stimulating atmosphere consistent with a gamified learning platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAy7GQ0rXxZYX9dvVbXbrbv0wYqbJR8IEzJhf3fZipA7XHsZyi6Jk6Cg_fwMnDdpdZAeG1S0JhzhUU1jVYep2nXE_VkhSHzUrIX79xuYhizb9-4bR5F2z2QynszqJOVMuiEpR4os27S07FkKOYYjfwJzotQ4rr8l3tliMpWD0gT4LRV6RE4Vlv4e5FJAgO3wyAbqmIUT2LBEg1Ab6jHmobhfJ0P1rT4olrsIGZ3dYGxHO9yHrGhScLBL0cQz3fgBsLQKFs1swEXXK13"/>
+</div>
+<div>
+<h1 class="font-['Nunito'] font-extrabold text-2xl tracking-tight leading-tight">NeuroChain 3.0</h1>
+<p class="text-sm font-semibold text-white/80">Welcome back, Advait!</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform" style="background-color: rgba(255, 255, 255, 0.2);">
+<span class="material-symbols-outlined text-white" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full active:scale-95 transition-transform" style="background-color: rgba(255, 255, 255, 0.2);">
+<span class="material-symbols-outlined text-white" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-around rounded-2xl p-4" style="background-color: rgba(0, 0, 0, 0.15);">
+<div class="flex flex-col items-center">
+<div class="hex-badge bg-yellow-400 w-10 h-10 flex items-center justify-center mb-1">
+<span class="material-symbols-outlined text-neutral-900 text-xl" data-weight="fill" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-white/90">Gold Tier</span>
+</div>
+<div class="h-10 w-[1px]" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+<div class="flex flex-col items-center">
+<span class="text-xl font-black text-yellow-400">1,250</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-white/90">NeuroPoints</span>
+</div>
+<div class="h-10 w-[1px]" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+<div class="flex flex-col items-center">
+<span class="text-xl font-black text-yellow-400">12</span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-white/90">Day Streak</span>
+</div>
+</div>
+</header>
+<main class="px-5 pt-6 flex flex-col gap-6">
+<!-- Today's Plan with Compact Progress -->
+<section class="flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-title text-headline-title text-on-surface">Today's Plan</h2>
+<span class="font-bold text-sm" style="color: #7B74E0;">See All</span>
+</div>
+<div class="bg-white rounded-[20px] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-on-surface-variant text-xs font-bold uppercase tracking-wider">Current Focus</span>
+<span class="text-on-surface font-extrabold text-lg">Logic &amp; Spatial Reasoning</span>
+</div>
+<div class="bg-tertiary-fixed text-primary rounded-full px-3 py-1 text-xs font-black">75%</div>
+</div>
+<!-- Compact Progress Bar -->
+<div class="w-full h-4 bg-[#E8E6FF] rounded-full overflow-hidden">
+<div class="h-full bg-[#7B74E0] rounded-full" style="width: 75%;"></div>
+</div>
+<div class="mt-4 flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg" data-icon="schedule">schedule</span>
+<span class="text-sm font-semibold">Next session in 2 hours</span>
+</div>
+</div>
+</section>
+<!-- Action Hub -->
+<section class="flex flex-col gap-4">
+<h2 class="font-headline-title text-headline-title text-on-surface">Action Hub</h2>
+<div class="bg-white rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden">
+<!-- Questionnaire -->
+<div class="flex items-center gap-4 p-5 hover:bg-neutral-50 active:scale-[0.98] transition-all cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-orange-100 flex items-center justify-center text-orange-600">
+<span class="material-symbols-outlined text-2xl" data-icon="assignment" data-weight="fill" style="font-variation-settings: 'FILL' 1;">assignment</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">Weekly Questionnaire</h3>
+<p class="text-on-surface-variant text-xs">Update your behavioral milestones</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-neutral-100 mx-5"></div>
+<!-- AI Screening -->
+<div class="flex items-center gap-4 p-5 hover:bg-neutral-50 active:scale-[0.98] transition-all cursor-pointer">
+<div class="w-12 h-12 rounded-2xl bg-teal-100 flex items-center justify-center text-teal-600">
+<span class="material-symbols-outlined text-2xl" data-icon="psychology" data-weight="fill" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">AI Screening</h3>
+<p class="text-on-surface-variant text-xs">Fast-track cognitive assessment</p>
+</div>
+<div class="bg-yellow-400 px-2 py-0.5 rounded-md text-[10px] font-black uppercase text-neutral-900">New</div>
+<span class="material-symbols-outlined text-neutral-400" data-icon="chevron_right">chevron_right</span>
+</div>
+<div class="h-[1px] bg-neutral-100 mx-5"></div>
+<!-- Consultation -->
+<div class="flex items-center gap-4 p-5 hover:bg-neutral-50 active:scale-[0.98] transition-all cursor-pointer">
+<div class="w-12 h-12 rounded-2xl flex items-center justify-center text-violet-600" style="background-color: #E8E6FF; color: #7B74E0;">
+<span class="material-symbols-outlined text-2xl" data-icon="video_chat" data-weight="fill" style="font-variation-settings: 'FILL' 1;">video_chat</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">Consultation</h3>
+<p class="text-on-surface-variant text-xs">Talk to a child specialist</p>
+</div>
+<span class="material-symbols-outlined text-neutral-400" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</section>
+<!-- Recommended Game / Card -->
+<section class="flex flex-col gap-4">
+<h2 class="font-headline-title text-headline-title text-on-surface">Boost Skills</h2>
+<div class="relative bg-white rounded-[20px] shadow-[0_2px_12px_rgba(0,0,0,0.06)] overflow-hidden aspect-[16/9] flex items-end">
+<img class="absolute inset-0 w-full h-full object-cover" data-alt="A vibrant and playful game interface design for a 'Memory Matrix' puzzle. It features colorful, chunky 3D blocks in primary shades of yellow, purple, and teal floating against a soft-textured lavender background. The style is tactile and modern, with soft ambient shadows and rounded corners, creating a physical and clickable look that appeals to children while maintaining academic rigor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAOhIxa-j6hx-DBaZOHBmSZXDEtxJvnz71Sw0lkkgWtQfuOvxIYEl3LXD0u_lNpOXV0dIvt-GFZgyDlRXTxIdrjlpo140OW_CoQGyDJcOYjUFxGMNy2ppXV5vHwg27SWlYhkGnRcIR7QjYZQAsZ26ktfbOIGtovjcwqqlT75_Xnv7iY3hMwJQy9xV_u564nstOd0T3pzQcWizP464L5OFCxYxMTXisO7KwDe8koe873Mv4ks0w9nkmgzDk2mLMX76yuV0hw4WKCKSW5"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="relative p-5 w-full flex items-center justify-between text-white">
+<div>
+<h3 class="text-xl font-extrabold">Memory Matrix</h3>
+<p class="text-sm font-semibold opacity-90">Visual Recall • Level 4</p>
+</div>
+<button class="bg-[#F5C518] text-neutral-900 rounded-full px-6 py-2 font-black text-sm active:scale-95 transition-transform shadow-lg">
+                        PLAY
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-2 bg-white dark:bg-neutral-800 shadow-[0_-4px_12px_rgba(0,0,0,0.06)] rounded-t-[24px] h-[72px] z-50">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center bg-yellow-400 dark:bg-yellow-500 text-neutral-900 rounded-[50px] px-5 py-2 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="home" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Home</span>
+</a>
+<!-- Games -->
+<a class="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="sports_esports">sports_esports</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Games</span>
+</a>
+<!-- Reports -->
+<a class="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="description">description</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Reports</span>
+</a>
+<!-- Store -->
+<a class="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="shopping_bag">shopping_bag</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Store</span>
+</a>
+<!-- Insights -->
+<a class="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="analytics">analytics</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Insights</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-neutral-400 dark:text-neutral-500 px-4 py-2 hover:bg-neutral-50 dark:hover:bg-neutral-700 active:scale-90 transition-all duration-200 ease-out" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="account_circle">account_circle</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] uppercase tracking-wider mt-0.5">Profile</span>
+</a>
+</nav>
+</body></html>

@@ -22,8 +22,22 @@ import {
   aggregateConcernScore, taskConcernScore, TaskAnalysisResult,
 } from '../../services/geminiVideoAnalysis';
 import { TASKS } from '../../data/taskDefinitions';
-import { getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 import { useChildStore } from '../../store/store';
+
+/*
+  Required Supabase table (run once in your Supabase SQL editor):
+
+  CREATE TABLE IF NOT EXISTS video_screenings (
+    id           TEXT PRIMARY KEY,
+    child_id     UUID NOT NULL,
+    original_risk TEXT NOT NULL,
+    adjusted_risk TEXT NOT NULL,
+    concern_score INTEGER NOT NULL,
+    task_results  JSONB NOT NULL DEFAULT '[]',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+*/
 
 type RiskLevel = 'LOW' | 'MODERATE' | 'HIGH';
 
@@ -98,29 +112,24 @@ const BehavioralReportScreen: React.FC<Props> = ({ navigation }) => {
   const meta             = RISK_META[adjustedRisk];
   const riskChanged      = adjustedRisk !== (originalRisk as RiskLevel);
 
-  // Save to database once
+  // Save to Supabase once
   useEffect(() => {
     if (saved || !activeChild || tasks.length === 0) return;
     (async () => {
       try {
-        const db = await getDatabase();
-        await db.runAsync(
-          `INSERT INTO video_screenings
-             (id, child_id, original_risk, adjusted_risk, concern_score, task_results, created_at, sync_status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-          [
-            Date.now().toString(),
-            activeChild.id,
-            originalRisk,
-            adjustedRisk,
-            concernScore,
-            JSON.stringify(tasks),
-            new Date().toISOString(),
-          ],
-        );
+        const { error } = await supabase.from('video_screenings').insert({
+          id:            Date.now().toString(),
+          child_id:      activeChild.id,
+          original_risk: originalRisk,
+          adjusted_risk: adjustedRisk,
+          concern_score: concernScore,
+          task_results:  tasks,
+          created_at:    new Date().toISOString(),
+        });
+        if (error) throw error;
         setSaved(true);
       } catch (e) {
-        console.warn('Failed to save video screening:', e);
+        console.warn('Failed to save video screening to Supabase:', e);
       }
     })();
   }, []);

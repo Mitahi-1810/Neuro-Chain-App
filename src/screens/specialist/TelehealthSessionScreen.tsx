@@ -147,7 +147,10 @@ const TelehealthSessionScreen: React.FC<any> = ({ navigation, route }) => {
           <Text style={styles.patientName}>
             {appointment?.parentName || 'Parent'} & {appointment?.childName || 'Child'}
           </Text>
-          <Text style={styles.connectionStatus}>🟢 Connected • HD Quality</Text>
+          <View style={styles.connectionStatusRow}>
+            <MaterialCommunityIcons name="checkbox-blank-circle" size={10} color="#4ADE80" />
+            <Text style={styles.connectionStatus}>Connected • HD Quality</Text>
+          </View>
         </View>
       </View>
 
@@ -275,6 +278,12 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.5)',
     fontSize: 13,
     fontFamily: 'Inter',
+    marginTop: 0,
+  },
+  connectionStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 8,
   },
   pipContainer: {

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,52 +20,58 @@ import { colors } from '../utils/colors';
 const { width } = Dimensions.get('window');
 
 // All sounds represented as emojis with descriptions (real audio would use expo-av)
-const SOUND_ROUNDS = [
+const SOUND_ROUNDS: {
+  id: string;
+  soundLabel: string;
+  displayIcon: keyof typeof MaterialCommunityIcons.glyphMap;
+  options: { id: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string }[];
+  answer: string;
+}[] = [
   {
     id: 'dog',
-    soundLabel: '🐕 Woof woof!',
-    displayEmoji: '🔊',
+    soundLabel: 'Woof woof!',
+    displayIcon: 'volume-high',
     options: [
-      { id: 'dog', emoji: '🐕', label: 'Dog' },
-      { id: 'cat', emoji: '🐈', label: 'Cat' },
-      { id: 'bird', emoji: '🐦', label: 'Bird' },
-      { id: 'cow', emoji: '🐄', label: 'Cow' },
+      { id: 'dog', icon: 'dog', label: 'Dog' },
+      { id: 'cat', icon: 'cat', label: 'Cat' },
+      { id: 'bird', icon: 'bird', label: 'Bird' },
+      { id: 'cow', icon: 'cow', label: 'Cow' },
     ],
     answer: 'dog',
   },
   {
     id: 'rain',
-    soundLabel: '🌧️ Pitter-patter...',
-    displayEmoji: '🔊',
+    soundLabel: 'Pitter-patter...',
+    displayIcon: 'volume-high',
     options: [
-      { id: 'rain', emoji: '🌧️', label: 'Rain' },
-      { id: 'thunder', emoji: '⛈️', label: 'Thunder' },
-      { id: 'wind', emoji: '💨', label: 'Wind' },
-      { id: 'snow', emoji: '❄️', label: 'Snow' },
+      { id: 'rain', icon: 'weather-rainy', label: 'Rain' },
+      { id: 'thunder', icon: 'weather-lightning', label: 'Thunder' },
+      { id: 'wind', icon: 'weather-windy', label: 'Wind' },
+      { id: 'snow', icon: 'weather-snowy', label: 'Snow' },
     ],
     answer: 'rain',
   },
   {
     id: 'car',
-    soundLabel: '🚗 Vroom vroom!',
-    displayEmoji: '🔊',
+    soundLabel: 'Vroom vroom!',
+    displayIcon: 'volume-high',
     options: [
-      { id: 'bike', emoji: '🚲', label: 'Bike' },
-      { id: 'car', emoji: '🚗', label: 'Car' },
-      { id: 'train', emoji: '🚂', label: 'Train' },
-      { id: 'plane', emoji: '✈️', label: 'Plane' },
+      { id: 'bike', icon: 'bike', label: 'Bike' },
+      { id: 'car', icon: 'car', label: 'Car' },
+      { id: 'train', icon: 'train', label: 'Train' },
+      { id: 'plane', icon: 'airplane', label: 'Plane' },
     ],
     answer: 'car',
   },
   {
     id: 'drum',
-    soundLabel: '🥁 Ba-dum-tss!',
-    displayEmoji: '🔊',
+    soundLabel: 'Ba-dum-tss!',
+    displayIcon: 'volume-high',
     options: [
-      { id: 'guitar', emoji: '🎸', label: 'Guitar' },
-      { id: 'piano', emoji: '🎹', label: 'Piano' },
-      { id: 'drum', emoji: '🥁', label: 'Drum' },
-      { id: 'trumpet', emoji: '🎺', label: 'Trumpet' },
+      { id: 'guitar', icon: 'guitar-acoustic', label: 'Guitar' },
+      { id: 'piano', icon: 'piano', label: 'Piano' },
+  { id: 'drum', icon: 'music', label: 'Drum' },
+      { id: 'trumpet', icon: 'trumpet', label: 'Trumpet' },
     ],
     answer: 'drum',
   },
@@ -150,7 +157,7 @@ export const NameThatSoundGame: React.FC<Props> = ({ onFinish }) => {
       {/* Sound Display */}
       <TouchableOpacity onPress={playSoundAnimation} activeOpacity={0.8}>
         <Animated.View style={[styles.soundCircle, speakerStyle]}>
-          <Text style={styles.soundIcon}>🔊</Text>
+          <MaterialCommunityIcons name={round.displayIcon} size={26} color={colors.primary} />
           <Text style={styles.soundLabel}>{round.soundLabel}</Text>
         </Animated.View>
       </TouchableOpacity>
@@ -178,13 +185,13 @@ export const NameThatSoundGame: React.FC<Props> = ({ onFinish }) => {
               disabled={isAnswered}
               activeOpacity={0.7}
             >
-              <Text style={styles.optionEmoji}>{option.emoji}</Text>
+              <MaterialCommunityIcons name={option.icon} size={28} color={colors.textDark} />
               <Text style={styles.optionLabel}>{option.label}</Text>
               {isAnswered && isCorrect && (
-                <Text style={styles.checkmark}>✅</Text>
+                <MaterialCommunityIcons name="check-circle" size={18} color={colors.success} />
               )}
               {isAnswered && isSelected && !isCorrect && (
-                <Text style={styles.checkmark}>❌</Text>
+                <MaterialCommunityIcons name="close-circle" size={18} color={colors.danger} />
               )}
             </TouchableOpacity>
           );

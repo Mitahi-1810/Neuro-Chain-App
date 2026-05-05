@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, Dimensions } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { PanGestureHandler, PanGestureHandlerGestureEvent } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -13,13 +14,13 @@ import { colors } from '../utils/colors';
 
 const { width, height } = Dimensions.get('window');
 
-const ITEMS = [
-  { id: '1', emoji: '🦁', type: 'animal' },
-  { id: '2', emoji: '🚗', type: 'vehicle' },
-  { id: '3', emoji: '🐘', type: 'animal' },
-  { id: '4', emoji: '🚀', type: 'vehicle' },
-  { id: '5', emoji: '🦒', type: 'animal' },
-  { id: '6', emoji: '🚁', type: 'vehicle' },
+const ITEMS: { id: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; type: 'animal' | 'vehicle' }[] = [
+  { id: '1', icon: 'paw', type: 'animal' },
+  { id: '2', icon: 'car-outline', type: 'vehicle' },
+  { id: '3', icon: 'paw', type: 'animal' },
+  { id: '4', icon: 'rocket-launch-outline', type: 'vehicle' },
+  { id: '5', icon: 'paw', type: 'animal' },
+  { id: '6', icon: 'helicopter', type: 'vehicle' },
 ];
 
 interface Props {
@@ -97,11 +98,11 @@ export const SortTheWorldGame: React.FC<Props> = ({ onFinish }) => {
 
       <View style={styles.dropZones}>
         <View style={[styles.dropZone, { backgroundColor: '#E8F5E9' }]}>
-          <Text style={styles.zoneEmoji}>🌿</Text>
+          <MaterialCommunityIcons name="leaf" size={28} color={colors.success} />
           <Text style={styles.zoneLabel}>Animals</Text>
         </View>
         <View style={[styles.dropZone, { backgroundColor: '#E3F2FD' }]}>
-          <Text style={styles.zoneEmoji}>🏙️</Text>
+          <MaterialCommunityIcons name="city-variant-outline" size={28} color={colors.primary} />
           <Text style={styles.zoneLabel}>Vehicles</Text>
         </View>
       </View>
@@ -109,7 +110,7 @@ export const SortTheWorldGame: React.FC<Props> = ({ onFinish }) => {
       <View style={styles.dragContainer}>
         <PanGestureHandler onGestureEvent={onGestureEvent}>
           <Animated.View style={[styles.dragItem, animatedStyle]}>
-            <Text style={styles.itemEmoji}>{item.emoji}</Text>
+            <MaterialCommunityIcons name={item.icon} size={48} color={colors.textDark} />
           </Animated.View>
         </PanGestureHandler>
       </View>

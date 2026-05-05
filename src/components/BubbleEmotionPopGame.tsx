@@ -8,19 +8,20 @@ import {
   Dimensions,
   SafeAreaView,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius } from '../utils/colors';
 
 const { width: SW, height: SH } = Dimensions.get('window');
 
-const EMOTIONS = [
-  { name: 'Happy',     emoji: '😊', color: '#FFD93D' },
-  { name: 'Sad',       emoji: '😢', color: '#6C9FE4' },
-  { name: 'Angry',     emoji: '😠', color: '#FF6B6B' },
-  { name: 'Surprised', emoji: '😲', color: '#FF9F43' },
-  { name: 'Scared',    emoji: '😨', color: '#A29BFE' },
-  { name: 'Excited',   emoji: '🤩', color: '#FD79A8' },
-  { name: 'Calm',      emoji: '😌', color: '#55EFC4' },
-  { name: 'Silly',     emoji: '🤪', color: '#FDCB6E' },
+const EMOTIONS: { name: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; color: string }[] = [
+  { name: 'Happy',     icon: 'emoticon-happy-outline', color: '#FFD93D' },
+  { name: 'Sad',       icon: 'emoticon-sad-outline', color: '#6C9FE4' },
+  { name: 'Angry',     icon: 'emoticon-angry-outline', color: '#FF6B6B' },
+  { name: 'Surprised', icon: 'emoticon-neutral-outline', color: '#FF9F43' },
+  { name: 'Scared',    icon: 'emoticon-cry-outline', color: '#A29BFE' },
+  { name: 'Excited',   icon: 'emoticon-happy-outline', color: '#FD79A8' },
+  { name: 'Calm',      icon: 'emoticon-neutral-outline', color: '#55EFC4' },
+  { name: 'Silly',     icon: 'emoticon-happy-outline', color: '#FDCB6E' },
 ];
 
 const WIN_SCORE = 12;
@@ -107,7 +108,7 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
     if (correct) {
       const next = score + 1;
       setScore(next);
-      setFeedback({ text: '🎉 Pop!', color: colors.success });
+  setFeedback({ text: 'Pop!', color: colors.success });
       const nextTarget = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
       setTarget(nextTarget);
       if (next >= WIN_SCORE) {
@@ -136,13 +137,14 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
       <View style={styles.header}>
         <Text style={styles.title}>Bubble Pop!</Text>
         <View style={styles.scoreRow}>
-          <Text style={styles.scoreText}>⭐ {score} / {WIN_SCORE}</Text>
+          <MaterialCommunityIcons name="star" size={16} color={colors.primary} />
+          <Text style={styles.scoreText}>{score} / {WIN_SCORE}</Text>
         </View>
       </View>
 
       <Animated.View style={[styles.targetBox, { transform: [{ scale: targetPulse }] }]}>
         <Text style={styles.targetLabel}>Pop the</Text>
-        <Text style={styles.targetEmoji}>{target.emoji}</Text>
+  <MaterialCommunityIcons name={target.icon} size={44} color={target.color} />
         <Text style={styles.targetName}>{target.name}</Text>
       </Animated.View>
 
@@ -179,7 +181,7 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
                 style={styles.bubbleTap}
                 activeOpacity={0.7}
               >
-                <Text style={styles.bubbleEmoji}>{bubble.emotion.emoji}</Text>
+                <MaterialCommunityIcons name={bubble.emotion.icon} size={32} color={colors.white} />
                 <Text style={styles.bubbleName}>{bubble.emotion.name}</Text>
               </TouchableOpacity>
             </Animated.View>
@@ -189,7 +191,7 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
 
       {done && (
         <View style={styles.winOverlay}>
-          <Text style={styles.winText}>Amazing! 🎉</Text>
+          <Text style={styles.winText}>Amazing!</Text>
           <Text style={styles.winSub}>You popped {WIN_SCORE} bubbles!</Text>
         </View>
       )}
@@ -201,7 +203,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#E8F4FD', alignItems: 'center' },
   header: { paddingTop: 16, paddingHorizontal: 20, width: '100%', alignItems: 'center' },
   title: { fontSize: 26, fontWeight: '900', color: colors.primary, fontFamily: 'Poppins' },
-  scoreRow: { marginTop: 4 },
+  scoreRow: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 6 },
   scoreText: { fontSize: 18, fontWeight: '800', color: colors.textDark, fontFamily: 'Poppins' },
   targetBox: {
     marginTop: 16,

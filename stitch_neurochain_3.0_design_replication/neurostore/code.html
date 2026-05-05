@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>NeuroGrow - Store</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#584400",
+                        "tertiary-container": "#6e66d7",
+                        "tertiary-fixed-dim": "#c5c0ff",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-fixed": "#241a00",
+                        "primary-fixed": "#e3dfff",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-background": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "secondary": "#745b00",
+                        "background": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed-dim": "#f0c110",
+                        "on-primary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#544cbc",
+                        "primary": "#554db7",
+                        "primary-container": "#6e67d2",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffe08b",
+                        "surface-container-low": "#f4f3f3",
+                        "on-primary-fixed": "#130067",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#fdcc22",
+                        "on-primary-fixed-variant": "#3f36a0",
+                        "inverse-primary": "#c5c0ff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1a1c1c",
+                        "surface-tint": "#5750ba",
+                        "outline": "#787584",
+                        "outline-variant": "#c8c4d4",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3f34a5",
+                        "on-tertiary-fixed": "#130067",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-container": "#6e5700",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#474552"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-padding": "16px",
+                        "unit": "4px",
+                        "list-item-gap": "12px",
+                        "container-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "section-subtitle": ["Nunito"],
+                        "question-text": ["Nunito"],
+                        "label-secondary": ["Nunito"],
+                        "headline-title": ["Nunito"],
+                        "metadata-small": ["Nunito"],
+                        "body-default": ["Nunito"]
+                    },
+                    "fontSize": {
+                        "section-subtitle": ["17px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "question-text": ["26px", {"lineHeight": "32px", "fontWeight": "800"}],
+                        "label-secondary": ["13px", {"lineHeight": "18px", "fontWeight": "600"}],
+                        "headline-title": ["24px", {"lineHeight": "30px", "fontWeight": "800"}],
+                        "metadata-small": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-default": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #EBEBEB; }
+        /* Safe area handling for iOS */
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        
+        /* Hide scrollbar for category chips */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-default text-on-surface antialiased min-h-screen flex flex-col pt-safe pb-[90px]">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full flex items-center justify-between px-4 z-40 h-16 bg-[#7B74E0] shadow-sm">
+<div class="flex items-center gap-3">
+<button class="text-white hover:bg-white/10 rounded-full transition-colors w-10 h-10 flex items-center justify-center active:scale-90 transition-all">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-['Nunito'] font-extrabold text-lg text-white">NeuroGrow</h1>
+</div>
+<div class="flex items-center">
+<div class="bg-white/20 rounded-full px-3 py-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary-container text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-white">2,450 XP</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-1 w-full max-w-md mx-auto px-container-margin py-6">
+<!-- Header Section -->
+<div class="mb-6">
+<h2 class="font-headline-title text-headline-title text-on-background mb-2">NeuroStore</h2>
+<p class="font-body-default text-body-default text-on-surface-variant">Redeem your XP for real rewards.</p>
+</div>
+<!-- Category Chips -->
+<div class="flex overflow-x-auto no-scrollbar gap-3 mb-6 pb-2 -mx-container-margin px-container-margin">
+<!-- Active Chip -->
+<button class="whitespace-nowrap px-5 py-2.5 rounded-[50px] bg-[#F5C518] text-white font-label-secondary text-label-secondary shadow-[0_2px_8px_rgba(245,197,24,0.3)] flex-shrink-0 active:scale-95 transition-transform">
+                All
+            </button>
+<!-- Inactive Chips -->
+<button class="whitespace-nowrap px-5 py-2.5 rounded-[50px] bg-white text-on-surface-variant font-label-secondary text-label-secondary shadow-sm flex-shrink-0 active:scale-95 transition-transform border border-surface-variant">
+                Sensory
+            </button>
+<button class="whitespace-nowrap px-5 py-2.5 rounded-[50px] bg-white text-on-surface-variant font-label-secondary text-label-secondary shadow-sm flex-shrink-0 active:scale-95 transition-transform border border-surface-variant">
+                Weighted
+            </button>
+<button class="whitespace-nowrap px-5 py-2.5 rounded-[50px] bg-white text-on-surface-variant font-label-secondary text-label-secondary shadow-sm flex-shrink-0 active:scale-95 transition-transform border border-surface-variant">
+                Oral
+            </button>
+<button class="whitespace-nowrap px-5 py-2.5 rounded-[50px] bg-white text-on-surface-variant font-label-secondary text-label-secondary shadow-sm flex-shrink-0 active:scale-95 transition-transform border border-surface-variant">
+                Lamps
+            </button>
+</div>
+<!-- Product List (Latest Quiz row style) -->
+<div class="flex flex-col gap-list-item-gap">
+<!-- Product Item 1 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-card-padding flex items-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform cursor-pointer">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4 bg-surface-container-low">
+<img alt="Weighted Blanket" class="w-full h-full object-cover" data-alt="A close-up studio shot of a high-quality grey weighted blanket folded neatly on a bright white surface. The lighting is soft and even, typical of a modern e-commerce product photo in a light-mode UI context. The texture of the fabric is visible, conveying comfort and weight. The overall mood is calming and tactile, aligning with a tactile modern design aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3s30ilwgiKPNQopcdSA41UPvr4WBD25phIGOpSSCaJ_eYzaX8SIlpUtDr78lIafcxH8VOVpvB-q6O156XLMTVc7sDMaWh9mj8FEYsFweGz5juGMvI6rtreGvqltl3LjxjzDl_xKqK8ox0k-OKGbi1MQenr3al7OBPtW0FX9O4cUJAGgah6hNPsknLX325dhDsOpwocCS-GtbABspDiRJ9r4LPueNFx77WJBPWD08yQAT0ch19JbTYfz_kdPBD32pTs53U2WPdmHw3"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-section-subtitle text-section-subtitle text-on-background truncate mb-1">Premium Weighted Blanket</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-label-secondary">15,000 XP</span>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Product Item 2 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-card-padding flex items-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform cursor-pointer">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4 bg-surface-container-low relative">
+<img alt="Sensory Chews" class="w-full h-full object-cover" data-alt="A collection of colorful, silicone chewelry items arranged playfully on a clean, light grey background. The lighting is bright and cheerful, highlighting the vibrant primary colors of the sensory items. The composition feels energetic and gamified, fitting a high-end mobile app store interface. The style is tactile modern, with clear focus and high contrast." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4xQHWZjGYQENR3lZ-2NbkohGv0Ko54qjBa8nK_ntHIZ1cbyWBg5n1BYFPf7XEdza4c6PHhQD4ZTtKoloHVEu-X7ynczwfzmVBInP1FWoQ4YtXeMXoftS0T6o_9EIyhvLBpyem4oSFe7Yjf9jSNObxtlYIutbxaAvxgRfRXoT3uvia0m__eOZ3JVeyKa06O95aQFveDFciyP2t1KMN8nG2OQ_ZKmI28MwzmJhvmt2JnlMo893fdKk7Az1hGNfQ4GKfb73J4yZzMbCu"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-section-subtitle text-section-subtitle text-on-background truncate mb-1">Textured Chewelry Set</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-label-secondary">2,500 XP</span>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Product Item 3 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-card-padding flex items-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform cursor-pointer">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4 bg-surface-container-low">
+<img alt="Noise Cancelling Headphones" class="w-full h-full object-cover" data-alt="Sleek, modern noise-canceling headphones in a soft matte finish, resting on a bright, minimalist surface. The lighting is high-key and studio-quality, casting subtle drop shadows that enhance the tactile feel. The color palette is neutral with soft white and light grey tones, perfectly suiting a light-mode tactile modern UI. The image conveys focus and quiet concentration." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsqkpIS-wWVrbjwlIPZ6YWyHRmBan8Ks9v1dRuXwcaUe68l5mKr-G0Qtn9IIm0f21M755z7ozgtQf63_lG7zSGXz4rg2ecblP7M9UHaxiDiFcTft8UclIT040cJwQeDHCEY2uhbaUwZnH9EGmP190sAdzIzEz6aCwmbDkib_b6ff0WBxMttnlv_wS0P_EiUZB5rDE-rGAIAHC5jv_u1lbWDCW_cjIUavzBVYiy4Sb8bP6H_c7HizgFJFsr-P11OyTeM6Gn_Lk78O7d"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-section-subtitle text-section-subtitle text-on-background truncate mb-1">QuietTime Headphones</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-label-secondary">25,000 XP</span>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Product Item 4 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-card-padding flex items-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] opacity-60">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4 bg-surface-container-low relative">
+<div class="absolute inset-0 bg-surface-variant/50 flex items-center justify-center z-10 backdrop-blur-[1px]">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="lock">lock</span>
+</div>
+<img alt="Fidget Cube" class="w-full h-full object-cover grayscale" data-alt="A small, multi-sided fidget cube resting on a plain white background. The image is rendered in black and white or grayscale to indicate it is locked or unavailable. The lighting is soft but dimensional, emphasizing the buttons and switches on the cube. The aesthetic fits a modern, gamified app interface where locked items still look premium and desirable." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoM3EqDjmYvW1UC-qbNXK_mwT8h7QkIOZUmRMYovRAz_f4SAwQvqp1tZErphCoGd5jwMOTL9ukAChWmpKtYHXflKlM0Nw7tB_nuAtgD3eIDNtgOAOdWw1ZYZ3769-3ues9PjIExOJoHfQ3pZAtmEZChQnVMN9N5iSC-9DfdQhEiSAc2dvX6KqBsZwqJQdevZp7l3gY5DnQCEAbcBBxmV3GMZkxiwR7uBIB0sj7i7ZDD5YhDEsNA448Byo6WLWTox6a_FvRLzq55VV2"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-section-subtitle text-section-subtitle text-on-background truncate mb-1">Advanced Fidget Cube</h3>
+<div class="flex items-center gap-1 text-outline">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-label-secondary">Unlocks at Lvl 10</span>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+<!-- Product Item 5 -->
+<div class="bg-surface-container-lowest rounded-[16px] p-card-padding flex items-center shadow-[0_2px_12px_rgba(0,0,0,0.06)] active:scale-[0.98] transition-transform cursor-pointer">
+<div class="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 mr-4 bg-surface-container-low">
+<img alt="Lava Lamp" class="w-full h-full object-cover" data-alt="A vibrant, modern lava lamp with blue liquid and yellow wax, glowing brightly against a pristine white background. The image has high contrast and saturation, adding a pop of energy to the composition. The lighting highlights the smooth curves of the lamp and the fluid motion inside. It looks like a desirable reward in a gamified learning app, fitting the tactile modern style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuByPT5S95038TYjt3oms-iA9IMMfU_TyhSNxqfNgoR1gTlJuXhboa3YYxspkOuTwmFrEmiXFePKbM_8Yq4jhoBwT5ZslSX61ej_Onk4T8f0jZCSSpioxVzpGS0wsOj1HHbw3OeTpGqEsIAvPtCm4G9mWMXtE_7rgqqGI6l7CaQskkCcVTRT3Q1bTs-9rSuhhK0D9JkODoMdgKlo7h0gB7KXTBANj5r1K670VGjiHkKSQikzQxD6I5BWk-VQKHld7CfcqdztCqAS6yRg"/>
+</div>
+<div class="flex-1 min-w-0">
+<h3 class="font-section-subtitle text-section-subtitle text-on-background truncate mb-1">Calming Motion Lamp</h3>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]" data-icon="star" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-secondary text-label-secondary">8,000 XP</span>
+</div>
+</div>
+<div class="flex-shrink-0 ml-2">
+<span class="material-symbols-outlined text-outline-variant" data-icon="chevron_right">chevron_right</span>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center pb-safe bg-white shadow-[0_-2px_12px_rgba(0,0,0,0.06)] fixed bottom-0 w-full h-[72px] rounded-t-[24px] z-50 px-2">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center text-outline-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Home</span>
+</a>
+<!-- Games -->
+<a class="flex flex-col items-center justify-center text-outline-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="sports_esports">sports_esports</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Games</span>
+</a>
+<!-- Reports -->
+<a class="flex flex-col items-center justify-center text-outline-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="description">description</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Reports</span>
+</a>
+<!-- Store (Active) -->
+<a class="flex flex-col items-center justify-center bg-[#F5C518] text-white rounded-[50px] px-4 py-1 hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 shadow-sm" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="shopping_bag" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Store</span>
+</a>
+<!-- Insights -->
+<a class="flex flex-col items-center justify-center text-outline-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="analytics">analytics</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Insights</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-outline-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-['Nunito'] font-extrabold text-[10px] tracking-tight">Profile</span>
+</a></nav>
+</body></html>
