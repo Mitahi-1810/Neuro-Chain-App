@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -59,6 +59,157 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const nextGame = dailyPlan.find(
     (g) => !todaysSessions.some((s) => s.game_id === g.id),
+  const greetingTime = () => {
+    const h = new Date().getHours();
+    if (h < 12) return t('home_greeting_morning');
+    if (h < 18) return t('home_greeting_afternoon');
+    return t('home_greeting_evening');
+  };
+
+  /* ───────── HEADER ───────── */
+  const Header = () => (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        <View style={styles.profileRow}>
+          <AvatarBubble
+            initial={activeChild?.first_name?.charAt(0) || user?.full_name?.charAt(0) || '?'}
+            size={48}
+            bg={colors.secondary}
+            ring={colors.secondaryLight}
+          />
+          <View>
+            <Text style={styles.headerHello}>{greetingTime()},</Text>
+            <Text style={styles.headerName}>
+              {activeChild?.first_name || user?.full_name?.split(' ')[0] || 'Parent'}
+            </Text>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.bellBtn} activeOpacity={0.85}>
+          <MaterialCommunityIcons name="bell-outline" size={20} color={colors.textDark} />
+        </TouchableOpacity>
+      </View>
+
+      <View style={styles.tierBar}>
+        <View style={[styles.tierChip, { backgroundColor: tierColor + '18' }]}>
+          <IconSymbol name="crown-outline" size={14} color={tierColor} />
+          <Text style={[styles.tierChipText, { color: tierColor }]}>{t('home_tier_plan', { tier: tierLabel })}</Text>
+        </View>
+        <View style={styles.streakChip}>
+          <IconSymbol name="fire" size={14} color={colors.secondaryDark} />
+          <Text style={styles.streakChipText}>
+            {t('home_day_streak_chip', { count: streakData.current_streak })}
+          </Text>
+        </View>
+      </View>
+    </View>
+  );
+
+  /* ───────── HERO CARD ───────── */
+  const HeroCard = () => {
+    const nextGame = dailyPlan.find(
+      (g) => !todaysSessions.some((s) => s.game_id === g.id),
+    );
+    const ctaLabel = tier === 'FREE'
+      ? t('home_cta_screening')
+      : nextGame
+      ? t('home_cta_continue_plan')
+      : t('home_cta_browse_games');
+    const onCta = () => {
+      if (tier === 'FREE') return navigation.navigate('AutismScreener');
+      if (nextGame) return navigation.navigate('GameRunner', { gameId: nextGame.id });
+      navigation.navigate('Games');
+    };
+
+    return (
+      <CrayonCard variant="primary" padding={16} style={styles.hero}>
+        <View style={styles.heroRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.heroEyebrow}>
+              {tier === 'FREE' ? t('home_hero_eyebrow_free') : t('home_hero_eyebrow_paid')}
+            </Text>
+            <Text style={styles.heroTitle}>
+              {tier === 'FREE'
+                ? t('home_hero_title_free')
+                : nextGame
+                ? t('home_hero_title_game', { name: nextGame.name })
+                : t('home_hero_title_done')}
+            </Text>
+            <Text style={styles.heroDesc}>
+              {tier === 'FREE'
+                ? t('home_hero_desc_free')
+                : nextGame
+                ? `${nextGame.target_skill} · ${nextGame.duration_minutes} min`
+                : t('home_hero_desc_done')}
+            </Text>
+            <CrayonButton
+              label={ctaLabel}
+              onPress={onCta}
+              variant="secondary"
+              size="small"
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
+              iconRight={
+                <MaterialCommunityIcons name="arrow-right" size={16} color={colors.textDark} />
+              }
+            />
+          </View>
+          <Mascot
+            kind={tier === 'FREE' ? 'puzzle' : nextGame ? 'rocket' : 'star'}
+            size="md"
+            tint="rgba(255,255,255,0.18)"
+          />
+        </View>
+      </CrayonCard>
+    );
+  };
+
+  /* ───────── TODAY PROGRESS ───────── */
+  const TodayProgress = () => (
+    <CrayonCard variant="default" padding={18} style={{ marginBottom: 18 }}>
+      <View style={styles.progressHeader}>
+        <View>
+          <Text style={styles.progressEyebrow}>{t('home_progress_eyebrow')}</Text>
+          <Text style={styles.progressValue}>
+            {progressPercent}% <Text style={styles.progressValueMuted}>{t('home_progress_complete')}</Text>
+          </Text>
+        </View>
+        <View style={styles.progressMetric}>
+          <Text style={styles.progressMetricValue}>
+            {todaysSessions.length}/{totalPlan}
+          </Text>
+          <Text style={styles.progressMetricLabel}>{t('home_progress_sessions')}</Text>
+        </View>
+      </View>
+      <View style={styles.progressBar}>
+        <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+      </View>
+    </CrayonCard>
+  );
+
+  /* ───────── STAT TILES ───────── */
+  const Stats = () => (
+    <View style={styles.statRow}>
+      <StatPill
+        emoji="🔥"
+        label={t('home_stat_streak')}
+        value={`${streakData.current_streak}d`}
+        iconBg={colors.secondaryLight}
+        iconColor={colors.secondaryDark}
+      />
+      <StatPill
+        emoji="🎮"
+        label={t('home_stat_games')}
+        value={streakData.total_games_played}
+        iconBg={colors.primaryLight}
+        iconColor={colors.primary}
+      />
+      <StatPill
+        emoji="⭐"
+        label={t('home_stat_points')}
+        value={streakData.total_games_played * 12}
+        iconBg={colors.accentLight}
+        iconColor={colors.accentDark}
+      />
+    </View>
   );
   const focusSkill = nextGame?.target_skill || dailyPlan[0]?.target_skill || 'Logic & Spatial Reasoning';
   const focusLabel = nextGame
@@ -176,6 +327,31 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.planMetaText}>Next session in 2 hours</Text>
             </View>
           </View>
+        </CrayonCard>
+      )}
+
+      {/* ── Book a Consultation ── */}
+      <CrayonCard padding={18} style={{ marginBottom: 18, borderColor: colors.accent + '30', borderWidth: 1.5 }}>
+        <View style={styles.specRow}>
+          <Mascot kind="heart" size="md" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.specTitle}>Book a consultation</Text>
+            <Text style={styles.specDesc}>
+              Get a personalised AI behavioural check, then book a session with a verified specialist.
+            </Text>
+            <CrayonButton
+              label="See All"
+              onPress={() => navigation.navigate('TelehealthBooking')}
+              variant="primary"
+              size="small"
+              style={{ marginTop: 12, alignSelf: 'flex-start' }}
+              iconRight={<MaterialCommunityIcons name="arrow-right" size={16} color={colors.white} />}
+            />
+          </View>
+        </View>
+      </CrayonCard>
+    </View>
+  );
 
           <Text style={styles.sectionTitle}>Action Hub</Text>
           <View style={styles.actionCard}>
@@ -492,6 +668,55 @@ const styles = StyleSheet.create({
   },
   boostContent: {
     padding: 20,
+
+  /* Specialist list cards */
+  specialistCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    padding: 14,
+    gap: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
+    ...shadow.sm,
+  },
+  specialistAvatar: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.primaryMid,
+  },
+  specialistAvatarText: {
+    ...typography.h3,
+    fontSize: 18,
+    color: colors.primary,
+  },
+  specialistName: {
+    ...typography.h3,
+    fontSize: 15,
+  },
+  specialistMeta: {
+    ...typography.caption,
+    marginTop: 2,
+    color: colors.textMuted,
+  },
+  specialistBookBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  /* Week card */
+  weekRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

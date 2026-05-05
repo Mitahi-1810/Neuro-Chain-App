@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
@@ -13,73 +14,48 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { useAuthStore } from '../../store/store';
 import { CALENDLY_BASE_URL } from './CalendlyBookingScreen';
+import { supabase } from '../../lib/supabase';
+
+const ACCENT_COLORS = [colors.primary, '#35D0BA', '#F97316', '#A855F7', '#0EA5E9'];
 
 interface Specialist {
   id: string;
-  name: string;
-  credential: string;
-  specialty: string;
-  fee: number;
-  languages: string[];
-  calendly_url: string;
-  initials: string;
-  accentColor: string;
+  full_name: string | null;
+  specialty: string | null;
+  city: string | null;
+  calendly_url: string | null;
+  consultation_fee_bdt: number | null;
 }
-
-const SPECIALISTS: Specialist[] = [
-  {
-    id: 'spec-1',
-    name: 'Dr. Ayesha Rahman',
-    credential: 'MBBS, FCPS (Pediatrics)',
-    specialty: 'Autism & Developmental Pediatrics',
-    fee: 2000,
-    languages: ['Bengali', 'English'],
-    calendly_url: CALENDLY_BASE_URL,
-    initials: 'AR',
-    accentColor: colors.primary,
-  },
-  {
-    id: 'spec-2',
-    name: 'Dr. Hasan Chowdhury',
-    credential: 'MBBS, MD (Child Psychiatry)',
-    specialty: 'Speech & Language Therapy',
-    fee: 1800,
-    languages: ['Bengali', 'English', 'Hindi'],
-    calendly_url: CALENDLY_BASE_URL,
-    initials: 'HC',
-    accentColor: '#35D0BA',
-  },
-  {
-    id: 'spec-3',
-    name: 'Ms. Nadia Islam',
-    credential: 'BSc, MSc (Occupational Therapy)',
-    specialty: 'Occupational Therapy',
-    fee: 1500,
-    languages: ['Bengali'],
-    calendly_url: CALENDLY_BASE_URL,
-    initials: 'NI',
-    accentColor: '#F97316',
-  },
-];
 
 const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
   const isPremium = user?.tier_level === 'PREMIUM';
   const [selected, setSelected] = useState<string | null>(null);
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const specialist = SPECIALISTS.find((s) => s.id === selected);
-  const discountedFee = specialist
-    ? isPremium
-      ? Math.round(specialist.fee * 0.8)
-      : specialist.fee
-    : 0;
+  useEffect(() => {
+    supabase
+      .from('specialists')
+      .select('id, full_name, specialty, city, calendly_url, consultation_fee_bdt')
+      .eq('status', 'ACTIVE')
+      .order('created_at', { ascending: false })
+      .then(({ data }) => {
+        setSpecialists((data as Specialist[]) || []);
+        setLoading(false);
+      }, () => setLoading(false));
+  }, []);
+
+  const specialist = specialists.find((s) => s.id === selected);
+  const baseFee = specialist?.consultation_fee_bdt ?? 0;
+  const discountedFee = isPremium ? Math.round(baseFee * 0.8) : baseFee;
 
   const handleBook = () => {
     if (!specialist) return;
     navigation.navigate('CalendlyBooking', {
-      calendlyUrl: specialist.calendly_url,
+      calendlyUrl: specialist.calendly_url || CALENDLY_BASE_URL,
       specialistId: specialist.id,
-      specialistName: specialist.name,
+      specialistName: specialist.full_name || 'Specialist',
       fee: discountedFee,
     });
   };
@@ -110,9 +86,23 @@ const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
 
         <Text style={styles.sectionLabel}>Choose your specialist</Text>
 
-        {SPECIALISTS.map((spec) => {
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginVertical: 32 }} />
+        ) : specialists.length === 0 ? (
+          <Text style={[styles.sectionLabel, { textAlign: 'center', marginTop: 32 }]}>
+            No specialists available right now.
+          </Text>
+        ) : specialists.map((spec, index) => {
           const isSelected = spec.id === selected;
-          const displayFee = isPremium ? Math.round(spec.fee * 0.8) : spec.fee;
+          const accent = ACCENT_COLORS[index % ACCENT_COLORS.length];
+          const fee = spec.consultation_fee_bdt ?? 0;
+          const displayFee = isPremium ? Math.round(fee * 0.8) : fee;
+          const initials = (spec.full_name || 'SP')
+            .split(' ')
+            .map((w) => w[0])
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
           return (
             <TouchableOpacity
               key={spec.id}
@@ -127,38 +117,41 @@ const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
               )}
 
               <View style={styles.specRow}>
-                <View style={[styles.avatar, { backgroundColor: spec.accentColor + '20', borderColor: spec.accentColor + '40' }]}>
-                  <Text style={[styles.avatarText, { color: spec.accentColor }]}>{spec.initials}</Text>
+                <View style={[styles.avatar, { backgroundColor: accent + '20', borderColor: accent + '40' }]}>
+                  <Text style={[styles.avatarText, { color: accent }]}>{initials}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.specName}>{spec.name}</Text>
-                  <Text style={styles.specCred}>{spec.credential}</Text>
+                  <Text style={styles.specName}>{spec.full_name || 'Specialist'}</Text>
+                  {spec.city ? (
+                    <Text style={styles.specCred}>{spec.city}</Text>
+                  ) : null}
                 </View>
               </View>
 
-              <View style={styles.specDetails}>
-                <View style={styles.specChip}>
-                  <Text style={styles.specChipText}>{spec.specialty}</Text>
+              {spec.specialty ? (
+                <View style={styles.specDetails}>
+                  <View style={styles.specChip}>
+                    <Text style={styles.specChipText}>{spec.specialty}</Text>
+                  </View>
                 </View>
-                <View style={[styles.specChip, styles.langChip]}>
-                  <Text style={[styles.specChipText, { color: colors.textMuted }]}>
-                    {spec.languages.join(' · ')}
-                  </Text>
-                </View>
-              </View>
+              ) : null}
 
               <View style={styles.specFooter}>
                 <View>
-                  {isPremium && (
-                    <Text style={styles.originalFee}>{spec.fee} BDT</Text>
+                  {isPremium && fee > 0 && (
+                    <Text style={styles.originalFee}>{fee} BDT</Text>
                   )}
-                  <Text style={[styles.feeText, { color: spec.accentColor }]}>
-                    {displayFee} BDT <Text style={styles.feeLabel}>/ session</Text>
-                  </Text>
+                  {fee > 0 ? (
+                    <Text style={[styles.feeText, { color: accent }]}>
+                      {displayFee} BDT <Text style={styles.feeLabel}>/ session</Text>
+                    </Text>
+                  ) : (
+                    <Text style={[styles.feeText, { color: accent }]}>Free consultation</Text>
+                  )}
                 </View>
-                <View style={[styles.availBadge, isSelected && { backgroundColor: spec.accentColor + '15', borderColor: spec.accentColor + '40' }]}>
-                  <View style={[styles.availDot, { backgroundColor: isSelected ? spec.accentColor : colors.success }]} />
-                  <Text style={[styles.availText, isSelected && { color: spec.accentColor }]}>Available</Text>
+                <View style={[styles.availBadge, isSelected && { backgroundColor: accent + '15', borderColor: accent + '40' }]}>
+                  <View style={[styles.availDot, { backgroundColor: isSelected ? accent : colors.success }]} />
+                  <Text style={[styles.availText, isSelected && { color: accent }]}>Available</Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -179,7 +172,7 @@ const TelehealthBookingScreen: React.FC<any> = ({ navigation }) => {
       <View style={styles.bottomBar}>
         {specialist && (
           <Text style={styles.selectedSummary}>
-            {specialist.name} · <Text style={{ color: colors.primary }}>{discountedFee} BDT</Text>
+            {specialist.full_name || 'Specialist'} · <Text style={{ color: colors.primary }}>{discountedFee > 0 ? `${discountedFee} BDT` : 'Free'}</Text>
           </Text>
         )}
         <CrayonButton

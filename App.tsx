@@ -41,7 +41,6 @@ import {
   Poppins_700Bold,
   Poppins_800ExtraBold,
 } from "@expo-google-fonts/poppins";
-import { typography } from "./src/utils/typography";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -81,6 +80,7 @@ import TaskInstructionScreen from './src/screens/screener/TaskInstructionScreen'
 import TaskRecordingScreen from './src/screens/screener/TaskRecordingScreen';
 import TaskReviewScreen from './src/screens/screener/TaskReviewScreen';
 import BehavioralReportScreen from './src/screens/screener/BehavioralReportScreen';
+import AIBehavioralCheckScreen from './src/screens/screener/AIBehavioralCheckScreen';
 
 // Specialist Screens
 import SpecialistDashboardScreen from "./src/screens/specialist/SpecialistDashboardScreen";
@@ -294,7 +294,8 @@ function ParentStack() {
         <Stack.Screen name="TaskInstruction"     component={TaskInstructionScreen} />
         <Stack.Screen name="TaskRecording"       component={TaskRecordingScreen} />
         <Stack.Screen name="TaskReview"          component={TaskReviewScreen} />
-        <Stack.Screen name="BehavioralReport"    component={BehavioralReportScreen} />
+        <Stack.Screen name="BehavioralReport"      component={BehavioralReportScreen} />
+        <Stack.Screen name="AIBehavioralCheck"    component={AIBehavioralCheckScreen} />
         <Stack.Screen name="SubscriptionUpgrade" component={SubscriptionUpgradeScreen} />
         <Stack.Screen name="TelehealthBooking" component={TelehealthBookingScreen} />
         <Stack.Screen name="CalendlyBooking" component={CalendlyBookingScreen} />

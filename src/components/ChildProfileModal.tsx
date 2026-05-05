@@ -11,6 +11,7 @@ import {
   Platform,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../utils/colors';
 import { CrayonButton } from './CrayonButton';
 import { CrayonCard } from './CrayonCard';
@@ -109,10 +110,19 @@ export const ChildProfileModal: React.FC<Props> = ({ visible, onSave, onClose })
             keyboardShouldPersistTaps="handled"
             keyboardDismissMode="none"
           >
-            <Text style={styles.title}>Create Child Profile</Text>
-            <Text style={styles.subtitle}>
-              Please complete your child\'s profile to continue.
-            </Text>
+            <View style={styles.titleRow}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.title}>Create Child Profile</Text>
+                <Text style={styles.subtitle}>
+                  Please complete your child's profile to continue.
+                </Text>
+              </View>
+              {onClose && (
+                <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
+                  <MaterialCommunityIcons name="close" size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+              )}
+            </View>
 
             <CrayonCard style={styles.section} variant="default">
               <Text style={styles.label}>Child\'s First Name</Text>
@@ -237,6 +247,21 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 8,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+    gap: 8,
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.lightGrey,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
   title: {
     fontSize: 22,
     fontWeight: '800',
@@ -247,7 +272,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: colors.textWarmBrown,
-    marginBottom: 16,
     fontFamily: 'Inter',
   },
   section: {
