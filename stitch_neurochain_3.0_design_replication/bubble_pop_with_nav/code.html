@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bubble Pop Game</title>
+<!-- Google Fonts: Nunito -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#584400",
+                        "tertiary-container": "#6e66d7",
+                        "tertiary-fixed-dim": "#c5c0ff",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-fixed": "#241a00",
+                        "primary-fixed": "#e3dfff",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-background": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "secondary": "#745b00",
+                        "background": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed-dim": "#f0c110",
+                        "on-primary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#544cbc",
+                        "primary": "#554db7",
+                        "primary-container": "#6e67d2",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffe08b",
+                        "surface-container-low": "#f4f3f3",
+                        "on-primary-fixed": "#130067",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#fdcc22",
+                        "on-primary-fixed-variant": "#3f36a0",
+                        "inverse-primary": "#c5c0ff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1a1c1c",
+                        "surface-tint": "#5750ba",
+                        "outline": "#787584",
+                        "outline-variant": "#c8c4d4",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3f34a5",
+                        "on-tertiary-fixed": "#130067",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-container": "#6e5700",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#474552"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-padding": "16px",
+                        "unit": "4px",
+                        "list-item-gap": "12px",
+                        "container-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "section-subtitle": ["Nunito"],
+                        "question-text": ["Nunito"],
+                        "label-secondary": ["Nunito"],
+                        "headline-title": ["Nunito"],
+                        "metadata-small": ["Nunito"],
+                        "body-default": ["Nunito"]
+                    },
+                    "fontSize": {
+                        "section-subtitle": ["17px", { "lineHeight": "24px", "fontWeight": "700" }],
+                        "question-text": ["26px", { "lineHeight": "32px", "fontWeight": "800" }],
+                        "label-secondary": ["13px", { "lineHeight": "18px", "fontWeight": "600" }],
+                        "headline-title": ["24px", { "lineHeight": "30px", "fontWeight": "800" }],
+                        "metadata-small": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "body-default": ["14px", { "lineHeight": "20px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            /* Fallback for the requested background if theme primary doesn't match the exact hex requested, 
+               though we prioritize theme classes in the markup */
+            background-color: #7B74E0;
+        }
+        .bubble-float-1 { animation: float1 6s ease-in-out infinite; }
+        .bubble-float-2 { animation: float2 8s ease-in-out infinite reverse; }
+        .bubble-float-3 { animation: float3 7s ease-in-out infinite; }
+        
+        @keyframes float1 {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(10px); }
+        }
+        @keyframes float2 {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            50% { transform: translateY(-15px) translateX(-15px) scale(1.05); }
+        }
+        @keyframes float3 {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-25px) scale(0.95); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col font-body-default text-body-default text-on-primary">
+<!-- Shared Component: TopAppBar -->
+<header class="bg-[#7B74E0] dark:bg-slate-950 sticky top-0 w-full flex items-center justify-between px-4 z-40 h-16 shadow-sm">
+<button aria-label="Go back" class="text-white hover:bg-white/10 rounded-full transition-colors active:scale-90 transition-all p-2 flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">arrow_back</span>
+</button>
+<h1 class="font-['Nunito'] font-extrabold text-lg text-white tracking-tight text-2xl font-black">NeuroGrow</h1>
+<!-- Spacer to ensure title centering -->
+<div class="w-10"></div>
+</header>
+<!-- Main Game Canvas -->
+<main class="flex-1 flex flex-col px-container-margin pt-6 pb-24 relative overflow-hidden">
+<!-- Game Header & Timer -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="font-headline-title text-headline-title text-white drop-shadow-sm">Bubble Pop</h2>
+<p class="font-label-secondary text-label-secondary text-primary-fixed mt-1">Round 3 / Level 2</p>
+</div>
+<!-- Timer Badge -->
+<div class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-full flex items-center gap-1 shadow-[0_4px_12px_rgba(0,0,0,0.15)] ring-2 ring-white/20">
+<span class="material-symbols-outlined text-[18px]">timer</span>
+<span class="font-section-subtitle text-section-subtitle tracking-wide">01:30</span>
+</div>
+</div>
+<!-- Progress Track (8 segments, 3 filled) -->
+<div class="flex gap-1.5 mb-8">
+<div class="h-2.5 flex-1 rounded-full bg-secondary-container shadow-[0_0_8px_rgba(253,204,34,0.6)]"></div>
+<div class="h-2.5 flex-1 rounded-full bg-secondary-container shadow-[0_0_8px_rgba(253,204,34,0.6)]"></div>
+<div class="h-2.5 flex-1 rounded-full bg-secondary-container shadow-[0_0_8px_rgba(253,204,34,0.6)]"></div>
+<div class="h-2.5 flex-1 rounded-full bg-white/20 backdrop-blur-sm"></div>
+<div class="h-2.5 flex-1 rounded-full bg-white/20 backdrop-blur-sm"></div>
+<div class="h-2.5 flex-1 rounded-full bg-white/20 backdrop-blur-sm"></div>
+<div class="h-2.5 flex-1 rounded-full bg-white/20 backdrop-blur-sm"></div>
+<div class="h-2.5 flex-1 rounded-full bg-white/20 backdrop-blur-sm"></div>
+</div>
+<!-- Question / Prompt -->
+<div class="text-center mb-8 z-10">
+<h3 class="font-question-text text-question-text text-white drop-shadow-md">Pop the bubbles!</h3>
+</div>
+<!-- Interactive Game Area (Glassmorphism Canvas) -->
+<div class="flex-1 relative min-h-[350px] bg-white/10 backdrop-blur-md rounded-[32px] border border-white/20 shadow-[0_8px_32px_rgba(0,0,0,0.1)] p-5 overflow-hidden">
+<!-- Score and Lives Display -->
+<div class="flex justify-between items-center bg-black/10 rounded-full px-4 py-2 backdrop-blur-sm border border-white/10 mb-4">
+<div class="flex items-center gap-2 font-label-secondary text-label-secondary text-white">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed">stars</span>
+<span>Score: 1250</span>
+</div>
+<div class="flex items-center gap-2 font-label-secondary text-label-secondary text-white">
+<span class="material-symbols-outlined text-[18px] text-error-container" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span>x3</span>
+</div>
+</div>
+<!-- Floating Bubbles (CSS rendered for tactile modern feel) -->
+<!-- Bubble 1: Large Pink/White -->
+<button class="bubble-float-1 absolute top-[20%] left-[15%] w-24 h-24 rounded-full bg-gradient-to-br from-error-container to-white shadow-[inset_-8px_-8px_16px_rgba(0,0,0,0.1),0_12px_24px_rgba(0,0,0,0.15)] flex items-center justify-center active:scale-90 transition-transform focus:outline-none">
+<!-- Glossy highlight -->
+<div class="w-6 h-6 bg-white/80 rounded-full absolute top-3 left-3 blur-[2px]"></div>
+<span class="font-headline-title text-headline-title text-error opacity-80">A</span>
+</button>
+<!-- Bubble 2: Medium Teal/Primary -->
+<button class="bubble-float-2 absolute top-[45%] right-[10%] w-20 h-20 rounded-full bg-gradient-to-br from-primary-fixed to-primary shadow-[inset_-6px_-6px_12px_rgba(0,0,0,0.2),0_10px_20px_rgba(0,0,0,0.15)] flex items-center justify-center active:scale-90 transition-transform focus:outline-none">
+<div class="w-5 h-5 bg-white/60 rounded-full absolute top-2 left-2 blur-[1px]"></div>
+<span class="font-headline-title text-headline-title text-white">B</span>
+</button>
+<!-- Bubble 3: Small Yellow -->
+<button class="bubble-float-3 absolute bottom-[15%] left-[30%] w-16 h-16 rounded-full bg-gradient-to-br from-secondary-fixed to-secondary-container shadow-[inset_-4px_-4px_10px_rgba(0,0,0,0.15),0_8px_16px_rgba(0,0,0,0.1)] flex items-center justify-center active:scale-90 transition-transform focus:outline-none">
+<div class="w-3 h-3 bg-white/80 rounded-full absolute top-2 left-2 blur-[1px]"></div>
+</button>
+<!-- Bubble 4: Extra Small Distraction -->
+<div class="bubble-float-1 absolute top-[10%] right-[30%] w-8 h-8 rounded-full bg-white/30 backdrop-blur-sm shadow-[inset_-2px_-2px_4px_rgba(0,0,0,0.05)] flex items-center justify-center">
+<div class="w-2 h-2 bg-white/50 rounded-full absolute top-1 left-1 blur-[0.5px]"></div>
+</div>
+</div>
+</main>
+<!-- Shared Component: BottomNav -->
+<nav class="bg-surface border-t border-surface-variant fixed bottom-0 w-full z-50">
+<div class="flex justify-around items-center h-[72px] px-2 pb-safe">
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">home</span>
+<span class="font-metadata-small text-metadata-small">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1" style="font-variation-settings: 'FILL' 1;">extension</span>
+<span class="font-metadata-small text-metadata-small">Games</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">bar_chart</span>
+<span class="font-metadata-small text-metadata-small">Reports</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">storefront</span>
+<span class="font-metadata-small text-metadata-small">Store</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">insights</span>
+<span class="font-metadata-small text-metadata-small">Insights</span>
+</a>
+<a class="flex flex-col items-center justify-center w-full h-full text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[24px] mb-1">person</span>
+<span class="font-metadata-small text-metadata-small">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>

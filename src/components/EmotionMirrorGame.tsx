@@ -13,11 +13,11 @@ import { colors } from '../utils/colors';
 
 const { width, height } = Dimensions.get('window');
 
-const EMOTIONS = [
-  { id: 'happy', emoji: '😊', label: 'Happy', color: '#FFD700' },
-  { id: 'sad', emoji: '😢', label: 'Sad', color: '#6495ED' },
-  { id: 'angry', emoji: '😡', label: 'Angry', color: '#FF4500' },
-  { id: 'surprised', emoji: '😲', label: 'Surprised', color: '#ADFF2F' },
+const EMOTIONS: { id: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; label: string; color: string }[] = [
+  { id: 'happy', icon: 'emoticon-happy-outline', label: 'Happy', color: '#FFD700' },
+  { id: 'sad', icon: 'emoticon-sad-outline', label: 'Sad', color: '#6495ED' },
+  { id: 'angry', icon: 'emoticon-angry-outline', label: 'Angry', color: '#FF4500' },
+  { id: 'surprised', icon: 'emoticon-neutral-outline', label: 'Surprised', color: '#ADFF2F' },
 ];
 
 interface Props {
@@ -95,7 +95,7 @@ export const EmotionMirrorGame: React.FC<Props> = ({ onFinish }) => {
 
       <View style={styles.mirrorFrame}>
         <Animated.View style={[styles.emotionContainer, animatedStyle, { backgroundColor: currentEmotion.color + '20' }]}>
-          <Text style={styles.emoji}>{currentEmotion.emoji}</Text>
+          <MaterialCommunityIcons name={currentEmotion.icon} size={96} color={currentEmotion.color} />
           <Text style={styles.instruction}>Can you show a {currentEmotion.label} face?</Text>
         </Animated.View>
       </View>
@@ -107,7 +107,7 @@ export const EmotionMirrorGame: React.FC<Props> = ({ onFinish }) => {
             onPress={() => handlePress(item.id)}
             style={[styles.optionButton, { borderColor: item.color }]}
           >
-            <Text style={styles.optionEmoji}>{item.emoji}</Text>
+            <MaterialCommunityIcons name={item.icon} size={28} color={item.color} />
             <Text style={styles.optionLabel}>{item.label}</Text>
           </TouchableOpacity>
         ))}

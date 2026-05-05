@@ -106,14 +106,14 @@ const TaskInstructionScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
 
         <CrayonButton
-          label={`Start recording Task ${taskIndex + 1}`}
+          label={`Ready — pick video for Task ${taskIndex + 1}`}
           onPress={() => navigation.navigate('TaskRecording', { taskIndex })}
           variant="primary"
           size="large"
           fullWidth
           style={{ marginBottom: 12 }}
           iconRight={
-            <MaterialCommunityIcons name="record-circle-outline" size={20} color={colors.white} />
+            <MaterialCommunityIcons name="video-plus-outline" size={20} color={colors.white} />
           }
         />
         <CrayonButton

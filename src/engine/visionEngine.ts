@@ -22,16 +22,16 @@
  * EVALUATED FREE AI OPTIONS (and why each was rejected for raw video)
  * ─────────────────────────────────────────────────────────────────────────────
  *
- *   ❌ OpenRouter (LLaVA, Gemini, etc.)       — no BAA, requires network, ~2s latency
- *   ❌ Hugging Face Inference API              — no BAA, rate-limited, not real-time
- *   ❌ Replicate                               — no BAA, paid after free credits
- *   ❌ Clarifai free tier                      — no BAA for health data
- *   ❌ Google Cloud Vision / AWS Rekognition   — paid; no free tier for production
- *   ❌ MediaPipe WASM in WebView bridge        — ~40MB bundle, 200ms+ bridge latency
- *   ❌ @tensorflow/tfjs-react-native + FER2013  — ~25MB bundle, native build steps
+ *   NO  OpenRouter (LLaVA, Gemini, etc.)       — no BAA, requires network, ~2s latency
+ *   NO  Hugging Face Inference API              — no BAA, rate-limited, not real-time
+ *   NO  Replicate                               — no BAA, paid after free credits
+ *   NO  Clarifai free tier                      — no BAA for health data
+ *   NO  Google Cloud Vision / AWS Rekognition   — paid; no free tier for production
+ *   NO  MediaPipe WASM in WebView bridge        — ~40MB bundle, 200ms+ bridge latency
+ *   NO  @tensorflow/tfjs-react-native + FER2013  — ~25MB bundle, native build steps
  *                                               incompatible with Expo SDK 51
  *
- *   ✅ expo-camera face detection (CHOSEN)     — zero cost, on-device, works offline,
+ *   YES expo-camera face detection (CHOSEN)     — zero cost, on-device, works offline,
  *                                               wraps Apple Vision (iOS) + ML Kit (Android),
  *                                               identical underlying models to MediaPipe Face
  *                                               Detector Lite. Returns yaw/roll angles,

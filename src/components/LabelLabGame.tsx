@@ -8,10 +8,11 @@ import {
   Animated,
   ScrollView,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import * as Haptics from 'expo-haptics';
 import * as Speech from 'expo-speech';
 import { colors, radius, shadow } from '../utils/colors';
-import { LAB_ITEMS, LabItem, ItemMastery, INTRAVERBAL_PROMPTS } from '../data/labelLabItems';
+import { LAB_ITEMS, LabItem, ItemMastery, INTRAVERBAL_PROMPTS, ItemCategory } from '../data/labelLabItems';
 import {
   Stage,
   Trial,
@@ -25,6 +26,15 @@ import {
 } from '../engine/labelLabEngine';
 
 const { width } = Dimensions.get('window');
+
+const CATEGORY_ICON: Record<ItemCategory, keyof typeof MaterialCommunityIcons.glyphMap> = {
+  Household: 'home-outline',
+  Food: 'food-apple',
+  Body: 'human',
+  Clothing: 'tshirt-crew-outline',
+  Actions: 'run',
+  Animals: 'paw',
+};
 
 type Phase = 'setup' | 'trial' | 'feedback' | 'summary';
 
@@ -287,7 +297,12 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
               style={[s.optionCard, isTargetAndLead && s.optionCardHint]}
               onPress={() => handleStage1Or3Select(opt.id)}
             >
-              <Text style={s.optionEmoji}>{opt.emoji}</Text>
+              <MaterialCommunityIcons
+                name={CATEGORY_ICON[opt.category]}
+                size={36}
+                color={colors.primary}
+                style={s.optionEmoji}
+              />
               <Text style={s.optionLabel}>{lang === 'en' ? opt.en : opt.bn}</Text>
             </TouchableOpacity>
           );
@@ -322,9 +337,12 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
           <TouchableOpacity style={s.clearBtn} onPress={() => setSentence([])}>
              <Text style={s.clearBtnTxt}>Clear</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={s.checkBtn} onPress={handleStage2Check}>
-             <Text style={s.checkBtnTxt}>Check ✓</Text>
-          </TouchableOpacity>
+       <TouchableOpacity style={s.checkBtn} onPress={handleStage2Check}>
+         <View style={s.checkBtnRow}>
+          <MaterialCommunityIcons name="check" size={16} color={colors.white} />
+          <Text style={s.checkBtnTxt}>Check</Text>
+         </View>
+       </TouchableOpacity>
         </View>
       )}
     </>
@@ -333,7 +351,7 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
   const renderStage3 = () => (
     <>
       <View style={s.receptiveBox}>
-        <Text style={s.receptiveIcon}>👂</Text>
+  <MaterialCommunityIcons name="ear-hearing" size={28} color={colors.primary} />
         <Text style={s.receptiveText}>
           {lang === 'en' ? `Touch the ${currentItem?.en}` : `${currentItem?.bn} স্পর্শ করো`}
         </Text>
@@ -341,7 +359,10 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
       <TouchableOpacity 
          style={s.playAudioBtn}
          onPress={() => speak(lang === 'en' ? `Touch the ${currentItem?.en}` : `${currentItem?.bn} স্পর্শ করো`)}>
-         <Text style={s.playAudioTxt}>🔊 Play Audio</Text>
+         <View style={s.playAudioRow}>
+           <MaterialCommunityIcons name="volume-high" size={18} color={colors.white} />
+           <Text style={s.playAudioTxt}>Play Audio</Text>
+         </View>
       </TouchableOpacity>
       
       {/* For MVP digital testing, we still show cards, but clinically this is physical */}
@@ -352,7 +373,12 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
             style={s.optionCard}
             onPress={() => handleStage1Or3Select(opt.id)}
           >
-            <Text style={s.optionEmoji}>{opt.emoji}</Text>
+            <MaterialCommunityIcons
+              name={CATEGORY_ICON[opt.category]}
+              size={36}
+              color={colors.primary}
+              style={s.optionEmoji}
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -362,7 +388,7 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
   const renderStage4 = () => (
       <>
         <View style={s.receptiveBox}>
-          <Text style={s.receptiveIcon}>💬</Text>
+          <MaterialCommunityIcons name="message-text-outline" size={28} color={colors.primary} />
           <Text style={s.receptiveText}>
             {lang === 'en' ? intraverbalPrompt?.prompt_en : intraverbalPrompt?.prompt_bn}
           </Text>
@@ -370,7 +396,10 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
         <TouchableOpacity 
            style={s.playAudioBtn}
            onPress={() => speak(lang === 'en' ? intraverbalPrompt?.prompt_en || '' : intraverbalPrompt?.prompt_bn || '')}>
-           <Text style={s.playAudioTxt}>🔊 Play Audio</Text>
+           <View style={s.playAudioRow}>
+             <MaterialCommunityIcons name="volume-high" size={18} color={colors.white} />
+             <Text style={s.playAudioTxt}>Play Audio</Text>
+           </View>
         </TouchableOpacity>
         
         <View style={s.cardGrid}>
@@ -380,7 +409,12 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
               style={s.optionCard}
               onPress={() => handleStage4Select(opt.id)}
             >
-              <Text style={s.optionEmoji}>{opt.emoji}</Text>
+              <MaterialCommunityIcons
+                name={CATEGORY_ICON[opt.category]}
+                size={36}
+                color={colors.primary}
+                style={s.optionEmoji}
+              />
               <Text style={s.optionLabel}>{lang === 'en' ? opt.en : opt.bn}</Text>
             </TouchableOpacity>
           ))}
@@ -393,42 +427,45 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
   if (phase === 'setup') {
     return (
       <View style={s.setup}>
-        <Text style={s.h1}>Label Lab 🔬</Text>
+        <View style={s.titleRow}>
+          <MaterialCommunityIcons name="flask-outline" size={26} color={colors.primary} />
+          <Text style={s.h1}>Label Lab</Text>
+        </View>
         <Text style={s.sub}>Clinical ABA Protocol</Text>
         
         <View style={s.langRow}>
-          <TouchableOpacity style={[s.langBtn, lang === 'en' && s.langActive]} onPress={() => setLang('en')}>
-             <Text style={[s.langTxt, lang === 'en' && s.langTxtActive]}>🇬🇧 EN</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.langBtn, lang === 'bn' && s.langActive]} onPress={() => setLang('bn')}>
-             <Text style={[s.langTxt, lang === 'bn' && s.langTxtActive]}>🇧🇩 BN</Text>
-          </TouchableOpacity>
+       <TouchableOpacity style={[s.langBtn, lang === 'en' && s.langActive]} onPress={() => setLang('en')}>
+         <Text style={[s.langTxt, lang === 'en' && s.langTxtActive]}>EN</Text>
+       </TouchableOpacity>
+       <TouchableOpacity style={[s.langBtn, lang === 'bn' && s.langActive]} onPress={() => setLang('bn')}>
+         <Text style={[s.langTxt, lang === 'bn' && s.langTxtActive]}>BN</Text>
+       </TouchableOpacity>
         </View>
 
         <Text style={s.sectionLbl}>Select Stage</Text>
         <TouchableOpacity style={s.stageCard} onPress={() => startGame(1, 10)}>
-          <Text style={s.stageIcon}>👁️</Text>
+          <MaterialCommunityIcons name="eye-outline" size={26} color={colors.primary} />
           <View style={{flex: 1}}>
             <Text style={s.stageTitle}>Stage 1: Tacting</Text>
             <Text style={s.stageDesc}>"What is this?" (Expressive Labeling)</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={s.stageCard} onPress={() => startGame(2, 10)}>
-          <Text style={s.stageIcon}>🧩</Text>
+          <MaterialCommunityIcons name="puzzle-outline" size={26} color={colors.primary} />
           <View style={{flex: 1}}>
             <Text style={s.stageTitle}>Stage 2: Syntax</Text>
             <Text style={s.stageDesc}>Build multi-word descriptors</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={s.stageCard} onPress={() => startGame(3, 10)}>
-          <Text style={s.stageIcon}>👂</Text>
+          <MaterialCommunityIcons name="ear-hearing" size={26} color={colors.primary} />
           <View style={{flex: 1}}>
             <Text style={s.stageTitle}>Stage 3: Receptive</Text>
             <Text style={s.stageDesc}>"Touch the [item]"</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity style={s.stageCard} onPress={() => startGame(4, 10)}>
-          <Text style={s.stageIcon}>💬</Text>
+          <MaterialCommunityIcons name="message-text-outline" size={26} color={colors.primary} />
           <View style={{flex: 1}}>
             <Text style={s.stageTitle}>Stage 4: Intraverbal</Text>
             <Text style={s.stageDesc}>"You eat with a..."</Text>
@@ -507,7 +544,14 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
 
       {/* Main Stimulus */}
       <Animated.View style={[s.stimulusFrame, { transform: [{ scale: scaleAnim }, { translateX: shakeAnim }] }]}>
-         <Text style={s.stimulusEmoji}>{currentItem?.emoji}</Text>
+         {currentItem && (
+           <MaterialCommunityIcons
+             name={CATEGORY_ICON[currentItem.category]}
+             size={80}
+             color={colors.primary}
+             style={s.stimulusEmoji}
+           />
+         )}
       </Animated.View>
 
       {/* Dynamic Stage Content */}
@@ -531,6 +575,7 @@ export const LabelLabGame: React.FC<Props> = ({ onFinish }) => {
 const s = StyleSheet.create({
   setup: { flex: 1, backgroundColor: colors.cream, padding: 24, paddingTop: 60 },
   h1: { fontSize: 28, fontWeight: '800', color: colors.textDark, fontFamily: 'Poppins' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
   sub: { fontSize: 15, color: colors.primary, fontFamily: 'Inter', fontWeight: '600', marginBottom: 24 },
   langRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   langBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 20, backgroundColor: colors.surfaceAlt },
@@ -574,12 +619,14 @@ const s = StyleSheet.create({
   clearBtn: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 24, backgroundColor: colors.surfaceAlt },
   clearBtnTxt: { color: colors.textDark, fontWeight: '600', fontSize: 15 },
   checkBtn: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 24, backgroundColor: colors.primary },
+  checkBtnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   checkBtnTxt: { color: colors.white, fontWeight: '700', fontSize: 15 },
 
   receptiveBox: { backgroundColor: colors.white, padding: 24, borderRadius: radius.lg, alignItems: 'center', marginBottom: 16, borderWidth: 1, borderColor: colors.border },
   receptiveIcon: { fontSize: 48, marginBottom: 12 },
   receptiveText: { fontSize: 20, fontWeight: '700', color: colors.textDark, textAlign: 'center' },
   playAudioBtn: { backgroundColor: colors.primaryLight, paddingVertical: 12, paddingHorizontal: 20, borderRadius: 24, alignSelf: 'center', marginBottom: 30 },
+  playAudioRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   playAudioTxt: { color: colors.primary, fontWeight: '700', fontSize: 15 },
 
   errorPill: { position: 'absolute', bottom: 40, backgroundColor: (colors as any).warningDark || '#B45309', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20 },

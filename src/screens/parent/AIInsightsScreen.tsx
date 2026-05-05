@@ -54,12 +54,12 @@ const GAME_SKILL_MAP: Record<string, string> = {
 const BulletCard: React.FC<{
   title: string;
   items: string[];
-  emoji: string;
+  icon: keyof typeof MaterialCommunityIcons.glyphMap;
   accent: string;
-}> = ({ title, items, emoji, accent }) => (
+}> = ({ title, items, icon, accent }) => (
   <View style={[styles.bulletCard, { borderLeftColor: accent }]}>
     <View style={styles.bulletHeader}>
-      <Text style={{ fontSize: 18 }}>{emoji}</Text>
+      <MaterialCommunityIcons name={icon} size={18} color={accent} />
       <Text style={[styles.bulletTitle, { color: accent }]}>{title}</Text>
     </View>
     {items.map((item, i) => (
@@ -190,7 +190,7 @@ const AIInsightsScreen: React.FC<any> = ({ navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.aiBadge}>
-            <Text style={{ fontSize: 11 }}>✨</Text>
+            <MaterialCommunityIcons name="star-four-points" size={12} color={colors.primary} />
             <Text style={styles.aiBadgeText}>GPT-4 powered</Text>
           </View>
           <Text style={styles.title}>AI insights</Text>
@@ -289,14 +289,14 @@ const AIInsightsScreen: React.FC<any> = ({ navigation }) => {
             <BulletCard
               title="Key strengths"
               items={report.strengths}
-              emoji="🌟"
+              icon="star-four-points"
               accent={colors.success}
             />
 
             <BulletCard
               title="Areas to grow"
               items={report.areas_for_growth}
-              emoji="🌱"
+              icon="sprout"
               accent={'#F97316'}
             />
 

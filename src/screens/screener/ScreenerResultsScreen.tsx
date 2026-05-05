@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
 } from 'react-native';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
@@ -29,12 +30,12 @@ interface Props {
 
 const RISK_META: Record<
   RiskLevel,
-  { color: string; bg: string; emoji: string; mascot: any; title: string; mascotKind: any }
+  { color: string; bg: string; icon: keyof typeof MaterialCommunityIcons.glyphMap; mascot: any; title: string; mascotKind: any }
 > = {
   LOW: {
     color: colors.success,
     bg: colors.successLight,
-    emoji: '🌟',
+    icon: 'star-four-points',
     mascot: 'star',
     title: 'Looking strong',
     mascotKind: 'sun',
@@ -42,7 +43,7 @@ const RISK_META: Record<
   MODERATE: {
     color: colors.secondaryDark,
     bg: colors.secondaryLight,
-    emoji: '🌱',
+    icon: 'sprout',
     mascot: 'puzzle',
     title: "Let's monitor",
     mascotKind: 'puzzle',
@@ -50,7 +51,7 @@ const RISK_META: Record<
   HIGH: {
     color: colors.danger,
     bg: colors.dangerLight,
-    emoji: '🤝',
+    icon: 'handshake',
     mascot: 'heart',
     title: 'Time for support',
     mascotKind: 'heart',
@@ -249,9 +250,10 @@ const ScreenerResultsScreen: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.heroRow}>
             <View style={{ flex: 1 }}>
               <Text style={[styles.eyebrow, { color: meta.color }]}>screening complete</Text>
-              <Text style={styles.heroTitle}>
-                {meta.emoji} {meta.title}
-              </Text>
+              <View style={styles.heroTitleRow}>
+                <MaterialCommunityIcons name={meta.icon} size={22} color={meta.color} />
+                <Text style={styles.heroTitle}>{meta.title}</Text>
+              </View>
               <Text style={styles.heroDesc}>
                 Score: <Text style={{ fontWeight: '800' }}>{result.riskScore}/{result.maxScore}</Text>
               </Text>
@@ -342,6 +344,12 @@ const styles = StyleSheet.create({
     ...typography.h1,
     fontSize: 26,
     lineHeight: 32,
+  },
+  heroTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
   },
   heroDesc: {
     ...typography.bodyLg,

@@ -8,15 +8,28 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { colors, radius, shadow, tiers } from '../../utils/colors';
-import { typography } from '../../utils/typography';
 import { useAuthStore, useChildStore } from '../../store/store';
-import { CrayonButton } from '../../components/CrayonButton';
-import { CrayonCard } from '../../components/CrayonCard';
-import { Mascot } from '../../components/Mascot';
-import { AvatarBubble, SectionTitle } from '../../components/Decorations';
 import { ChildProfileModal } from '../../components/ChildProfileModal';
 import { useI18n } from '../../i18n/useI18n';
+
+// Static colors matching the pixel-perfect design
+const designColors = {
+  surfaceContainer: '#eeeeee',
+  surfaceLowest: '#ffffff',
+  surfaceLow: '#f4f3f3',
+  surfaceHighest: '#e2e2e2',
+  onSurface: '#1a1c1c',
+  onSurfaceVariant: '#474552',
+  primary: '#554db7',
+  primaryFixed: '#e3dfff',
+  secondaryFixed: '#ffe08b',
+  secondary: '#745b00',
+  outline: '#787584',
+  outlineVariant: '#c8c4d4',
+  errorContainer: '#ffdad6',
+  onErrorContainer: '#93000a',
+  headerBg: '#7B74E0',
+};
 
 const ProfileScreen: React.FC<any> = ({ navigation }) => {
   const { t } = useI18n();
@@ -45,212 +58,155 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
   };
 
   const tier = (user?.tier_level || 'FREE') as 'FREE' | 'BASIC' | 'PREMIUM';
-  const tierKey = tier.toLowerCase() as 'free' | 'basic' | 'premium';
-  const tierColor = tiers[tierKey]?.color || colors.primary;
 
+  // Specific row rendering to match `settings/code.html` rows precisely
   const SettingRow = ({
     icon,
     label,
-    sub,
+    rightInfo,
     onPress,
-    danger,
+    iconBg = designColors.primaryFixed,
+    iconColor = designColors.primary,
+    hideBorder = false,
   }: {
     icon: string;
     label: string;
-    sub?: string;
+    rightInfo?: React.ReactNode;
     onPress?: () => void;
-    danger?: boolean;
+    iconBg?: string;
+    iconColor?: string;
+    hideBorder?: boolean;
   }) => (
     <TouchableOpacity
-      style={styles.settingRow}
+      style={[
+        styles.rowContainer,
+        !hideBorder && styles.rowBorder
+      ]}
       onPress={onPress}
       activeOpacity={0.85}
       disabled={!onPress}
     >
-      <View
-        style={[
-          styles.settingIcon,
-          { backgroundColor: danger ? colors.dangerLight : colors.primaryLight },
-        ]}
-      >
-        <MaterialCommunityIcons
-          name={icon as any}
-          size={18}
-          color={danger ? colors.danger : colors.primary}
-        />
+      <View style={styles.rowLeft}>
+        <View style={[styles.iconContainer, { backgroundColor: iconBg }]}>
+          <MaterialCommunityIcons
+            name={icon as any}
+            size={22}
+            color={iconColor}
+          />
+        </View>
+        {typeof label === 'string' && !rightInfo ? (
+           <Text style={styles.rowLabel}>{label}</Text>
+        ) : (
+           <View style={styles.rowLabelGroup}>
+             <Text style={styles.rowLabel}>{label}</Text>
+             {rightInfo}
+           </View>
+        )}
       </View>
-      <View style={{ flex: 1 }}>
-        <Text style={[styles.settingLabel, danger && { color: colors.danger }]}>
-          {label}
-        </Text>
-        {sub && <Text style={styles.settingSub}>{sub}</Text>}
-      </View>
-      {onPress && (
-        <MaterialCommunityIcons
-          name="chevron-right"
-          size={18}
-          color={colors.darkGrey}
-        />
-      )}
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={24}
+        color={designColors.outlineVariant}
+      />
     </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* TopAppBar exact match */}
+      <SafeAreaView style={{ backgroundColor: designColors.headerBg }} />
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.headerButton} onPress={() => navigation.goBack()} activeOpacity={0.85}>
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Settings</Text>
+        <View style={{ width: 40 }} />
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>{t('profile_title')}</Text>
-          <TouchableOpacity style={styles.iconBtn} activeOpacity={0.85}>
-            <MaterialCommunityIcons name="cog-outline" size={20} color={colors.textDark} />
-          </TouchableOpacity>
-        </View>
+        <View style={styles.mainContent}>
 
-        {/* Identity card */}
-        <CrayonCard variant="primary" padding={22} style={{ marginBottom: 18 }}>
-          <View style={styles.idRow}>
-            <AvatarBubble
-              initial={user?.full_name?.charAt(0) || '?'}
-              size={64}
-              bg={colors.secondary}
-            />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.idName}>{user?.full_name || t('profile_default_parent')}</Text>
-              <Text style={styles.idEmail}>{user?.email}</Text>
-              <TouchableOpacity
-                style={styles.idTier}
-                onPress={() => navigation.navigate('SubscriptionUpgrade')}
-                activeOpacity={0.85}
-              >
-                <Text style={styles.idTierText}>
-                  {tier} plan {tier !== 'PREMIUM' ? t('profile_upgrade_btn') : ''}
-                </Text>
-                <MaterialCommunityIcons
-                  name="arrow-right"
-                  size={12}
-                  color={colors.textDark}
-                />
-              </TouchableOpacity>
+          {/* Account Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="account-outline"
+                label={user?.full_name || "Profile Information"}
+              />
+              <SettingRow
+                icon="account-child-outline"
+                label="Children Profiles"
+                onPress={() => setIsModalVisible(true)}
+              />
+              <SettingRow
+                icon="lock-outline"
+                label="Security & Password"
+                hideBorder={true}
+              />
             </View>
           </View>
-        </CrayonCard>
 
-        {/* Children */}
-        <SectionTitle
-          title={t('profile_children_section')}
-          action={{
-            label: t('profile_add_child_action'),
-            onPress: () => setIsModalVisible(true),
-          }}
-        />
-
-        {children.length === 0 ? (
-          <CrayonCard padding={24} style={{ alignItems: 'center', marginBottom: 18 }}>
-            <Mascot kind="puzzle" size="lg" />
-            <Text style={[styles.emptyTitle, { marginTop: 14 }]}>
-              {t('profile_no_children_title')}
-            </Text>
-            <Text style={styles.emptySub}>
-              {t('profile_no_children_desc')}
-            </Text>
-            <CrayonButton
-              label={t('profile_add_child_btn')}
-              onPress={() => setIsModalVisible(true)}
-              variant="primary"
-              size="medium"
-              style={{ marginTop: 14 }}
-            />
-          </CrayonCard>
-        ) : (
-          <View style={{ gap: 10, marginBottom: 18 }}>
-            {children.map((child) => {
-              const active = activeChild?.id === child.id;
-              const age =
-                new Date().getFullYear() -
-                new Date(child.date_of_birth).getFullYear();
-              return (
-                <TouchableOpacity
-                  key={child.id}
-                  onPress={() => setActiveChild(child)}
-                  activeOpacity={0.92}
-                  style={[styles.childCard, active && styles.childCardActive]}
-                >
-                  <AvatarBubble
-                    initial={child.first_name?.charAt(0) || '?'}
-                    size={48}
-                    bg={active ? colors.primary : colors.primaryLight}
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Text
-                      style={[
-                        styles.childName,
-                        active && { color: colors.primary },
-                      ]}
-                    >
-                      {child.first_name}
-                    </Text>
-                    <Text style={styles.childMeta}>{t('profile_years_old', { age })}</Text>
-                  </View>
-                  {active ? (
-                    <View style={styles.activePill}>
-                      <Text style={styles.activePillText}>{t('profile_active_pill')}</Text>
-                    </View>
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="chevron-right"
-                      size={18}
-                      color={colors.darkGrey}
-                    />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+          {/* Subscription Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Subscription</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="star"
+                iconBg={designColors.secondaryFixed}
+                iconColor={designColors.secondary}
+                label="Current Plan"
+                rightInfo={<Text style={styles.metaDataText}>{tier} Tier</Text>}
+                onPress={() => navigation.navigate('SubscriptionUpgrade')}
+              />
+              <SettingRow
+                icon="credit-card-outline"
+                label="Payment Methods"
+                hideBorder={true}
+              />
+            </View>
           </View>
-        )}
 
-        {/* Settings */}
-        <SectionTitle title={t('profile_account_section')} />
-        <View style={styles.settingsCard}>
-          <SettingRow
-            icon="bell-outline"
-            label={t('profile_notifications_label')}
-            sub={t('profile_notifications_sub')}
-            onPress={() => {}}
-          />
-          <View style={styles.divider} />
-          <SettingRow
-            icon="translate"
-            label={t('profile_language_label')}
-            sub={t('profile_language_sub')}
-            onPress={() => {}}
-          />
-          <View style={styles.divider} />
-          <SettingRow
-            icon="shield-check-outline"
-            label={t('profile_privacy_label')}
-            sub={t('profile_privacy_sub')}
-            onPress={() => {}}
-          />
-          <View style={styles.divider} />
-          <SettingRow
-            icon="help-circle-outline"
-            label={t('profile_help_label')}
-            onPress={() => {}}
-          />
+          {/* Notifications Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notifications</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="bell-ring-outline"
+                label="Push Notifications"
+                hideBorder={true}
+              />
+            </View>
+          </View>
+
+          {/* Support Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Support</Text>
+            <View style={styles.card}>
+              <SettingRow
+                icon="help-circle-outline"
+                label="Help Center"
+              />
+              <SettingRow
+                icon="information-outline"
+                label="About"
+                hideBorder={true}
+              />
+            </View>
+          </View>
+
+          {/* Log Out Button */}
+          <View style={styles.logoutSection}>
+            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout} activeOpacity={0.85}>
+              <MaterialCommunityIcons name="logout" size={20} color={designColors.onErrorContainer} style={{ marginRight: 8 }} />
+              <Text style={styles.logoutButtonText}>Log Out</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
-
-        <CrayonButton
-          label={t('profile_logout_btn')}
-          onPress={handleLogout}
-          variant="ghost"
-          size="large"
-          fullWidth
-          style={{ marginTop: 20, marginBottom: 12 }}
-        />
-
-        <Text style={styles.versionText}>{t('profile_version_text')}</Text>
       </ScrollView>
 
       {isModalVisible && (
@@ -260,167 +216,135 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
           onClose={() => setIsModalVisible(false)}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.cream },
-  scroll: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 120,
+  container: { 
+    flex: 1, 
+    backgroundColor: designColors.surfaceContainer 
   },
-  headerRow: {
+  header: {
+    height: 64,
+    backgroundColor: designColors.headerBg,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 18,
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    zIndex: 40,
   },
-  title: {
-    ...typography.h1,
-    fontSize: 26,
+  headerTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 18,
+    color: '#FFF',
+    letterSpacing: -0.5,
   },
-  iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: colors.white,
+  headerButton: {
+    width: 40,
+    height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadow.sm,
+    borderRadius: 20,
   },
-
-  /* Identity */
-  idRow: {
+  scroll: {
+    paddingBottom: 90,
+  },
+  mainContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    gap: 24,
+    maxWidth: 600, // mimicking max-w-2xl mx-auto container logic
+    alignSelf: 'stretch',
+    width: '100%',
+  },
+  section: {
+    gap: 12,
+  },
+  sectionTitle: {
+    fontFamily: 'Nunito',
+    fontSize: 17,
+    fontWeight: '700',
+    lineHeight: 24,
+    color: designColors.onSurfaceVariant,
+    paddingHorizontal: 8,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: designColors.surfaceLowest,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  rowContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  rowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: designColors.surfaceHighest,
+  },
+  rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 16,
   },
-  idName: {
-    ...typography.h2,
-    fontSize: 20,
-    color: colors.white,
-  },
-  idEmail: {
-    ...typography.body,
-    fontSize: 13,
-    color: colors.primaryLight,
-    marginTop: 2,
-  },
-  idTier: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: colors.secondary,
-    borderRadius: radius.full,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    marginTop: 10,
-    alignSelf: 'flex-start',
-  },
-  idTierText: {
-    ...typography.badge,
-    fontSize: 11,
-    color: colors.textDark,
-    textTransform: 'none',
-    letterSpacing: 0.2,
-  },
-
-  /* Empty */
-  emptyTitle: {
-    ...typography.h3,
-    fontSize: 16,
-  },
-  emptySub: {
-    ...typography.body,
-    color: colors.textMuted,
-    textAlign: 'center',
-    marginTop: 4,
-  },
-
-  /* Child card */
-  childCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    padding: 14,
-    borderRadius: radius.xl,
-    gap: 14,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    ...shadow.sm,
-  },
-  childCardActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-  },
-  childName: {
-    ...typography.h3,
-    fontSize: 15,
-  },
-  childMeta: {
-    ...typography.caption,
-    marginTop: 2,
-  },
-  activePill: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: radius.full,
-  },
-  activePillText: {
-    ...typography.badge,
-    fontSize: 10,
-    color: colors.white,
-    textTransform: 'none',
-    letterSpacing: 0.3,
-  },
-
-  /* Settings */
-  settingsCard: {
-    backgroundColor: colors.white,
-    borderRadius: radius.xl,
-    paddingHorizontal: 4,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: 4,
-    ...shadow.sm,
-  },
-  settingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    gap: 14,
-  },
-  settingIcon: {
+  iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    marginRight: 16, // using marginRight here as generic React Native gap support requires specific setups
   },
-  settingLabel: {
-    ...typography.h4,
+  rowLabelGroup: {
+    justifyContent: 'center',
+  },
+  rowLabel: {
+    fontFamily: 'Nunito',
     fontSize: 14,
+    fontWeight: '800',
+    lineHeight: 20,
+    color: designColors.onSurface,
   },
-  settingSub: {
-    ...typography.caption,
+  metaDataText: {
+    fontFamily: 'Nunito',
+    fontSize: 12,
+    fontWeight: '400',
+    lineHeight: 16,
+    color: designColors.outline,
     marginTop: 2,
   },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginHorizontal: 18,
+  logoutSection: {
+    marginTop: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-
-  versionText: {
-    ...typography.caption,
-    textAlign: 'center',
-    marginTop: 4,
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: designColors.errorContainer,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 9999,
+  },
+  logoutButtonText: {
+    fontFamily: 'Nunito',
+    fontSize: 14,
+    fontWeight: '800',
+    color: designColors.onErrorContainer,
   },
 });
 

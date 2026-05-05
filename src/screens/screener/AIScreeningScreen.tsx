@@ -59,7 +59,7 @@ interface Activity {
   id: string;
   label: string;
   instruction: string;
-  stimulus: string;
+  stimulus: keyof typeof MaterialCommunityIcons.glyphMap;
   bgColor: string;
   accentColor: string;
   duration: number;
@@ -71,7 +71,7 @@ const ACTIVITIES: Activity[] = [
     id: 'name_response',
     label: 'Name Response',
     instruction: "Say your child's name clearly, 3 times.",
-    stimulus: '⭐',
+  stimulus: 'star-four-points',
     bgColor: '#0A0820',
     accentColor: '#FFD23F',
     duration: 25,
@@ -81,7 +81,7 @@ const ACTIVITIES: Activity[] = [
     id: 'social_attention',
     label: 'Social Attention',
     instruction: 'Wave and smile warmly at your child.',
-    stimulus: '👋',
+  stimulus: 'hand-wave-outline',
     bgColor: '#050F1A',
     accentColor: '#35D0BA',
     duration: 25,
@@ -91,7 +91,7 @@ const ACTIVITIES: Activity[] = [
     id: 'visual_tracking',
     label: 'Visual Tracking',
     instruction: 'Let your child watch the screen naturally.',
-    stimulus: '🎈',
+  stimulus: 'balloon',
     bgColor: '#0D0520',
     accentColor: '#A29BFE',
     duration: 25,
@@ -101,7 +101,7 @@ const ACTIVITIES: Activity[] = [
     id: 'joint_attention',
     label: 'Joint Attention',
     instruction: "Point to the screen and say 'Look!'",
-    stimulus: '👆',
+  stimulus: 'gesture-tap',
     bgColor: '#0A1A0A',
     accentColor: '#2CB67D',
     duration: 25,
@@ -397,7 +397,7 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
                 },
               ]} />
               <Text style={styles.detectionLabel}>
-                {isGazingNow ? 'Looking ✓' : facePresentNow ? 'Face detected' : 'Waiting…'}
+                {isGazingNow ? 'Looking' : facePresentNow ? 'Face detected' : 'Waiting…'}
               </Text>
             </View>
           </View>
@@ -430,7 +430,7 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
               opacity: activity.animation === 'blink' ? opacityAnim : 1,
             },
           ]}>
-            <Text style={styles.stimulusEmoji}>{activity.stimulus}</Text>
+            <MaterialCommunityIcons name={activity.stimulus} size={72} color={activity.accentColor} />
           </Animated.View>
         </View>
 
@@ -577,8 +577,12 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
       behavioralScore >= 38 ? { label: 'Moderate', color: colors.warning } :
                                { label: 'Low', color: colors.danger };
 
-    const affectEmoji = (s?: string) =>
-      s === 'calm' ? '😌' : s === 'neutral' ? '😐' : s === 'tense' ? '😟' : s === 'distressed' ? '😢' : '❓';
+    const affectIcon = (s?: string): keyof typeof MaterialCommunityIcons.glyphMap =>
+      s === 'calm' ? 'emoticon-neutral-outline'
+      : s === 'neutral' ? 'emoticon-neutral-outline'
+      : s === 'tense' ? 'emoticon-confused-outline'
+      : s === 'distressed' ? 'emoticon-cry-outline'
+      : 'help-circle-outline';
 
     const riskMeta: Record<RiskLevel, { color: string; bg: string; label: string }> = {
       LOW:      { color: colors.success, bg: colors.successLight, label: 'Low Risk' },
@@ -659,12 +663,12 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
               <Text style={styles.metricLabel}>Face Present</Text>
             </View>
             <View style={styles.metricCard}>
-              <Text style={{ fontSize: 22 }}>{affectEmoji(visionMetrics.affect_start)}</Text>
+              <MaterialCommunityIcons name={affectIcon(visionMetrics.affect_start)} size={22} color={colors.textDark} />
               <Text style={styles.metricValue}>{visionMetrics.affect_start}</Text>
               <Text style={styles.metricLabel}>Mood Start</Text>
             </View>
             <View style={styles.metricCard}>
-              <Text style={{ fontSize: 22 }}>{affectEmoji(visionMetrics.affect_end)}</Text>
+              <MaterialCommunityIcons name={affectIcon(visionMetrics.affect_end)} size={22} color={colors.textDark} />
               <Text style={styles.metricValue}>{visionMetrics.affect_end}</Text>
               <Text style={styles.metricLabel}>Mood End</Text>
             </View>

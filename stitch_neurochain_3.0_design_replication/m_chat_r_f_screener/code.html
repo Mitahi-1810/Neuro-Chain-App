@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>NeuroGrow - Autism Screener</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#584400",
+                        "tertiary-container": "#6e66d7",
+                        "tertiary-fixed-dim": "#c5c0ff",
+                        "surface-bright": "#f9f9f9",
+                        "on-tertiary-container": "#fffbff",
+                        "on-secondary-fixed": "#241a00",
+                        "primary-fixed": "#e3dfff",
+                        "tertiary-fixed": "#e3dfff",
+                        "on-background": "#1a1c1c",
+                        "surface-container": "#eeeeee",
+                        "secondary": "#745b00",
+                        "background": "#f9f9f9",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f1f1f1",
+                        "surface-variant": "#e2e2e2",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e2e2e2",
+                        "secondary-fixed-dim": "#f0c110",
+                        "on-primary-container": "#fffbff",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#544cbc",
+                        "primary": "#554db7",
+                        "primary-container": "#6e67d2",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffe08b",
+                        "surface-container-low": "#f4f3f3",
+                        "on-primary-fixed": "#130067",
+                        "primary-fixed-dim": "#c5c0ff",
+                        "surface-dim": "#dadada",
+                        "secondary-container": "#fdcc22",
+                        "on-primary-fixed-variant": "#3f36a0",
+                        "inverse-primary": "#c5c0ff",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1a1c1c",
+                        "surface-tint": "#5750ba",
+                        "outline": "#787584",
+                        "outline-variant": "#c8c4d4",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#3f34a5",
+                        "on-tertiary-fixed": "#130067",
+                        "surface-container-high": "#e8e8e8",
+                        "inverse-surface": "#2f3131",
+                        "on-secondary-container": "#6e5700",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#f9f9f9",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#474552"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "card-padding": "16px",
+                        "unit": "4px",
+                        "list-item-gap": "12px",
+                        "container-margin": "20px"
+                    },
+                    "fontFamily": {
+                        "section-subtitle": ["Nunito"],
+                        "question-text": ["Nunito"],
+                        "label-secondary": ["Nunito"],
+                        "headline-title": ["Nunito"],
+                        "metadata-small": ["Nunito"],
+                        "body-default": ["Nunito"]
+                    },
+                    "fontSize": {
+                        "section-subtitle": ["17px", {"lineHeight": "24px", "fontWeight": "700"}],
+                        "question-text": ["26px", {"lineHeight": "32px", "fontWeight": "800"}],
+                        "label-secondary": ["13px", {"lineHeight": "18px", "fontWeight": "600"}],
+                        "headline-title": ["24px", {"lineHeight": "30px", "fontWeight": "800"}],
+                        "metadata-small": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "body-default": ["14px", {"lineHeight": "20px", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Nunito', sans-serif; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#7B74E0] min-h-screen flex flex-col text-on-primary">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full flex items-center justify-between px-4 z-40 h-16 bg-[#7B74E0] shadow-sm">
+<button class="text-white hover:bg-white/10 rounded-full transition-colors active:scale-90 w-10 h-10 flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+<h1 class="font-['Nunito'] font-extrabold text-lg text-white">NeuroGrow</h1>
+<div class="w-10 h-10"></div> <!-- Placeholder to balance flex-between -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col px-container-margin pt-6 max-w-2xl mx-auto w-full pb-20">
+<!-- Header / Progress Area -->
+<div class="mb-8">
+<h2 class="font-headline-title text-headline-title text-on-primary mb-2">Autism Screener</h2>
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-secondary text-label-secondary text-on-primary/80 uppercase tracking-wider">Question 03</span>
+<span class="font-metadata-small text-metadata-small text-on-primary/80 font-bold bg-white/20 px-2 py-1 rounded-full">3 of 20</span>
+</div>
+<!-- Segmented Progress Bar -->
+<div class="flex gap-1 h-2 w-full">
+<!-- Completed Segments -->
+<div class="h-full flex-1 bg-white rounded-l-full"></div>
+<div class="h-full flex-1 bg-white"></div>
+<!-- Current Segment -->
+<div class="h-full flex-1 bg-white"></div>
+<!-- Remaining Segments -->
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30"></div>
+<div class="h-full flex-1 bg-white/30 rounded-r-full"></div>
+</div>
+</div>
+<!-- Question Card Area -->
+<div class="flex-1 flex flex-col justify-center gap-8 mb-8">
+<!-- The Question -->
+<h3 class="font-question-text text-question-text text-on-primary text-center leading-tight">
+                Does your child look at you when you call his or her name?
+            </h3>
+<!-- Answer Options -->
+<div class="flex flex-col gap-4 mt-8">
+<!-- Selected Option (Yes) -->
+<button class="w-full bg-[#F5C518] hover:opacity-90 active:scale-95 transition-all text-[#241a00] font-headline-title text-headline-title py-5 px-6 rounded-[24px] shadow-[0_4px_20px_rgba(245,197,24,0.3)] flex items-center justify-center border-2 border-[#F5C518]">
+                    Yes
+                </button>
+<!-- Unselected Option (No) -->
+<button class="w-full bg-white hover:bg-surface-bright active:scale-95 transition-all text-primary font-headline-title text-headline-title py-5 px-6 rounded-[24px] shadow-[0_4px_12px_rgba(0,0,0,0.1)] flex items-center justify-center border-2 border-transparent">
+                    No
+                </button>
+</div>
+</div>
+</main>
+<!-- Contextual Bottom Action Bar (Not the global BottomNavBar, as this is a transactional screen) -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant px-2 pb-safe z-50">
+<div class="flex justify-between items-center h-16 max-w-2xl mx-auto">
+<!-- Home -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]">home</span>
+<span class="text-[10px] font-bold mt-1 truncate">Home</span>
+</a>
+<!-- Games -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]">sports_esports</span>
+<span class="text-[10px] font-bold mt-1 truncate">Games</span>
+</a>
+<!-- Reports -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]">description</span>
+<span class="text-[10px] font-bold mt-1 truncate">Reports</span>
+</a>
+<!-- Store -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]">shopping_bag</span>
+<span class="text-[10px] font-bold mt-1 truncate">Store</span>
+</a>
+<!-- Insights (Active) -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-primary" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">insights</span>
+<span class="text-[10px] font-bold mt-1 truncate">Insights</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center flex-1 min-w-0 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined text-[24px]">person</span>
+<span class="text-[10px] font-bold mt-1 truncate">Profile</span>
+</a>
+</div>
+</nav>
+</body></html>
