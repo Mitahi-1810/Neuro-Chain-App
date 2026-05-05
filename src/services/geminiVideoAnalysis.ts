@@ -11,6 +11,7 @@
  * Parents consent to this before upload (VideoScreeningSetupScreen).
  */
 
+import * as FileSystem from 'expo-file-system';
 import { GEMINI_API_KEY, GEMINI_BASE, GEMINI_MODEL } from '../config/gemini';
 import { TaskDefinition, buildGeminiPrompt } from '../data/taskDefinitions';
 import { Child } from '../types';
@@ -63,16 +64,45 @@ interface UploadedFile {
 }
 
 async function uploadVideo(videoUri: string): Promise<UploadedFile> {
-  const formData = new FormData();
-  formData.append('file', {
-    uri:  videoUri,
-    name: 'screening.mp4',
-    type: 'video/mp4',
-  } as any);
+  const fileInfo = await FileSystem.getInfoAsync(videoUri);
+  if (!fileInfo.exists) {
+    throw new Error('Selected video file was not found. Please reselect the video.');
+  }
+  if (fileInfo.size && fileInfo.size > 20 * 1024 * 1024) {
+    throw new Error('Video is too large for direct upload. Please trim to under 20MB and retry.');
+  }
+
+  const base64Video = await FileSystem.readAsStringAsync(videoUri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
+  const boundary = `----gemini-boundary-${Date.now()}`;
+  const metadataJson = JSON.stringify({
+    file: {
+      displayName: 'screening.mp4',
+      mimeType: 'video/mp4',
+    },
+  });
+
+  const body =
+    `--${boundary}\r\n` +
+    'Content-Type: application/json; charset=UTF-8\r\n\r\n' +
+    `${metadataJson}\r\n` +
+    `--${boundary}\r\n` +
+    'Content-Type: video/mp4\r\n' +
+    'Content-Transfer-Encoding: base64\r\n\r\n' +
+    `${base64Video}\r\n` +
+    `--${boundary}--`;
 
   const res = await fetch(
     `${GEMINI_BASE}/upload/v1beta/files?uploadType=multipart&key=${GEMINI_API_KEY}`,
-    { method: 'POST', body: formData },
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': `multipart/related; boundary=${boundary}`,
+      },
+      body,
+    },
   );
 
   if (!res.ok) {

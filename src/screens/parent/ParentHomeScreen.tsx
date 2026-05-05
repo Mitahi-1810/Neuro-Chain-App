@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -6,46 +6,60 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
-} from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { AvatarBubble } from '../../components/Decorations';
-import { useAuthStore, useChildStore, useGameStore, useUIStore } from '../../store/store';
-import { useI18n } from '../../i18n/useI18n';
+} from "react-native";
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { AvatarBubble } from "../../components/Decorations";
+import {
+  useAuthStore,
+  useChildStore,
+  useGameStore,
+  useUIStore,
+} from "../../store/store";
+import { useI18n } from "../../i18n/useI18n";
 
 interface Props {
   navigation: any;
 }
 
 const designColors = {
-  background: '#f9f9f9',
-  surfaceContainer: '#eeeeee',
-  surfaceLow: '#f4f3f3',
-  surfaceLowest: '#ffffff',
-  surfaceVariant: '#e2e2e2',
-  onSurface: '#1a1c1c',
-  onSurfaceVariant: '#474552',
-  primary: '#554db7',
-  secondary: '#745b00',
-  secondaryContainer: '#fdcc22',
-  tertiaryContainer: '#6e66d7',
-  primaryFixed: '#e3dfff',
-  outline: '#787584',
-  outlineVariant: '#c8c4d4',
-  headerBg: '#7B74E0',
-  headerScrim: 'rgba(0,0,0,0.15)',
+  background: "#f9f9f9",
+  surfaceContainer: "#eeeeee",
+  surfaceLow: "#f4f3f3",
+  surfaceLowest: "#ffffff",
+  surfaceVariant: "#e2e2e2",
+  onSurface: "#1a1c1c",
+  onSurfaceVariant: "#474552",
+  primary: "#554db7",
+  secondary: "#745b00",
+  secondaryContainer: "#fdcc22",
+  tertiaryContainer: "#6e66d7",
+  primaryFixed: "#e3dfff",
+  outline: "#787584",
+  outlineVariant: "#c8c4d4",
+  headerBg: "#7B74E0",
+  headerScrim: "rgba(0,0,0,0.15)",
 };
 
 const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuthStore();
   const { activeChild } = useChildStore();
-  const { getTodaysSessions, getStreakData, dailyPlan, refreshDailyPlan } = useGameStore();
+  const { getTodaysSessions, getStreakData, dailyPlan, refreshDailyPlan } =
+    useGameStore();
   const { locale, setLocale } = useUIStore();
   const { t } = useI18n();
 
-  const tier = user?.tier_level || 'FREE';
-  const tierLabel = tier === 'PREMIUM' ? 'Premium Tier' : tier === 'BASIC' ? 'Basic Tier' : 'Free Tier';
+  const tier = user?.tier_level || "FREE";
+  const tierLabel =
+    tier === "PREMIUM"
+      ? "Premium Tier"
+      : tier === "BASIC"
+        ? "Basic Tier"
+        : "Free Tier";
 
-  const todaysSessions = useMemo(() => getTodaysSessions(), [getTodaysSessions]);
+  const todaysSessions = useMemo(
+    () => getTodaysSessions(),
+    [getTodaysSessions],
+  );
   const streakData = useMemo(() => getStreakData(), [getStreakData]);
 
   useEffect(() => {
@@ -62,52 +76,66 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
     (g) => !todaysSessions.some((s) => s.game_id === g.id),
   );
 
-  const focusSkill = nextGame?.target_skill || dailyPlan[0]?.target_skill || 'Logic & Spatial Reasoning';
+  const focusSkill =
+    nextGame?.target_skill ||
+    dailyPlan[0]?.target_skill ||
+    "Logic & Spatial Reasoning";
   const focusLabel = nextGame
     ? `${nextGame.target_skill} • ${nextGame.duration_minutes} min`
-    : 'Daily focus';
+    : "Daily focus";
   const points = streakData.total_games_played * 12;
 
   const actionItems = [
     {
-      key: 'questionnaire',
-      title: 'Weekly Questionnaire',
-      subtitle: 'Update your behavioral milestones',
-      icon: 'clipboard-text-outline' as const,
-      iconColor: '#C2410C',
-      bg: '#FFEDD5',
-      onPress: () => navigation.navigate('AutismScreener'),
+      key: "questionnaire",
+      title: "Weekly Questionnaire",
+      subtitle: "Update your behavioral milestones",
+      icon: "clipboard-text-outline" as const,
+      iconColor: "#C2410C",
+      bg: "#FFEDD5",
+      onPress: () => navigation.navigate("AutismScreener"),
     },
     {
-      key: 'screening',
-      title: 'AI Screening',
-      subtitle: 'Fast-track cognitive assessment',
-      icon: 'brain' as const,
-      iconColor: '#0F766E',
-      bg: '#CCFBF1',
-      badge: 'New',
-      onPress: () => navigation.navigate('AIScreening', { riskLevel: 'MODERATE' }),
+      key: "screening",
+      title: "AI Screening",
+      subtitle: "Fast-track cognitive assessment",
+      icon: "brain" as const,
+      iconColor: "#0F766E",
+      bg: "#CCFBF1",
+      badge: "New",
+      onPress: () =>
+        navigation.navigate("VideoScreeningSetup", {
+          riskLevel: "MODERATE",
+          riskScore: 0,
+        }),
     },
     {
-      key: 'consult',
-      title: 'Consultation',
-      subtitle: 'Talk to a child specialist',
-      icon: 'video-outline' as const,
+      key: "consult",
+      title: "Consultation",
+      subtitle: "Talk to a child specialist",
+      icon: "video-outline" as const,
       iconColor: designColors.primary,
-      bg: '#E8E6FF',
-      onPress: () => navigation.navigate('SubscriptionUpgrade'),
+      bg: "#E8E6FF",
+      onPress: () => navigation.navigate("TelehealthBooking"),
     },
   ];
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+      >
         <View style={styles.headerCard}>
           <View style={styles.headerTopRow}>
             <View style={styles.profileRow}>
               <View style={styles.avatarShell}>
                 <AvatarBubble
-                  initial={activeChild?.first_name?.charAt(0) || user?.full_name?.charAt(0) || '?'}
+                  initial={
+                    activeChild?.first_name?.charAt(0) ||
+                    user?.full_name?.charAt(0) ||
+                    "?"
+                  }
                   size={44}
                   bg={designColors.surfaceLowest}
                 />
@@ -115,28 +143,49 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
               <View>
                 <Text style={styles.headerTitle}>NeuroChain 3.0</Text>
                 <Text style={styles.headerSubtitle}>
-                  Welcome back, {activeChild?.first_name || user?.full_name?.split(' ')[0] || 'Parent'}!
+                  Welcome back,{" "}
+                  {activeChild?.first_name ||
+                    user?.full_name?.split(" ")[0] ||
+                    "Parent"}
+                  !
                 </Text>
               </View>
             </View>
             <View style={styles.headerActions}>
-              <TouchableOpacity 
-                style={styles.languageButton} 
+              <TouchableOpacity
+                style={styles.languageButton}
                 activeOpacity={0.7}
-                onPress={() => setLocale(locale === 'en' ? 'bn' : 'en')}
+                onPress={() => setLocale(locale === "en" ? "bn" : "en")}
               >
-                <MaterialCommunityIcons name="translate" size={18} color="#7B74E0" />
-                <Text style={styles.languageButtonText}>{locale === 'en' ? 'EN' : 'বাং'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.headerIconButton} activeOpacity={0.9}>
-                <MaterialCommunityIcons name="bell-outline" size={20} color="#FFF" />
+                <MaterialCommunityIcons
+                  name="translate"
+                  size={18}
+                  color="#7B74E0"
+                />
+                <Text style={styles.languageButtonText}>
+                  {locale === "en" ? "EN" : "বাং"}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerIconButton}
                 activeOpacity={0.9}
-                onPress={() => navigation.navigate('Profile')}
               >
-                <MaterialCommunityIcons name="cog-outline" size={20} color="#FFF" />
+                <MaterialCommunityIcons
+                  name="bell-outline"
+                  size={20}
+                  color="#FFF"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.headerIconButton}
+                activeOpacity={0.9}
+                onPress={() => navigation.navigate("Profile")}
+              >
+                <MaterialCommunityIcons
+                  name="cog-outline"
+                  size={20}
+                  color="#FFF"
+                />
               </TouchableOpacity>
             </View>
           </View>
@@ -144,7 +193,11 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.headerStats}>
             <View style={styles.headerStatItem}>
               <View style={styles.tierBadge}>
-                <MaterialCommunityIcons name="crown" size={18} color="#1F2937" />
+                <MaterialCommunityIcons
+                  name="crown"
+                  size={18}
+                  color="#1F2937"
+                />
               </View>
               <Text style={styles.headerStatLabel}>{tierLabel}</Text>
             </View>
@@ -155,7 +208,9 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             </View>
             <View style={styles.headerDivider} />
             <View style={styles.headerStatItem}>
-              <Text style={styles.headerStatValue}>{streakData.current_streak}</Text>
+              <Text style={styles.headerStatValue}>
+                {streakData.current_streak}
+              </Text>
               <Text style={styles.headerStatLabel}>Day Streak</Text>
             </View>
           </View>
@@ -164,7 +219,7 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.body}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Today's Plan</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Games')}>
+            <TouchableOpacity onPress={() => navigation.navigate("Games")}>
               <Text style={styles.sectionLink}>See All</Text>
             </TouchableOpacity>
           </View>
@@ -179,10 +234,19 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
               </View>
             </View>
             <View style={styles.planProgressTrack}>
-              <View style={[styles.planProgressFill, { width: `${progressPercent}%` }]} />
+              <View
+                style={[
+                  styles.planProgressFill,
+                  { width: `${progressPercent}%` },
+                ]}
+              />
             </View>
             <View style={styles.planMetaRow}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color={designColors.onSurfaceVariant} />
+              <MaterialCommunityIcons
+                name="clock-outline"
+                size={18}
+                color={designColors.onSurfaceVariant}
+              />
               <Text style={styles.planMetaText}>Next session in 2 hours</Text>
             </View>
           </View>
@@ -196,8 +260,14 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                   activeOpacity={0.9}
                   onPress={item.onPress}
                 >
-                  <View style={[styles.actionIcon, { backgroundColor: item.bg }]}>
-                    <MaterialCommunityIcons name={item.icon} size={22} color={item.iconColor} />
+                  <View
+                    style={[styles.actionIcon, { backgroundColor: item.bg }]}
+                  >
+                    <MaterialCommunityIcons
+                      name={item.icon}
+                      size={22}
+                      color={item.iconColor}
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.actionTitle}>{item.title}</Text>
@@ -208,9 +278,15 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                       <Text style={styles.actionBadgeText}>{item.badge}</Text>
                     </View>
                   )}
-                  <MaterialCommunityIcons name="chevron-right" size={20} color={designColors.outline} />
+                  <MaterialCommunityIcons
+                    name="chevron-right"
+                    size={20}
+                    color={designColors.outline}
+                  />
                 </TouchableOpacity>
-                {index < actionItems.length - 1 && <View style={styles.actionDivider} />}
+                {index < actionItems.length - 1 && (
+                  <View style={styles.actionDivider} />
+                )}
               </View>
             ))}
           </View>
@@ -220,7 +296,9 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.boostOverlay} />
             <View style={styles.boostContent}>
               <View>
-                <Text style={styles.boostTitle}>{nextGame?.name || 'Memory Matrix'}</Text>
+                <Text style={styles.boostTitle}>
+                  {nextGame?.name || "Memory Matrix"}
+                </Text>
                 <Text style={styles.boostSubtitle}>{focusLabel}</Text>
               </View>
               <TouchableOpacity
@@ -228,8 +306,8 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                 activeOpacity={0.9}
                 onPress={() =>
                   nextGame
-                    ? navigation.navigate('GameRunner', { gameId: nextGame.id })
-                    : navigation.navigate('Games')
+                    ? navigation.navigate("GameRunner", { gameId: nextGame.id })
+                    : navigation.navigate("Games")
                 }
               >
                 <Text style={styles.boostButtonText}>PLAY</Text>
@@ -252,20 +330,20 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     borderBottomLeftRadius: 28,
     borderBottomRightRadius: 28,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
   },
   headerTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   profileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   avatarShell: {
@@ -275,48 +353,48 @@ const styles = StyleSheet.create({
     backgroundColor: designColors.surfaceLowest,
     borderWidth: 2,
     borderColor: designColors.secondaryContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '800',
+    fontFamily: "Nunito",
+    fontWeight: "800",
     fontSize: 22,
-    color: '#FFF',
+    color: "#FFF",
   },
   headerSubtitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '600',
+    fontFamily: "Nunito",
+    fontWeight: "600",
     fontSize: 13,
-    color: 'rgba(255,255,255,0.8)',
+    color: "rgba(255,255,255,0.8)",
     marginTop: 2,
   },
   headerActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 10,
   },
   headerIconButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
   },
   languageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: '#FFF',
+    backgroundColor: "#FFF",
   },
   languageButtonText: {
-    fontFamily: 'Poppins',
-    fontWeight: '700',
+    fontFamily: "Poppins",
+    fontWeight: "700",
     fontSize: 12,
-    color: '#7B74E0',
+    color: "#7B74E0",
   },
   headerStats: {
     marginTop: 16,
@@ -324,13 +402,13 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     paddingVertical: 12,
     paddingHorizontal: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-around",
   },
   headerStatItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     minWidth: 90,
   },
   tierBadge: {
@@ -338,28 +416,28 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 12,
     backgroundColor: designColors.secondaryContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 6,
   },
   headerStatValue: {
-    fontFamily: 'Nunito',
-    fontWeight: '900',
+    fontFamily: "Nunito",
+    fontWeight: "900",
     fontSize: 20,
     color: designColors.secondaryContainer,
   },
   headerStatLabel: {
-    fontFamily: 'Nunito',
-    fontWeight: '800',
+    fontFamily: "Nunito",
+    fontWeight: "800",
     fontSize: 10,
     letterSpacing: 1.1,
-    color: 'rgba(255,255,255,0.9)',
-    textTransform: 'uppercase',
+    color: "rgba(255,255,255,0.9)",
+    textTransform: "uppercase",
   },
   headerDivider: {
     width: 1,
     height: 40,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: "rgba(255,255,255,0.2)",
   },
   body: {
     paddingHorizontal: 20,
@@ -367,19 +445,19 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   sectionTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '800',
+    fontFamily: "Nunito",
+    fontWeight: "800",
     fontSize: 20,
     color: designColors.onSurface,
   },
   sectionLink: {
-    fontFamily: 'Nunito',
-    fontWeight: '700',
+    fontFamily: "Nunito",
+    fontWeight: "700",
     fontSize: 13,
     color: designColors.headerBg,
   },
@@ -387,29 +465,29 @@ const styles = StyleSheet.create({
     backgroundColor: designColors.surfaceLowest,
     borderRadius: 20,
     padding: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
   planRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   planEyebrow: {
-    fontFamily: 'Nunito',
-    fontWeight: '700',
+    fontFamily: "Nunito",
+    fontWeight: "700",
     fontSize: 12,
     letterSpacing: 1,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     color: designColors.onSurfaceVariant,
   },
   planTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '800',
+    fontFamily: "Nunito",
+    fontWeight: "800",
     fontSize: 18,
     color: designColors.onSurface,
     marginTop: 4,
@@ -421,46 +499,46 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   planChipText: {
-    fontFamily: 'Nunito',
-    fontWeight: '900',
+    fontFamily: "Nunito",
+    fontWeight: "900",
     fontSize: 12,
     color: designColors.primary,
   },
   planProgressTrack: {
     height: 12,
-    backgroundColor: '#E8E6FF',
+    backgroundColor: "#E8E6FF",
     borderRadius: 9999,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   planProgressFill: {
-    height: '100%',
+    height: "100%",
     backgroundColor: designColors.headerBg,
     borderRadius: 9999,
   },
   planMetaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 12,
   },
   planMetaText: {
-    fontFamily: 'Nunito',
-    fontWeight: '600',
+    fontFamily: "Nunito",
+    fontWeight: "600",
     fontSize: 13,
     color: designColors.onSurfaceVariant,
   },
   actionCard: {
     backgroundColor: designColors.surfaceLowest,
     borderRadius: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 12,
     elevation: 2,
   },
   actionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 16,
     paddingHorizontal: 20,
     paddingVertical: 18,
@@ -469,18 +547,18 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   actionTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '700',
+    fontFamily: "Nunito",
+    fontWeight: "700",
     fontSize: 15,
     color: designColors.onSurface,
   },
   actionSubtitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '600',
+    fontFamily: "Nunito",
+    fontWeight: "600",
     fontSize: 12,
     color: designColors.onSurfaceVariant,
     marginTop: 4,
@@ -492,46 +570,46 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   actionBadgeText: {
-    fontFamily: 'Nunito',
-    fontWeight: '900',
+    fontFamily: "Nunito",
+    fontWeight: "900",
     fontSize: 10,
     letterSpacing: 0.6,
-    textTransform: 'uppercase',
-    color: '#1F2937',
+    textTransform: "uppercase",
+    color: "#1F2937",
   },
   actionDivider: {
     height: 1,
-    backgroundColor: '#F1F1F1',
+    backgroundColor: "#F1F1F1",
     marginHorizontal: 20,
   },
   boostCard: {
     height: 180,
     borderRadius: 20,
     backgroundColor: designColors.tertiaryContainer,
-    overflow: 'hidden',
-    justifyContent: 'flex-end',
+    overflow: "hidden",
+    justifyContent: "flex-end",
   },
   boostOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.35)',
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   boostContent: {
     padding: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
   },
   boostTitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '800',
+    fontFamily: "Nunito",
+    fontWeight: "800",
     fontSize: 20,
-    color: '#FFF',
+    color: "#FFF",
   },
   boostSubtitle: {
-    fontFamily: 'Nunito',
-    fontWeight: '600',
+    fontFamily: "Nunito",
+    fontWeight: "600",
     fontSize: 13,
-    color: 'rgba(255,255,255,0.9)',
+    color: "rgba(255,255,255,0.9)",
     marginTop: 4,
   },
   boostButton: {
@@ -539,18 +617,18 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
     paddingHorizontal: 20,
     paddingVertical: 8,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 3,
   },
   boostButtonText: {
-    fontFamily: 'Nunito',
-    fontWeight: '900',
+    fontFamily: "Nunito",
+    fontWeight: "900",
     fontSize: 12,
     letterSpacing: 1,
-    color: '#1F2937',
+    color: "#1F2937",
   },
 });
 
