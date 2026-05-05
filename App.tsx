@@ -26,6 +26,7 @@ import {
   useGameStore,
 } from "./src/store/store";
 import { colors, radius, shadow } from "./src/utils/colors";
+import { typography } from "./src/utils/typography";
 import { initDatabase } from "./src/data/database";
 import { registerBackgroundSync, runManualSync } from "./src/data/syncEngine";
 import * as ExpoSplashScreen from "expo-splash-screen";

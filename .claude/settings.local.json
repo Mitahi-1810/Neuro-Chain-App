@@ -8,7 +8,11 @@
       "Bash(npx expo *)",
       "Bash(npm install *)",
       "Bash(npx tsc *)",
-      "Bash(Select-Object Name, FullName)"
+      "Bash(Select-Object Name, FullName)",
+      "Bash(git fetch *)",
+      "Bash(git stash *)",
+      "Bash(git pull *)",
+      "Bash(git push *)"
     ]
   }
 }

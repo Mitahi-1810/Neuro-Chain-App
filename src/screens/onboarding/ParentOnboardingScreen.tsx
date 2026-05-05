@@ -16,7 +16,6 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { Mascot } from '../../components/Mascot';
-import { useUIStore } from '../../store/store';
 import { useAuthStore, useChildStore, useUIStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
 
