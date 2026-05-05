@@ -30,6 +30,16 @@ const syncTables = async () => {
 
   const SYNC_TIMEOUT_MS = 15_000;
 
+  // Helper to create abort signal with timeout
+  const createTimeoutSignal = (ms: number) => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), ms);
+    const signal = controller.signal;
+    // Clear timeout if signal completes naturally
+    signal.addEventListener('abort', () => clearTimeout(timeoutId), { once: true });
+    return signal;
+  };
+
   if (unsyncedLogs.length > 0) {
     console.log(
       `Found ${unsyncedLogs.length} unsynced activities. Pushing to Supabase...`,
@@ -50,7 +60,7 @@ const syncTables = async () => {
           created_at: log.created_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] activities_log error:", error);
@@ -94,7 +104,7 @@ const syncTables = async () => {
           updated_at: specialist.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] specialists error:", error);
@@ -128,7 +138,7 @@ const syncTables = async () => {
           updated_at: user.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] users error:", error);
@@ -168,7 +178,7 @@ const syncTables = async () => {
           updated_at: appointment.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] appointments error:", error);
