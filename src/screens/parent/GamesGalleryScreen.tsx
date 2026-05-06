@@ -43,15 +43,6 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
   const tier = user?.tier_level || 'FREE';
   const [filter, setFilter] = useState<FilterKey>('all');
 
-  if (children.length === 0) {
-    return (
-      <ChildProfileRequired
-        featureName="games"
-        description="Create a child profile in Profile to unlock games and personalized plans."
-      />
-    );
-  }
-
   const skillKeys = useMemo(() => {
     const set = new Set<string>();
     GAME_CATALOG.forEach((g) => set.add(g.target_skill));
@@ -73,6 +64,15 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
     { key: 'all', label: 'All' },
     ...skillKeys.map((s) => ({ key: s, label: s.replace(' Skills', '').replace(' Recognition', '') })),
   ];
+
+  if (children.length === 0) {
+    return (
+      <ChildProfileRequired
+        featureName="games"
+        description="Create a child profile in Profile to unlock games and personalized plans."
+      />
+    );
+  }
 
   const renderCard = (game: GameCatalogItem) => {
     const locked = isLocked(game.min_tier);
