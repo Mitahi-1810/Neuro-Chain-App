@@ -12,7 +12,8 @@ import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useChildStore } from '../../store/store';
-import { CAST_QUESTIONS } from './screenerData';
+import { useI18n } from '../../i18n/useI18n';
+import { getCastQuestions } from './screenerData';
 
 interface Props {
   navigation: any;
@@ -25,9 +26,12 @@ const getAgeInMonths = (dob: Date) => {
 };
 
 const CastScreenerScreen: React.FC<Props> = ({ navigation }) => {
+  const { locale } = useI18n();
   const { activeChild } = useChildStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
+
+  const castQuestions = useMemo(() => getCastQuestions(locale), [locale]);
 
   const childDOB = useMemo(() => {
     if (!activeChild?.date_of_birth) return null;
@@ -113,14 +117,14 @@ const CastScreenerScreen: React.FC<Props> = ({ navigation }) => {
     );
   }
 
-  const currentQuestion = CAST_QUESTIONS[currentQuestionIndex];
-  const progressPercent = ((currentQuestionIndex + 1) / CAST_QUESTIONS.length) * 100;
+  const currentQuestion = castQuestions[currentQuestionIndex];
+  const progressPercent = ((currentQuestionIndex + 1) / castQuestions.length) * 100;
 
   const handleAnswer = (answer: boolean) => {
     const newAnswers = [...answers, answer];
     setAnswers(newAnswers);
 
-    if (currentQuestionIndex < CAST_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < castQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       navigation.navigate('ScreenerResults', {
@@ -162,7 +166,7 @@ const CastScreenerScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.content}>
         <Text style={styles.questionCounter}>
-          Question {currentQuestionIndex + 1} of {CAST_QUESTIONS.length}
+          Question {currentQuestionIndex + 1} of {castQuestions.length}
         </Text>
 
         <CrayonCard style={styles.questionCard} variant="default">
@@ -188,7 +192,7 @@ const CastScreenerScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={styles.dotsContainer}>
-          {CAST_QUESTIONS.map((_, idx) => (
+          {castQuestions.map((_, idx) => (
             <View
               key={idx}
               style={[

@@ -31,6 +31,7 @@ export const initDatabase = async () => {
       first_name TEXT,
       date_of_birth TEXT,
       gender TEXT,
+      profile_photo_url TEXT,
       primary_concerns TEXT, -- Stored as JSON string
       created_at TEXT,
       updated_at TEXT,
@@ -147,6 +148,8 @@ export const initDatabase = async () => {
     );
   `);
   
+  await migrateChildrenProfilePhotoUrl();
+
   console.log('Database initialized successfully.');
 };
 
@@ -228,6 +231,15 @@ export const migrateCalendlyUrl = async () => {
   const database = await getDatabase();
   try {
     await database.execAsync('ALTER TABLE specialists ADD COLUMN calendly_url TEXT;');
+  } catch {
+    // Column already exists — safe to ignore
+  }
+};
+
+export const migrateChildrenProfilePhotoUrl = async () => {
+  const database = await getDatabase();
+  try {
+    await database.execAsync('ALTER TABLE children ADD COLUMN profile_photo_url TEXT;');
   } catch {
     // Column already exists — safe to ignore
   }

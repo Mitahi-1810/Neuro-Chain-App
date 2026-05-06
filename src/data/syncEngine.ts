@@ -5,8 +5,27 @@ import { supabase } from "../lib/supabase";
 
 const BACKGROUND_SYNC_TASK = "NEUROCHAIN_BACKGROUND_SYNC";
 
+/**
+ * Helper function for AbortSignal.timeout compatibility
+ * AbortSignal.timeout() is not available in older JS environments
+ * This creates a timeout signal using AbortController instead
+ */
+function createTimeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 const syncTables = async () => {
   const db = await getDatabase();
+
+  const unsyncedUsers = await db.getAllAsync(
+    "SELECT * FROM users WHERE sync_status = 0 LIMIT 50;",
+  );
+
+  const unsyncedChildren = await db.getAllAsync(
+    "SELECT * FROM children WHERE sync_status = 0 LIMIT 50;",
+  );
 
   const unsyncedLogs = await db.getAllAsync(
     "SELECT * FROM activities_log WHERE sync_status = 0 LIMIT 50;",
@@ -16,19 +35,83 @@ const syncTables = async () => {
     "SELECT * FROM specialists WHERE sync_status = 0 LIMIT 50;",
   );
 
-  const unsyncedUsers = await db.getAllAsync(
-    "SELECT * FROM users WHERE sync_status = 0 LIMIT 50;",
-  );
-
   const unsyncedAppointments = await db.getAllAsync(
     "SELECT * FROM appointments WHERE sync_status = 0 LIMIT 50;",
   );
 
   console.log(
-    `[Sync] Pending -> activities:${unsyncedLogs.length} specialists:${unsyncedSpecialists.length} users:${unsyncedUsers.length} appointments:${unsyncedAppointments.length}`,
+    `[Sync] Pending -> users:${unsyncedUsers.length} children:${unsyncedChildren.length} activities:${unsyncedLogs.length} specialists:${unsyncedSpecialists.length} appointments:${unsyncedAppointments.length}`,
   );
 
   const SYNC_TIMEOUT_MS = 15_000;
+
+  if (unsyncedUsers.length > 0) {
+    console.log(
+      `Found ${unsyncedUsers.length} unsynced users. Pushing to Supabase...`,
+    );
+
+    const { error } = await supabase
+      .from("users")
+      .upsert(
+        (unsyncedUsers as any[]).map((user) => ({
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+          tier_level: user.tier_level,
+          created_at: user.created_at,
+          updated_at: user.updated_at,
+        })),
+      )
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
+
+    if (error) {
+      console.error("[Sync] users error:", error);
+      throw error;
+    }
+
+    for (const user of unsyncedUsers as any[]) {
+      await db.runAsync("UPDATE users SET sync_status = 1 WHERE id = ?", [
+        user.id,
+      ]);
+    }
+    console.log("[Sync] users synced.");
+  }
+
+  if (unsyncedChildren.length > 0) {
+    console.log(
+      `Found ${unsyncedChildren.length} unsynced children. Pushing to Supabase...`,
+    );
+
+    const { error } = await supabase
+      .from("children")
+      .upsert(
+        (unsyncedChildren as any[]).map((child) => ({
+          id: child.id,
+          parent_id: child.parent_id,
+          first_name: child.first_name,
+          date_of_birth: child.date_of_birth,
+          gender: child.gender,
+          profile_photo_url: child.profile_photo_url,
+          primary_concerns: JSON.parse(child.primary_concerns || "[]"),
+          created_at: child.created_at,
+          updated_at: child.updated_at,
+        })),
+      )
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
+
+    if (error) {
+      console.error("[Sync] children error:", error);
+      throw error;
+    }
+
+    for (const child of unsyncedChildren as any[]) {
+      await db.runAsync("UPDATE children SET sync_status = 1 WHERE id = ?", [
+        child.id,
+      ]);
+    }
+    console.log("[Sync] children synced.");
+  }
 
   if (unsyncedLogs.length > 0) {
     console.log(
@@ -50,7 +133,7 @@ const syncTables = async () => {
           created_at: log.created_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] activities_log error:", error);
@@ -94,7 +177,7 @@ const syncTables = async () => {
           updated_at: specialist.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] specialists error:", error);
@@ -109,41 +192,6 @@ const syncTables = async () => {
 
     console.log("[Sync] specialists synced.");
   }
-
-  if (unsyncedUsers.length > 0) {
-    console.log(
-      `Found ${unsyncedUsers.length} unsynced users. Pushing to Supabase...`,
-    );
-
-    const { error } = await supabase
-      .from("users")
-      .upsert(
-        (unsyncedUsers as any[]).map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          tier_level: user.tier_level,
-          created_at: user.created_at,
-          updated_at: user.updated_at,
-        })),
-      )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
-
-    if (error) {
-      console.error("[Sync] users error:", error);
-      throw error;
-    }
-
-    for (const user of unsyncedUsers as any[]) {
-      await db.runAsync("UPDATE users SET sync_status = 1 WHERE id = ?", [
-        user.id,
-      ]);
-    }
-
-    console.log("[Sync] users synced.");
-  }
-
   if (unsyncedAppointments.length > 0) {
     console.log(
       `Found ${unsyncedAppointments.length} unsynced appointments. Pushing to Supabase...`,
@@ -168,7 +216,7 @@ const syncTables = async () => {
           updated_at: appointment.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] appointments error:", error);
