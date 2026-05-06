@@ -155,7 +155,7 @@ const BehavioralReportScreen: React.FC<Props> = ({ navigation }) => {
                 <Text style={styles.riskBadgeText}>{adjustedRisk} RISK</Text>
               </View>
             </View>
-            <Mascot kind={meta.mascotKind} size="xl" />
+            <Mascot kind={meta.mascotKind} size="md" />
           </View>
         </CrayonCard>
 

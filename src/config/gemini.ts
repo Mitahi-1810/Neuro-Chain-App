@@ -10,5 +10,5 @@ export const GEMINI_API_KEY =
 export const GEMINI_MODEL =
   (config.EXPO_PUBLIC_GEMINI_MODEL as string) ||
   process.env.EXPO_PUBLIC_GEMINI_MODEL ||
-  "gemini-2.0-flash";
+  "gemini-2.5-flash-lite";
 export const GEMINI_BASE = "https://generativelanguage.googleapis.com";
