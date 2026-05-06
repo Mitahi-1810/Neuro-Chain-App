@@ -58,9 +58,33 @@ CREATE POLICY "children: specialist read via appointment"
 -- ─── ACTIVITIES_LOG ──────────────────────────────────────────────────────────
 ALTER TABLE public.activities_log ENABLE ROW LEVEL SECURITY;
 
--- Parent can manage activity logs for their own children.
-CREATE POLICY "activities_log: parent access"
-  ON public.activities_log FOR ALL
+-- Parent can read activity logs for their own children.
+CREATE POLICY "activities_log: parent read"
+  ON public.activities_log FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.children c
+      WHERE c.id = activities_log.child_id
+        AND c.parent_id::text = auth.uid()::text
+    )
+  );
+
+-- Parent can insert activity logs for their own children.
+CREATE POLICY "activities_log: parent insert"
+  ON public.activities_log FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.children c
+      WHERE c.id = activities_log.child_id
+        AND c.parent_id::text = auth.uid()::text
+    )
+  );
+
+-- Parent can update activity logs for their own children.
+CREATE POLICY "activities_log: parent update"
+  ON public.activities_log FOR UPDATE
   TO authenticated
   USING (
     EXISTS (

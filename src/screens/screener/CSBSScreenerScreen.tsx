@@ -12,7 +12,8 @@ import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useChildStore } from '../../store/store';
-import { CSBS_QUESTIONS } from './screenerData';
+import { useI18n } from '../../i18n/useI18n';
+import { getCsbsQuestions } from './screenerData';
 
 interface Props {
   navigation: any;
@@ -25,9 +26,12 @@ const getAgeInMonths = (dob: Date) => {
 };
 
 const CSBSScreenerScreen: React.FC<Props> = ({ navigation }) => {
+  const { locale } = useI18n();
   const { activeChild } = useChildStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
+
+  const csbsQuestions = useMemo(() => getCsbsQuestions(locale), [locale]);
 
   const childDOB = useMemo(() => {
     if (!activeChild?.date_of_birth) return null;
@@ -113,8 +117,8 @@ const CSBSScreenerScreen: React.FC<Props> = ({ navigation }) => {
     );
   }
 
-  const currentQuestion = CSBS_QUESTIONS[currentQuestionIndex];
-  const progressPercent = ((currentQuestionIndex + 1) / CSBS_QUESTIONS.length) * 100;
+  const currentQuestion = csbsQuestions[currentQuestionIndex];
+  const progressPercent = ((currentQuestionIndex + 1) / csbsQuestions.length) * 100;
 
   const getAnswerOptions = () => {
     if (currentQuestion.id === 8) {
@@ -142,7 +146,7 @@ const CSBSScreenerScreen: React.FC<Props> = ({ navigation }) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
 
-    if (currentQuestionIndex < CSBS_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < csbsQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       navigation.navigate('ScreenerResults', {
@@ -184,7 +188,7 @@ const CSBSScreenerScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={styles.content}>
         <Text style={styles.questionCounter}>
-          Question {currentQuestionIndex + 1} of {CSBS_QUESTIONS.length}
+          Question {currentQuestionIndex + 1} of {csbsQuestions.length}
         </Text>
 
         <CrayonCard style={styles.questionCard} variant="default">
@@ -206,7 +210,7 @@ const CSBSScreenerScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         <View style={styles.dotsContainer}>
-          {CSBS_QUESTIONS.map((_, idx) => (
+          {csbsQuestions.map((_, idx) => (
             <View
               key={idx}
               style={[

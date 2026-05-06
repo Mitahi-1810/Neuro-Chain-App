@@ -5,6 +5,17 @@ import { supabase } from "../lib/supabase";
 
 const BACKGROUND_SYNC_TASK = "NEUROCHAIN_BACKGROUND_SYNC";
 
+/**
+ * Helper function for AbortSignal.timeout compatibility
+ * AbortSignal.timeout() is not available in older JS environments
+ * This creates a timeout signal using AbortController instead
+ */
+function createTimeoutSignal(ms: number): AbortSignal {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 const syncTables = async () => {
   const db = await getDatabase();
 
@@ -42,7 +53,7 @@ const syncTables = async () => {
           updated_at: appointment.updated_at,
         })),
       )
-      .abortSignal(AbortSignal.timeout(SYNC_TIMEOUT_MS));
+      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
 
     if (error) {
       console.error("[Sync] appointments error:", error);

@@ -26,6 +26,7 @@ CREATE TABLE
         first_name TEXT,
         date_of_birth TEXT,
         gender TEXT,
+        profile_photo_url TEXT,
         primary_concerns TEXT,
         created_at TIMESTAMP
         WITH

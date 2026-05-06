@@ -12,7 +12,8 @@ import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useChildStore } from '../../store/store';
-import { QCHAT_QUESTIONS } from './screenerData';
+import { useI18n } from '../../i18n/useI18n';
+import { getQchatQuestions } from './screenerData';
 
 interface Props {
   navigation: any;
@@ -28,10 +29,13 @@ const getAgeInMonths = (dob: Date) => {
 const QCHAT_OPTIONS = ['Always', 'Usually', 'Sometimes', 'Rarely', 'Never'];
 
 const QChatScreenerScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { locale } = useI18n();
   const { activeChild } = useChildStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const source = route?.params?.source;
+
+  const qchatQuestions = useMemo(() => getQchatQuestions(locale), [locale]);
 
   const childDOB = useMemo(() => {
     if (!activeChild?.date_of_birth) return null;
@@ -106,14 +110,14 @@ const QChatScreenerScreen: React.FC<Props> = ({ navigation, route }) => {
     );
   }
 
-  const currentQuestion = QCHAT_QUESTIONS[currentQuestionIndex];
-  const progressPercent = ((currentQuestionIndex + 1) / QCHAT_QUESTIONS.length) * 100;
+  const currentQuestion = qchatQuestions[currentQuestionIndex];
+  const progressPercent = ((currentQuestionIndex + 1) / qchatQuestions.length) * 100;
 
   const handleAnswer = (value: number) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
 
-    if (currentQuestionIndex < QCHAT_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < qchatQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       navigation.navigate('ScreenerResults', {
@@ -155,7 +159,7 @@ const QChatScreenerScreen: React.FC<Props> = ({ navigation, route }) => {
 
       <View style={styles.content}>
         <Text style={styles.questionCounter}>
-          Question {currentQuestionIndex + 1} of {QCHAT_QUESTIONS.length}
+          Question {currentQuestionIndex + 1} of {qchatQuestions.length}
         </Text>
 
         <CrayonCard style={styles.questionCard} variant="default">
@@ -177,7 +181,7 @@ const QChatScreenerScreen: React.FC<Props> = ({ navigation, route }) => {
         </View>
 
         <View style={styles.dotsContainer}>
-          {QCHAT_QUESTIONS.map((_, idx) => (
+          {qchatQuestions.map((_, idx) => (
             <View
               key={idx}
               style={[

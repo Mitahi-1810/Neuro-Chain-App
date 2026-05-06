@@ -10,10 +10,10 @@ import {
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CrayonButton } from '../../components/CrayonButton';
-import { ScreenerQuestion } from '../../types';
 import { useAuthStore, useChildStore } from '../../store/store';
 import { supabase } from '../../lib/supabase';
-import { MCHAT_QUESTIONS } from './screenerData';
+import { useI18n } from '../../i18n/useI18n';
+import { getMchatQuestions } from './screenerData';
 
 const designColors = {
   background: '#7B74E0',
@@ -32,8 +32,6 @@ interface Props {
   navigation: any;
 }
 
-const SCREENER_QUESTIONS: ScreenerQuestion[] = MCHAT_QUESTIONS;
-
 type Instrument = 'CSBS_ITC' | 'MCHAT' | 'CAST' | 'NONE' | 'OLDER';
 
 const getAgeInMonths = (dob: Date) => {
@@ -51,12 +49,15 @@ const getInstrumentForAge = (ageMonths: number): Instrument => {
 };
 
 const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
+  const { locale } = useI18n();
   const { user } = useAuthStore();
   const { activeChild } = useChildStore();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<boolean[]>([]);
   const [lastAssessment, setLastAssessment] = useState<any | null>(null);
   const [loadingAssessment, setLoadingAssessment] = useState(true);
+
+  const screenerQuestions = useMemo(() => getMchatQuestions(locale), [locale]);
 
   // Age gate: Check if child is 16-30 months
   const childDOB = useMemo(() => {
@@ -308,18 +309,18 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
     );
   }
 
-  const currentQuestion = SCREENER_QUESTIONS[currentQuestionIndex];
-  const progressPercent = ((currentQuestionIndex + 1) / SCREENER_QUESTIONS.length) * 100;
+  const currentQuestion = screenerQuestions[currentQuestionIndex];
+  const progressPercent = ((currentQuestionIndex + 1) / screenerQuestions.length) * 100;
 
   const handleAnswer = (answer: boolean) => {
     const newAnswers = [...answers, answer];
     setAnswers(newAnswers);
 
-    if (currentQuestionIndex < SCREENER_QUESTIONS.length - 1) {
+    if (currentQuestionIndex < screenerQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } else {
       // Calculate score
-      const riskScore = SCREENER_QUESTIONS.reduce((score, q, idx) => {
+      const riskScore = screenerQuestions.reduce((score, q, idx) => {
         const isYes = newAnswers[idx];
         const contributes = q.is_reversed ? isYes : !isYes;
         return contributes ? score + 1 : score;
@@ -369,12 +370,12 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
             </Text>
             <View style={styles.progressPill}>
               <Text style={styles.progressPillText}>
-                {currentQuestionIndex + 1} of {SCREENER_QUESTIONS.length}
+                {currentQuestionIndex + 1} of {screenerQuestions.length}
               </Text>
             </View>
           </View>
           <View style={styles.segmentedBar}>
-            {SCREENER_QUESTIONS.map((_, idx) => {
+            {screenerQuestions.map((_, idx) => {
               const isActive = idx <= currentQuestionIndex;
               return (
                 <View
@@ -383,7 +384,7 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
                     styles.segment,
                     isActive ? styles.segmentActive : styles.segmentInactive,
                     idx === 0 && styles.segmentFirst,
-                    idx === SCREENER_QUESTIONS.length - 1 && styles.segmentLast,
+                    idx === screenerQuestions.length - 1 && styles.segmentLast,
                   ]}
                 />
               );

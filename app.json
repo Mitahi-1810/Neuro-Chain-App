@@ -24,5 +24,9 @@
         }
       ]
     ]
+  },
+  "extra": {
+    "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyAf_36axM1H1yIFlT5mTFyqTm3PHtBpGIE",
+    "EXPO_PUBLIC_GEMINI_MODEL": "gemini-2.0-flash"
   }
 }
