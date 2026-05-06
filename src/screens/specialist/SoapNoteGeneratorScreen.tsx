@@ -4,8 +4,8 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors } from '../../utils/colors';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
-import { getDatabase } from '../../data/database';
 import { useAuthStore } from '../../store/store';
+import { supabase } from '../../lib/supabase';
 import { transcribeAudio, generateSoapNote } from '../../lib/ai';
 
 const MOCK_AI_RESPONSE = {
@@ -67,27 +67,19 @@ const SoapNoteGeneratorScreen: React.FC<any> = ({ navigation, route }) => {
 
   const handleSignAndFinalize = async () => {
     try {
-      const db = await getDatabase();
       const timestamp = new Date().toISOString();
-      const aiGenerated = aiOriginalRef.current;
-      const edited = { subjective, objective, assessment, plan };
-
-      await db.runAsync(
-        `INSERT INTO clinical_soap_notes (
-          id, appointment_id, ai_generated_json, specialist_edited_json, is_signed, signed_at, signed_by, created_at, updated_at, sync_status
-        ) VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, 0)`,
-        [
-          Date.now().toString(),
-          appointment?.id || 'mock-apt',
-          JSON.stringify(aiGenerated),
-          JSON.stringify(edited),
-          timestamp,
-          user?.id || 'mock-spec',
-          timestamp,
-          timestamp,
-        ]
-      );
-      
+      const { error } = await supabase.from('clinical_soap_notes').insert({
+        id: Date.now().toString(),
+        appointment_id: appointment?.id || 'mock-apt',
+        ai_generated_json: aiOriginalRef.current,
+        specialist_edited_json: { subjective, objective, assessment, plan },
+        is_signed: 1,
+        signed_at: timestamp,
+        signed_by: user?.id || null,
+        created_at: timestamp,
+        updated_at: timestamp,
+      });
+      if (error) throw error;
       navigation.navigate('SpecialistDashboard');
     } catch (error) {
       console.error('Failed to sign note', error);

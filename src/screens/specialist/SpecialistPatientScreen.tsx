@@ -4,7 +4,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { CrayonCard } from '../../components/CrayonCard';
-import { getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 
 const SpecialistPatientScreen: React.FC<any> = ({ navigation, route }) => {
   const childId = route?.params?.childId;
@@ -16,30 +16,28 @@ const SpecialistPatientScreen: React.FC<any> = ({ navigation, route }) => {
   useEffect(() => {
     const load = async () => {
       if (!childId) return;
-      const db = await getDatabase();
-      const childRows: any[] = await db.getAllAsync('SELECT * FROM children WHERE id = ? LIMIT 1', [childId]);
-      setChild(childRows?.[0] ?? null);
 
-      const assessmentRows = await db.getAllAsync(
-        'SELECT * FROM assessments WHERE child_id = ? ORDER BY timestamp DESC',
-        [childId]
-      );
-      setAssessments(assessmentRows || []);
+      const [childRes, assessmentRes, activityRes, aptRes] = await Promise.all([
+        supabase.from('children').select('*').eq('id', childId).single(),
+        supabase.from('assessments').select('*').eq('child_id', childId).order('timestamp', { ascending: false }),
+        supabase.from('activities_log').select('*').eq('child_id', childId).order('timestamp', { ascending: false }).limit(30),
+        supabase.from('appointments').select('id').eq('child_id', childId),
+      ]);
 
-      const activityRows = await db.getAllAsync(
-        'SELECT * FROM activities_log WHERE child_id = ? ORDER BY timestamp DESC LIMIT 30',
-        [childId]
-      );
-      setActivities(activityRows || []);
+      setChild(childRes.data ?? null);
+      setAssessments(assessmentRes.data || []);
+      setActivities(activityRes.data || []);
 
-      const noteRows = await db.getAllAsync(
-        `SELECT n.* FROM clinical_soap_notes n
-         LEFT JOIN appointments a ON n.appointment_id = a.id
-         WHERE a.child_id = ? AND n.is_signed = 1
-         ORDER BY n.created_at DESC`,
-        [childId]
-      );
-      setSoapNotes(noteRows || []);
+      const aptIds = (aptRes.data || []).map((a: any) => a.id);
+      if (aptIds.length > 0) {
+        const { data: noteRows } = await supabase
+          .from('clinical_soap_notes')
+          .select('*')
+          .in('appointment_id', aptIds)
+          .eq('is_signed', 1)
+          .order('created_at', { ascending: false });
+        setSoapNotes(noteRows || []);
+      }
     };
     load();
   }, [childId]);

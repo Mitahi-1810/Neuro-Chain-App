@@ -16,7 +16,7 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useAuthStore } from '../../store/store';
-import { ensureSpecialistSchema, getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 
 const LANGUAGE_OPTIONS = ['Bengali', 'English', 'Hindi', 'Arabic'];
 
@@ -39,12 +39,11 @@ const SpecialistProfileScreen: React.FC<any> = ({ navigation }) => {
     const loadProfile = async () => {
       if (!user) return;
       try {
-        await ensureSpecialistSchema();
-        const db = await getDatabase();
-        const rows: any[] = await db.getAllAsync(
-          'SELECT * FROM specialists WHERE user_id = ? LIMIT 1',
-          [user.id]
-        );
+        const { data: rows } = await supabase
+          .from('specialists')
+          .select('*')
+          .eq('user_id', user.id)
+          .limit(1);
         const profile = rows?.[0];
         if (profile) {
           setSpecialistId(profile.id);
@@ -134,56 +133,38 @@ const SpecialistProfileScreen: React.FC<any> = ({ navigation }) => {
     }
 
     try {
-      const db = await getDatabase();
       const timestamp = new Date().toISOString();
+      const profileData = {
+        full_name: fullName.trim(),
+        medical_reg_number: medicalRegNumber.trim(),
+        specialty: specialty.trim(),
+        clinic_name: clinicName.trim(),
+        city: city.trim(),
+        consultation_fee_bdt: Number(consultationFee),
+        languages: JSON.stringify(languages),
+        bio: bio.trim(),
+        profile_photo_url: profilePhoto,
+        bank_account_encrypted: bankAccount.trim(),
+        updated_at: timestamp,
+      };
+
       if (specialistId) {
-        await db.runAsync(
-          `UPDATE specialists SET
-            full_name = ?, medical_reg_number = ?, specialty = ?, clinic_name = ?, city = ?,
-            consultation_fee_bdt = ?, languages = ?, bio = ?, profile_photo_url = ?,
-            bank_account_encrypted = ?, updated_at = ?, sync_status = 0
-           WHERE id = ?`,
-          [
-            fullName.trim(),
-            medicalRegNumber.trim(),
-            specialty.trim(),
-            clinicName.trim(),
-            city.trim(),
-            Number(consultationFee),
-            JSON.stringify(languages),
-            bio.trim(),
-            profilePhoto,
-            bankAccount.trim(),
-            timestamp,
-            specialistId,
-          ]
-        );
+        const { error } = await supabase
+          .from('specialists')
+          .update(profileData)
+          .eq('id', specialistId);
+        if (error) throw error;
       } else if (user) {
-        const newId = user.id;
-        await db.runAsync(
-          `INSERT OR REPLACE INTO specialists (
-            id, user_id, full_name, medical_reg_number, specialty, clinic_name, city,
-            consultation_fee_bdt, languages, bio, profile_photo_url, bank_account_encrypted,
-            status, is_verified, created_at, updated_at, sync_status
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', 0, ?, ?, 0)`,
-          [
-            newId,
-            user.id,
-            fullName.trim(),
-            medicalRegNumber.trim(),
-            specialty.trim(),
-            clinicName.trim(),
-            city.trim(),
-            Number(consultationFee),
-            JSON.stringify(languages),
-            bio.trim(),
-            profilePhoto,
-            bankAccount.trim(),
-            timestamp,
-            timestamp,
-          ]
-        );
-        setSpecialistId(newId);
+        const { error } = await supabase.from('specialists').upsert({
+          id: user.id,
+          user_id: user.id,
+          ...profileData,
+          status: 'PENDING',
+          is_verified: 0,
+          created_at: timestamp,
+        });
+        if (error) throw error;
+        setSpecialistId(user.id);
       }
 
       Alert.alert('Profile saved', 'Your specialist profile has been updated.');
