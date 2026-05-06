@@ -19,179 +19,16 @@ function createTimeoutSignal(ms: number): AbortSignal {
 const syncTables = async () => {
   const db = await getDatabase();
 
-  const unsyncedUsers = await db.getAllAsync(
-    "SELECT * FROM users WHERE sync_status = 0 LIMIT 50;",
-  );
-
-  const unsyncedChildren = await db.getAllAsync(
-    "SELECT * FROM children WHERE sync_status = 0 LIMIT 50;",
-  );
-
-  const unsyncedLogs = await db.getAllAsync(
-    "SELECT * FROM activities_log WHERE sync_status = 0 LIMIT 50;",
-  );
-
-  const unsyncedSpecialists = await db.getAllAsync(
-    "SELECT * FROM specialists WHERE sync_status = 0 LIMIT 50;",
-  );
-
   const unsyncedAppointments = await db.getAllAsync(
     "SELECT * FROM appointments WHERE sync_status = 0 LIMIT 50;",
   );
 
   console.log(
-    `[Sync] Pending -> users:${unsyncedUsers.length} children:${unsyncedChildren.length} activities:${unsyncedLogs.length} specialists:${unsyncedSpecialists.length} appointments:${unsyncedAppointments.length}`,
+    `[Sync] Pending -> appointments:${unsyncedAppointments.length}`,
   );
 
   const SYNC_TIMEOUT_MS = 15_000;
 
-  if (unsyncedUsers.length > 0) {
-    console.log(
-      `Found ${unsyncedUsers.length} unsynced users. Pushing to Supabase...`,
-    );
-
-    const { error } = await supabase
-      .from("users")
-      .upsert(
-        (unsyncedUsers as any[]).map((user) => ({
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          tier_level: user.tier_level,
-          created_at: user.created_at,
-          updated_at: user.updated_at,
-        })),
-      )
-      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
-
-    if (error) {
-      console.error("[Sync] users error:", error);
-      throw error;
-    }
-
-    for (const user of unsyncedUsers as any[]) {
-      await db.runAsync("UPDATE users SET sync_status = 1 WHERE id = ?", [
-        user.id,
-      ]);
-    }
-    console.log("[Sync] users synced.");
-  }
-
-  if (unsyncedChildren.length > 0) {
-    console.log(
-      `Found ${unsyncedChildren.length} unsynced children. Pushing to Supabase...`,
-    );
-
-    const { error } = await supabase
-      .from("children")
-      .upsert(
-        (unsyncedChildren as any[]).map((child) => ({
-          id: child.id,
-          parent_id: child.parent_id,
-          first_name: child.first_name,
-          date_of_birth: child.date_of_birth,
-          gender: child.gender,
-          profile_photo_url: child.profile_photo_url,
-          primary_concerns: JSON.parse(child.primary_concerns || "[]"),
-          created_at: child.created_at,
-          updated_at: child.updated_at,
-        })),
-      )
-      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
-
-    if (error) {
-      console.error("[Sync] children error:", error);
-      throw error;
-    }
-
-    for (const child of unsyncedChildren as any[]) {
-      await db.runAsync("UPDATE children SET sync_status = 1 WHERE id = ?", [
-        child.id,
-      ]);
-    }
-    console.log("[Sync] children synced.");
-  }
-
-  if (unsyncedLogs.length > 0) {
-    console.log(
-      `Found ${unsyncedLogs.length} unsynced activities. Pushing to Supabase...`,
-    );
-
-    const { error } = await supabase
-      .from("activities_log")
-      .upsert(
-        (unsyncedLogs as any[]).map((log) => ({
-          id: log.id,
-          child_id: log.child_id,
-          game_id: log.game_id,
-          duration_ms: log.duration_ms,
-          accuracy_percentage: log.accuracy_percentage,
-          timestamp: log.timestamp,
-          game_specific_metrics: JSON.parse(log.game_specific_metrics || "{}"),
-          ai_vision_metrics: JSON.parse(log.ai_vision_metrics || "{}"),
-          created_at: log.created_at,
-        })),
-      )
-      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
-
-    if (error) {
-      console.error("[Sync] activities_log error:", error);
-      throw error;
-    }
-
-    for (const log of unsyncedLogs as any[]) {
-      await db.runAsync(
-        "UPDATE activities_log SET sync_status = 1 WHERE id = ?",
-        [log.id],
-      );
-    }
-    console.log("[Sync] activities_log synced.");
-  }
-
-  if (unsyncedSpecialists.length > 0) {
-    console.log(
-      `Found ${unsyncedSpecialists.length} unsynced specialists. Pushing to Supabase...`,
-    );
-
-    const { error } = await supabase
-      .from("specialists")
-      .upsert(
-        (unsyncedSpecialists as any[]).map((specialist) => ({
-          id: specialist.id,
-          user_id: specialist.user_id,
-          full_name: specialist.full_name,
-          medical_reg_number: specialist.medical_reg_number,
-          specialty: specialist.specialty,
-          clinic_name: specialist.clinic_name,
-          city: specialist.city,
-          consultation_fee_bdt: specialist.consultation_fee_bdt,
-          languages: specialist.languages,
-          bio: specialist.bio,
-          profile_photo_url: specialist.profile_photo_url,
-          bank_account_encrypted: specialist.bank_account_encrypted,
-          calendly_url: specialist.calendly_url,
-          status: specialist.status,
-          is_verified: specialist.is_verified,
-          created_at: specialist.created_at,
-          updated_at: specialist.updated_at,
-        })),
-      )
-      .abortSignal(createTimeoutSignal(SYNC_TIMEOUT_MS));
-
-    if (error) {
-      console.error("[Sync] specialists error:", error);
-      throw error;
-    }
-
-    for (const specialist of unsyncedSpecialists as any[]) {
-      await db.runAsync("UPDATE specialists SET sync_status = 1 WHERE id = ?", [
-        specialist.id,
-      ]);
-    }
-
-    console.log("[Sync] specialists synced.");
-  }
   if (unsyncedAppointments.length > 0) {
     console.log(
       `Found ${unsyncedAppointments.length} unsynced appointments. Pushing to Supabase...`,
@@ -234,9 +71,6 @@ const syncTables = async () => {
   }
 
   return {
-    activities: unsyncedLogs.length,
-    specialists: unsyncedSpecialists.length,
-    users: unsyncedUsers.length,
     appointments: unsyncedAppointments.length,
   };
 };

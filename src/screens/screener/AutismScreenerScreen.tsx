@@ -11,7 +11,7 @@ import {
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CrayonButton } from '../../components/CrayonButton';
 import { useAuthStore, useChildStore } from '../../store/store';
-import { getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 import { useI18n } from '../../i18n/useI18n';
 import { getMchatQuestions } from './screenerData';
 
@@ -79,12 +79,13 @@ const AutismScreenerScreen: React.FC<Props> = ({ navigation }) => {
     const loadLatestAssessment = async () => {
       if (!activeChild) return;
       try {
-        const db = await getDatabase();
-        const rows = await db.getAllAsync(
-          'SELECT * FROM assessments WHERE child_id = ? ORDER BY timestamp DESC LIMIT 1',
-          [activeChild.id],
-        );
-        setLastAssessment(rows?.[0] ?? null);
+        const { data } = await supabase
+          .from('assessments')
+          .select('*')
+          .eq('child_id', activeChild.id)
+          .order('timestamp', { ascending: false })
+          .limit(1);
+        setLastAssessment(data?.[0] ?? null);
       } catch (error) {
         console.error('Failed to load assessments', error);
       } finally {

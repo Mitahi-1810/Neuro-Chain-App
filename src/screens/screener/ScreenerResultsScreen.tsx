@@ -13,7 +13,7 @@ import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { Mascot } from '../../components/Mascot';
 import { RiskLevel } from '../../types';
-import { getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 import { useChildStore } from '../../store/store';
 import { ScreeningDisclaimerBanner } from '../../components/ScreeningDisclaimerBanner';
 import {
@@ -211,23 +211,18 @@ const ScreenerResultsScreen: React.FC<Props> = ({ navigation, route }) => {
     if (!isSaved && activeChild && normalizedAnswers.length > 0) {
       const saveAssessment = async () => {
         try {
-          const db = await getDatabase();
           const timestamp = new Date().toISOString();
-          await db.runAsync(
-            `INSERT INTO assessments (
-              id, child_id, test_type, raw_answers, risk_score, risk_level, timestamp, created_at, sync_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-            [
-              Date.now().toString(),
-              activeChild.id,
-              resolvedTestType,
-              JSON.stringify(normalizedAnswers),
-              result.riskScore,
-              riskLevel,
-              timestamp,
-              timestamp,
-            ],
-          );
+          const { error } = await supabase.from('assessments').insert({
+            id: Date.now().toString(),
+            child_id: activeChild.id,
+            test_type: resolvedTestType,
+            raw_answers: normalizedAnswers,
+            risk_score: result.riskScore,
+            risk_level: riskLevel,
+            timestamp,
+            created_at: timestamp,
+          });
+          if (error) throw error;
           setIsSaved(true);
         } catch (error) {
           console.error('Failed to save assessment', error);

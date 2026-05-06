@@ -10,7 +10,7 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useAuthStore } from '../../store/store';
-import { ensureSpecialistSchema, getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 
 const SPECIALTIES = [
   'Developmental Pediatrician',
@@ -152,31 +152,26 @@ const SpecialistSignUpScreen: React.FC<{ navigation: any }> = ({ navigation }) =
     try {
       const createdUser = await signup(email, password, fullName, 'SPECIALIST', 'FREE');
       if (createdUser) {
-        await ensureSpecialistSchema();
-        const db = await getDatabase();
         const timestamp = new Date().toISOString();
-        await db.runAsync(
-          `INSERT OR REPLACE INTO specialists (
-            id, user_id, full_name, medical_reg_number, specialty, clinic_name, city,
-            consultation_fee_bdt, languages, bio, profile_photo_url, bank_account_encrypted,
-            status, is_verified, created_at, updated_at, sync_status
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'PENDING', 0, ?, ?, 0)`,
-          [
-            createdUser.id,
-            createdUser.id,
-            fullName.trim(),
-            medRegNumber.trim(),
-            specialty,
-            clinicName.trim(),
-            city.trim(),
-            Number(consultationFee),
-            JSON.stringify(languages),
-            bio.trim(),
-            profilePhoto || '',
-            timestamp,
-            timestamp,
-          ]
-        );
+        const { error: specError } = await supabase.from('specialists').upsert({
+          id: createdUser.id,
+          user_id: createdUser.id,
+          full_name: fullName.trim(),
+          medical_reg_number: medRegNumber.trim(),
+          specialty,
+          clinic_name: clinicName.trim(),
+          city: city.trim(),
+          consultation_fee_bdt: Number(consultationFee),
+          languages: JSON.stringify(languages),
+          bio: bio.trim(),
+          profile_photo_url: profilePhoto || '',
+          bank_account_encrypted: '',
+          status: 'PENDING',
+          is_verified: 0,
+          created_at: timestamp,
+          updated_at: timestamp,
+        });
+        if (specError) console.error('Failed to create specialist profile:', specError);
       }
     } catch (e: any) {
       let msg = e.message || 'Sign up failed. Please try again.';

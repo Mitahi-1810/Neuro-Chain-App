@@ -162,9 +162,20 @@ export const useAuthStore = create<AuthState>((set) => ({
           created_at: data.user.created_at,
           updated_at: data.user.updated_at || new Date().toISOString(),
         };
-        set({
-          user: createdUser,
+
+        // Write user profile directly to Supabase public.users
+        const { error: upsertError } = await supabase.from('users').upsert({
+          id: createdUser.id,
+          email: createdUser.email,
+          full_name: createdUser.full_name,
+          role: createdUser.role,
+          tier_level: createdUser.tier_level,
+          created_at: createdUser.created_at,
+          updated_at: createdUser.updated_at,
         });
+        if (upsertError) console.error('Failed to write user to Supabase:', upsertError);
+
+        set({ user: createdUser });
         return createdUser;
       }
       return null;
@@ -225,42 +236,43 @@ export const useChildStore = create<ChildState>((set) => ({
   addChild: async (child) => {
     set((state) => ({ children: [...state.children, child] }));
     try {
-      const db = await getDatabase();
-      await db.runAsync(
-        `INSERT INTO children (id, parent_id, first_name, date_of_birth, gender, primary_concerns, created_at, updated_at, sync_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-        [
-          child.id,
-          child.parent_id,
-          child.first_name,
-          child.date_of_birth,
-          child.gender,
-          JSON.stringify(child.primary_concerns),
-          child.created_at,
-          child.updated_at,
-        ]
-      );
+      const { error } = await supabase.from('children').insert({
+        id: child.id,
+        parent_id: child.parent_id,
+        first_name: child.first_name,
+        date_of_birth: child.date_of_birth,
+        gender: child.gender,
+        primary_concerns: JSON.stringify(child.primary_concerns),
+        created_at: child.created_at,
+        updated_at: child.updated_at,
+      });
+      if (error) throw error;
     } catch (e) {
-      console.error('Failed to save child locally', e);
+      console.error('Failed to save child to Supabase', e);
+      // Roll back optimistic update on failure
+      set((state) => ({ children: state.children.filter((c) => c.id !== child.id) }));
     }
   },
   hydrateChildren: async (parentId) => {
     try {
-      const db = await getDatabase();
-      const results = await db.getAllAsync(
-        'SELECT * FROM children WHERE parent_id = ? ORDER BY created_at DESC',
-        [parentId]
-      );
-      const mapped = (results as any[]).map(r => ({
+      const { data, error } = await supabase
+        .from('children')
+        .select('*')
+        .eq('parent_id', parentId)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      const mapped = (data || []).map((r: any) => ({
         ...r,
-        primary_concerns: JSON.parse(r.primary_concerns || '[]')
+        primary_concerns: typeof r.primary_concerns === 'string'
+          ? JSON.parse(r.primary_concerns || '[]')
+          : r.primary_concerns || [],
       }));
       set({ children: mapped });
       if (mapped.length > 0) {
         set({ activeChild: mapped[0] });
       }
     } catch (e) {
-      console.error('Failed to hydrate children', e);
+      console.error('Failed to hydrate children from Supabase', e);
     }
   }
 }));
@@ -270,32 +282,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   completedGames: [],
   dailyPlan: [],
   addGameSession: async (session) => {
-    // 1. Optimistically update UI
     set((state) => ({ completedGames: [...state.completedGames, session] }));
-    
-    // 2. Persist to local offline SQLite database
     try {
-      const db = await getDatabase();
-      await db.runAsync(
-        `INSERT INTO activities_log (
-          id, child_id, game_id, duration_ms, accuracy_percentage, 
-          timestamp, game_specific_metrics, ai_vision_metrics, created_at, sync_status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`,
-        [
-          session.id,
-          session.child_id,
-          session.game_id,
-          session.duration_ms,
-          session.accuracy_percentage,
-          session.timestamp,
-          JSON.stringify(session.game_specific_metrics || {}),
-          JSON.stringify(session.ai_vision_metrics || {}),
-          session.created_at,
-        ]
-      );
-      console.log('Game session saved locally.');
+      const { error } = await supabase.from('activities_log').insert({
+        id: session.id,
+        child_id: session.child_id,
+        game_id: session.game_id,
+        duration_ms: session.duration_ms,
+        accuracy_percentage: session.accuracy_percentage,
+        timestamp: session.timestamp,
+        game_specific_metrics: session.game_specific_metrics || {},
+        ai_vision_metrics: session.ai_vision_metrics || {},
+        created_at: session.created_at,
+      });
+      if (error) throw error;
     } catch (error) {
-      console.error('Failed to save session locally', error);
+      console.error('Failed to save game session to Supabase', error);
     }
   },
   getTodaysSessions: () => {
@@ -340,22 +342,15 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   hydrateGames: async (childId) => {
     try {
-      const db = await getDatabase();
-      let query = 'SELECT * FROM activities_log ORDER BY timestamp DESC';
-      let params: any[] = [];
+      let query = supabase.from('activities_log').select('*').order('timestamp', { ascending: false });
       if (childId) {
-        query = 'SELECT * FROM activities_log WHERE child_id = ? ORDER BY timestamp DESC';
-        params = [childId];
+        query = query.eq('child_id', childId);
       }
-      const results = await db.getAllAsync(query, params);
-      const mapped = (results as any[]).map(r => ({
-        ...r,
-        game_specific_metrics: JSON.parse(r.game_specific_metrics || '{}'),
-        ai_vision_metrics: JSON.parse(r.ai_vision_metrics || '{}')
-      }));
-      set({ completedGames: mapped });
+      const { data, error } = await query;
+      if (error) throw error;
+      set({ completedGames: data || [] });
     } catch (e) {
-      console.error('Failed to hydrate games', e);
+      console.error('Failed to hydrate games from Supabase', e);
     }
   }
 }));

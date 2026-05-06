@@ -15,7 +15,7 @@ import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
 import { useAuthStore } from '../../store/store';
-import { ensureSpecialistSchema, getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 
 const SpecialistCalendarScreen: React.FC<any> = ({ navigation }) => {
   const { user } = useAuthStore();
@@ -29,19 +29,19 @@ const SpecialistCalendarScreen: React.FC<any> = ({ navigation }) => {
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
-  await ensureSpecialistSchema();
-  const db = await getDatabase();
-      const specialists: any[] = await db.getAllAsync(
-        'SELECT id FROM specialists WHERE user_id = ? LIMIT 1',
-        [user.id]
-      );
-      const specialist = specialists?.[0];
+      const { data: specialistRows } = await supabase
+        .from('specialists')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+      const specialist = specialistRows?.[0];
       if (specialist?.id) {
         setSpecialistId(specialist.id);
-        const slots = await db.getAllAsync(
-          'SELECT * FROM specialist_blocked_slots WHERE specialist_id = ? ORDER BY slot_start DESC',
-          [specialist.id]
-        );
+        const { data: slots } = await supabase
+          .from('specialist_blocked_slots')
+          .select('*')
+          .eq('specialist_id', specialist.id)
+          .order('slot_start', { ascending: false });
         setBlockedSlots(slots || []);
       }
     };
@@ -55,7 +55,6 @@ const SpecialistCalendarScreen: React.FC<any> = ({ navigation }) => {
       return;
     }
     try {
-      const db = await getDatabase();
       const timestamp = new Date().toISOString();
       const newSlot = {
         id: Date.now().toString(),
@@ -66,19 +65,8 @@ const SpecialistCalendarScreen: React.FC<any> = ({ navigation }) => {
         created_at: timestamp,
         updated_at: timestamp,
       };
-      await db.runAsync(
-        `INSERT INTO specialist_blocked_slots (id, specialist_id, slot_start, slot_end, reason, created_at, updated_at, sync_status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-        [
-          newSlot.id,
-          newSlot.specialist_id,
-          newSlot.slot_start,
-          newSlot.slot_end,
-          newSlot.reason,
-          newSlot.created_at,
-          newSlot.updated_at,
-        ]
-      );
+      const { error } = await supabase.from('specialist_blocked_slots').insert(newSlot);
+      if (error) throw error;
       setBlockedSlots((prev) => [newSlot, ...prev]);
     } catch (error) {
       console.error('Failed to add blocked slot', error);

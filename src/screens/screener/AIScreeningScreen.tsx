@@ -43,7 +43,7 @@ import {
   VisionSessionMetrics,
 } from '../../engine/visionEngine';
 import { RiskLevel } from '../../types';
-import { getDatabase } from '../../data/database';
+import { supabase } from '../../lib/supabase';
 import { useChildStore } from '../../store/store';
 
 // expo-camera v15: onFacesDetected not in top-level CameraProps types, but functional
@@ -264,22 +264,18 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
     setStage('done');
 
     try {
-      const db = await getDatabase();
       const timestamp = new Date().toISOString();
-      await db.runAsync(
-        `INSERT INTO assessments
-          (id, child_id, test_type, raw_answers, risk_score, risk_level, timestamp, created_at, sync_status)
-         VALUES (?, ?, 'AI_VISION', ?, ?, ?, ?, ?, 0)`,
-        [
-          Date.now().toString(),
-          activeChild?.id || '',
-          JSON.stringify(metrics),
-          score,
-          adjusted,
-          timestamp,
-          timestamp,
-        ],
-      );
+      const { error } = await supabase.from('assessments').insert({
+        id: Date.now().toString(),
+        child_id: activeChild?.id || '',
+        test_type: 'AI_VISION',
+        raw_answers: metrics,
+        risk_score: score,
+        risk_level: adjusted,
+        timestamp,
+        created_at: timestamp,
+      });
+      if (error) throw error;
     } catch (e) {
       console.error('Failed to save AI screening result:', e);
     }

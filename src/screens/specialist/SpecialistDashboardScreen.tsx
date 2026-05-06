@@ -16,12 +16,8 @@ import { typography } from "../../utils/typography";
 import { CrayonCard } from "../../components/CrayonCard";
 import { CrayonButton } from "../../components/CrayonButton";
 import { useI18n } from "../../i18n/useI18n";
-import {
-  ensureSpecialistSchema,
-  getDatabase,
-  migrateCalendlyUrl,
-} from "../../data/database";
 import { useAuthStore } from "../../store/store";
+import { supabase } from "../../lib/supabase";
 
 const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
   const { t } = useI18n();
@@ -37,56 +33,53 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
     const loadData = async () => {
       if (!user) return;
       try {
-        await ensureSpecialistSchema();
-        await migrateCalendlyUrl();
-        const db = await getDatabase();
-        const specialistRows: any[] = await db.getAllAsync(
-          "SELECT * FROM specialists WHERE user_id = ? LIMIT 1",
-          [user.id],
-        );
-        let specialistProfile = (specialistRows?.[0] as any) ?? null;
+        const { data: specialistRows } = await supabase
+          .from('specialists')
+          .select('*')
+          .eq('user_id', user.id)
+          .limit(1);
+        let specialistProfile = specialistRows?.[0] ?? null;
 
         if (!specialistProfile) {
           const timestamp = new Date().toISOString();
-          const newId = user.id;
-          await db.runAsync(
-            `INSERT OR IGNORE INTO specialists (id, user_id, full_name, specialty, status, created_at, updated_at, sync_status)
-             VALUES (?, ?, ?, ?, 'PENDING', ?, ?, 0)`,
-            [
-              newId,
-              user.id,
-              user.full_name || "Specialist",
-              "General",
-              timestamp,
-              timestamp,
-            ],
-          );
-          specialistProfile = {
-            id: newId,
+          const { data: inserted } = await supabase.from('specialists').upsert({
+            id: user.id,
             user_id: user.id,
-            full_name: user.full_name,
-            status: "PENDING",
-          };
+            full_name: user.full_name || 'Specialist',
+            specialty: 'General',
+            status: 'PENDING',
+            created_at: timestamp,
+            updated_at: timestamp,
+          }).select().single();
+          specialistProfile = inserted ?? { id: user.id, user_id: user.id, full_name: user.full_name, status: 'PENDING' };
         }
 
         setSpecialist(specialistProfile);
-        setCalendlyUrl(specialistProfile?.calendly_url || "");
+        setCalendlyUrl(specialistProfile?.calendly_url || '');
 
         if (specialistProfile?.id) {
-          const rows = await db.getAllAsync(
-            `SELECT a.*, c.first_name AS child_name, c.date_of_birth AS child_dob,
-                    u.full_name AS parent_name
-             FROM appointments a
-             LEFT JOIN children c ON a.child_id = c.id
-             LEFT JOIN users u ON a.parent_id = u.id
-             WHERE a.specialist_id = ?
-             ORDER BY a.scheduled_at ASC`,
-            [specialistProfile.id],
-          );
-          setAppointments(rows || []);
+          const { data: apts } = await supabase
+            .from('appointments')
+            .select('*')
+            .eq('specialist_id', specialistProfile.id)
+            .order('scheduled_at', { ascending: true });
+
+          const enriched = await Promise.all((apts || []).map(async (apt: any) => {
+            const [childRes, parentRes] = await Promise.all([
+              supabase.from('children').select('first_name, date_of_birth').eq('id', apt.child_id).single(),
+              supabase.from('users').select('full_name').eq('id', apt.parent_id).single(),
+            ]);
+            return {
+              ...apt,
+              child_name: childRes.data?.first_name,
+              child_dob: childRes.data?.date_of_birth,
+              parent_name: parentRes.data?.full_name,
+            };
+          }));
+          setAppointments(enriched);
         }
       } catch (error) {
-        console.error("Failed to load specialist dashboard", error);
+        console.error('Failed to load specialist dashboard', error);
       } finally {
         setLoading(false);
       }
@@ -147,18 +140,16 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
 
   const handleUpdateStatus = async (appointmentId: string, status: string) => {
     try {
-      const db = await getDatabase();
-      await db.runAsync(
-        "UPDATE appointments SET status = ?, updated_at = ? WHERE id = ?",
-        [status, new Date().toISOString(), appointmentId],
-      );
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq('id', appointmentId);
+      if (error) throw error;
       setAppointments((prev) =>
-        prev.map((apt) =>
-          apt.id === appointmentId ? { ...apt, status } : apt,
-        ),
+        prev.map((apt) => apt.id === appointmentId ? { ...apt, status } : apt),
       );
     } catch (error) {
-      console.error("Failed to update appointment", error);
+      console.error('Failed to update appointment', error);
     }
   };
 
@@ -241,15 +232,15 @@ const SpecialistDashboardScreen: React.FC<any> = ({ navigation }) => {
     }
     setSavingUrl(true);
     try {
-      const db = await getDatabase();
-      await db.runAsync(
-        "UPDATE specialists SET calendly_url = ?, updated_at = ? WHERE user_id = ?",
-        [trimmed, new Date().toISOString(), user!.id],
-      );
+      const { error } = await supabase
+        .from('specialists')
+        .update({ calendly_url: trimmed, updated_at: new Date().toISOString() })
+        .eq('user_id', user!.id);
+      if (error) throw error;
       setSpecialist((prev: any) => ({ ...prev, calendly_url: trimmed }));
       setEditingUrl(false);
     } catch {
-      Alert.alert("Error", "Could not save. Please try again.");
+      Alert.alert('Error', 'Could not save. Please try again.');
     } finally {
       setSavingUrl(false);
     }
