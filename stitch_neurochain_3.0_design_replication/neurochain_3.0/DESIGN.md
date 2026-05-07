@@ -1,5 +1,5 @@
 ---
-name: NeuroChain 3.0
+name: NeuroChain 1.0
 colors:
   surface: '#f9f9f9'
   surface-dim: '#dadada'

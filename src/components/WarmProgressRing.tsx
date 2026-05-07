@@ -124,12 +124,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     color: colors.primary,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   label: {
     fontSize: 12,
     color: colors.textWarmBrown,
     marginTop: 4,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
   },
 });

@@ -42,6 +42,12 @@ import {
   Poppins_700Bold,
   Poppins_800ExtraBold,
 } from "@expo-google-fonts/poppins";
+import {
+  Nunito_400Regular,
+  Nunito_600SemiBold,
+  Nunito_700Bold,
+  Nunito_800ExtraBold,
+} from "@expo-google-fonts/nunito";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
@@ -191,7 +197,7 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             >
               <MaterialCommunityIcons
                 name={iconName as any}
-                size={22}
+                size={20}
                 color={isFocused ? activeColor : inactiveColor}
               />
               <Text style={[tabStyles.tabLabel, { color: isFocused ? activeColor : inactiveColor }]} numberOfLines={1}>
@@ -208,16 +214,16 @@ function FloatingTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
 const tabStyles = StyleSheet.create({
   wrapper: {
     position: "absolute",
-    left: 18,
-    right: 18,
-    bottom: Platform.OS === "ios" ? 28 : 18,
+    left: 16,
+    right: 16,
+    bottom: Platform.OS === "ios" ? 24 : 14,
   },
   bar: {
     flexDirection: "row",
     backgroundColor: "#7B74E0",
-    borderRadius: radius.full,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    borderRadius: radius.xxl,
+    paddingHorizontal: 6,
+    paddingVertical: 5,
     alignItems: "center",
     borderWidth: 0,
     ...shadow.lg,
@@ -227,11 +233,10 @@ const tabStyles = StyleSheet.create({
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 12,
-    paddingHorizontal: 6,
-    borderRadius: radius.full,
-    gap: 4,
-    minHeight: 44,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: radius.xl,
+    gap: 3,
   },
   tabLabel: {
     ...typography.badge,
@@ -378,6 +383,10 @@ export default function App() {
     "Poppins-SemiBold": Poppins_600SemiBold,
     "Poppins-Bold": Poppins_700Bold,
     "Poppins-ExtraBold": Poppins_800ExtraBold,
+    Nunito: Nunito_400Regular,
+    "Nunito-SemiBold": Nunito_600SemiBold,
+    "Nunito-Bold": Nunito_700Bold,
+    "Nunito-ExtraBold": Nunito_800ExtraBold,
   });
 
   useEffect(() => {

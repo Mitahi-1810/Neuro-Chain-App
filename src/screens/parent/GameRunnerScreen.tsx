@@ -18,15 +18,9 @@ import { useAuthStore, useChildStore, useGameStore } from '../../store/store';
 import { useI18n } from '../../i18n/useI18n';
 import { BackgroundCamera, BackgroundCameraHandle } from '../../components/BackgroundCamera';
 import { BubbleEmotionPopGame } from '../../components/BubbleEmotionPopGame';
-import { SnapMatchGame } from '../../components/SnapMatchGame';
 import { MorningMissionGame } from '../../components/MorningMissionGame';
 import { CopyMyGrooveGame } from '../../components/CopyMyGrooveGame';
 import { CalmCornerGame } from '../../components/CalmCornerGame';
-import { WaitingGame } from '../../components/WaitingGame';
-import { EmotionMatchArenaGame } from '../../components/EmotionMatchArenaGame';
-import { MandAndSeekGame } from '../../components/MandAndSeekGame';
-import { StoryNavigatorGame } from '../../components/StoryNavigatorGame';
-import { RhythmBurstGame } from '../../components/RhythmBurstGame';
 import { LabelLabGame } from '../../components/LabelLabGame';
 import { IconSymbol } from '../../components/IconSymbol';
 import { ChildProfileRequired } from '../../components/ChildProfileRequired';
@@ -87,14 +81,10 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
       switch (game.id) {
         case 'bubble_emotion_pop':
           return { score: 12, misses: 2, accuracy_percentage: accuracy, session_duration_seconds: Math.round(duration / 1000) };
-        case 'snap_match':
-          return { snaps_correct: 10, misses: 3, false_presses: 2, accuracy_percentage: accuracy, session_duration_seconds: Math.round(duration / 1000) };
         case 'morning_mission':
           return { mistakes: 2, accuracy_percentage: accuracy, session_duration_seconds: Math.round(duration / 1000) };
         case 'copy_my_groove':
           return { rounds_correct: 4, rounds_wrong: 2, accuracy_percentage: accuracy, session_duration_seconds: Math.round(duration / 1000) };
-        case 'waiting_game':
-          return { successful_bids: 7, total_bids: 10, average_time_to_eye_contact_ms: 1400, bid_latencies_array: [1300, 1500, 1600, 1200, 1400] };
         case 'calm_corner':
           return { cycles_completed: 5, session_duration_seconds: Math.round(duration / 1000), affect_transition: { affect_start: 'tense', affect_end: 'calm' }, initiated_by: 'PARENT' };
         default:
@@ -119,9 +109,8 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
 
   const startGame = () => {
     const playableGames = [
-      'bubble_emotion_pop', 'snap_match', 'morning_mission', 'copy_my_groove',
-      'calm_corner', 'waiting_game', 'emotion_match_arena', 'mand_and_seek',
-      'story_navigator', 'rhythm_burst', 'label_lab',
+      'bubble_emotion_pop', 'morning_mission', 'copy_my_groove',
+      'calm_corner', 'label_lab',
     ];
     if (playableGames.includes(game.id)) {
       setIsPlaying(true);
@@ -133,7 +122,7 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
   const handleGameFinish = (metrics: any) => {
     setIsPlaying(false);
     const visionMetrics =
-      isPremium && game.id !== 'waiting_game'
+      isPremium
         ? bgCameraRef.current?.getMetrics()
         : undefined;
 
@@ -154,7 +143,7 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
   };
 
   const withBgCamera = (gameNode: React.ReactElement) => {
-    if (!isPremium || game.id === 'waiting_game') return gameNode;
+    if (!isPremium) return gameNode;
     return (
       <View style={{ flex: 1 }}>
         {gameNode}
@@ -167,24 +156,12 @@ const GameRunnerScreen: React.FC<any> = ({ navigation, route }) => {
     switch (game.id) {
       case 'bubble_emotion_pop':
         return withBgCamera(<BubbleEmotionPopGame onFinish={handleGameFinish} />);
-      case 'snap_match':
-        return withBgCamera(<SnapMatchGame onFinish={handleGameFinish} />);
       case 'morning_mission':
         return withBgCamera(<MorningMissionGame onFinish={handleGameFinish} />);
       case 'copy_my_groove':
         return withBgCamera(<CopyMyGrooveGame onFinish={handleGameFinish} />);
       case 'calm_corner':
         return withBgCamera(<CalmCornerGame onFinish={handleGameFinish} isPremium={isPremium} />);
-      case 'waiting_game':
-        return <WaitingGame onFinish={handleGameFinish} />;
-      case 'emotion_match_arena':
-        return withBgCamera(<EmotionMatchArenaGame onFinish={handleGameFinish} />);
-      case 'mand_and_seek':
-        return withBgCamera(<MandAndSeekGame onFinish={handleGameFinish} />);
-      case 'story_navigator':
-        return withBgCamera(<StoryNavigatorGame onFinish={handleGameFinish} />);
-      case 'rhythm_burst':
-        return withBgCamera(<RhythmBurstGame onFinish={handleGameFinish} />);
       case 'label_lab':
         return withBgCamera(<LabelLabGame onFinish={handleGameFinish} />);
       default:

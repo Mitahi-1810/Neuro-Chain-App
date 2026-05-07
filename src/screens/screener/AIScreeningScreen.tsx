@@ -1,21 +1,3 @@
-/**
- * AIScreeningScreen — On-Device Behavioral Screening
- *
- * Stage 1 (ready):    Explainer + consent + camera permission request
- * Stage 2 (running):  4 structured activities × 25 s using the front camera
- *                     expo-camera face detection → visionEngine behavioural metrics
- * Stage 3 (done):     Engagement report + adjusted risk level + next steps
- *
- * All analysis is on-device. No frames, video, or facial images are transmitted.
- * Only numeric metrics (gaze %, engagement score, affect state) are persisted.
- * See visionEngine.ts for clinical rationale and privacy architecture.
- *
- * Clinical basis:
- *   ● Gaze on screen → joint attention / social orienting (ADOS-2 Module 1, item A2)
- *   ● Engagement composite → sustained attention (ABLLS-R category A)
- *   ● Affect transition → emotional regulation (Bernier et al., 2012)
- */
-
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -33,7 +15,6 @@ import { colors, radius, shadow } from '../../utils/colors';
 import { typography } from '../../utils/typography';
 import { CrayonButton } from '../../components/CrayonButton';
 import { CrayonCard } from '../../components/CrayonCard';
-import { Mascot } from '../../components/Mascot';
 import {
   buildFrameFromDetection,
   classifyAffect,
@@ -458,15 +439,23 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
 
   if (stage === 'ready') {
     return (
-      <View style={styles.readyContainer}>
-        {/* Hero background */}
+      <SafeAreaView style={styles.readyContainer}>
+        {/* Header */}
+        <View style={styles.readyHeader}>
+          <TouchableOpacity style={styles.readyBackBtn} onPress={() => navigation.goBack()}>
+            <MaterialCommunityIcons name="arrow-left" size={20} color={colors.white} />
+          </TouchableOpacity>
+          <Text style={styles.readyHeaderTitle}>AI Behavioral Check</Text>
+          <View style={{ width: 40 }} />
+        </View>
+
+        {/* Hero */}
         <View style={styles.readyHero}>
-          <View style={styles.readyHeroBg} />
-          <Mascot kind="brain" size="xl" />
-          <Text style={styles.readyHeroTitle}>AI Behavioral Check</Text>
-          <Text style={styles.readyHeroSub}>
-            2-minute on-device screening · No video stored
-          </Text>
+          <View style={styles.readyHeroIcon}>
+            <MaterialCommunityIcons name="brain" size={44} color={colors.white} />
+          </View>
+          <Text style={styles.readyHeroTitle}>2-minute on-device check</Text>
+          <Text style={styles.readyHeroSub}>No video is stored · All analysis happens on this device</Text>
         </View>
 
         <ScrollView
@@ -474,56 +463,46 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
           contentContainerStyle={styles.readyScrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* What happens */}
-          <CrayonCard style={styles.readyCard} padding={20}>
-            <Text style={styles.readyCardTitle}>What happens?</Text>
+          {/* Activity list */}
+          <Text style={styles.readySectionLabel}>4 short activities</Text>
+          <View style={styles.activityList}>
             {ACTIVITIES.map((a, i) => (
               <View key={a.id} style={styles.activityRow}>
-                <View style={[styles.activityCircle, { backgroundColor: a.accentColor + '22' }]}>
+                <View style={[styles.activityCircle, { backgroundColor: a.accentColor + '20' }]}>
                   <Text style={[styles.activityCircleNum, { color: a.accentColor }]}>{i + 1}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.activityRowLabel}>{a.label}</Text>
                   <Text style={styles.activityRowDesc}>{a.instruction}</Text>
                 </View>
-                <Text style={styles.activityDuration}>{a.duration}s</Text>
+                <View style={[styles.durationPill, { borderColor: a.accentColor + '50' }]}>
+                  <Text style={[styles.activityDuration, { color: a.accentColor }]}>{a.duration}s</Text>
+                </View>
               </View>
             ))}
-          </CrayonCard>
-
-          {/* Privacy note */}
-          <View style={styles.privacyRow}>
-            <MaterialCommunityIcons name="shield-check" size={18} color={colors.success} />
-            <Text style={styles.privacyText}>
-              All analysis runs on this device. No video or images are ever uploaded.
-            </Text>
           </View>
 
           {/* Tips */}
-          <CrayonCard variant="sun" padding={18} style={styles.tipsCard}>
+          <CrayonCard variant="sun" padding={16} style={styles.tipsCard}>
             <View style={styles.tipsRow}>
               <MaterialCommunityIcons name="lightbulb-outline" size={20} color={colors.secondaryDark} />
               <View style={{ flex: 1 }}>
-                <Text style={styles.tipsTitle}>Before you start</Text>
+                <Text style={styles.tipsTitle}>Quick setup</Text>
                 <Text style={styles.tipsText}>
-                  Find a quiet, well-lit space.{'\n'}
-                  Hold the screen 30–50 cm from your child's face.{'\n'}
-                  Your child doesn't need to do anything specific.
+                  Quiet, well-lit space · Screen 30–50 cm from your child · Your child just needs to be present
                 </Text>
               </View>
             </View>
           </CrayonCard>
 
           <CrayonButton
-            label="Start AI Screening"
+            label="Start Screening"
             onPress={handleStart}
             variant="primary"
             size="large"
             fullWidth
-            style={{ marginTop: 8 }}
-            iconRight={<MaterialCommunityIcons name="brain" size={20} color={colors.white} />}
+            style={{ marginTop: 4 }}
           />
-
           <CrayonButton
             label="Skip for now"
             onPress={() => {
@@ -536,10 +515,10 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
             variant="ghost"
             size="medium"
             fullWidth
-            style={{ marginTop: 10, marginBottom: 24 }}
+            style={{ marginTop: 10, marginBottom: 32 }}
           />
         </ScrollView>
-      </View>
+      </SafeAreaView>
     );
   }
 
@@ -548,18 +527,19 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
   if (stage === 'permission_denied') {
     return (
       <SafeAreaView style={styles.permContainer}>
-        <Mascot kind="cloud" size="xl" />
-        <Text style={styles.permTitle}>Camera needed</Text>
+        <View style={styles.permIconWrap}>
+          <MaterialCommunityIcons name="camera-off" size={48} color={colors.primary} />
+        </View>
+        <Text style={styles.permTitle}>Camera access needed</Text>
         <Text style={styles.permDesc}>
-          The AI screening needs your camera to observe your child's eye contact and engagement.
-          No video is recorded or stored.
+          The AI check uses your front camera to observe your child's eye contact and engagement. No video is stored.
         </Text>
         <CrayonButton
-          label="Open Settings"
+          label="Go back"
           onPress={() => navigation.goBack()}
           variant="primary"
           size="large"
-          style={{ marginTop: 24 }}
+          style={{ marginTop: 28 }}
         />
       </SafeAreaView>
     );
@@ -708,7 +688,7 @@ const AIScreeningScreen: React.FC<Props> = ({ navigation, route }) => {
           {/* Insight */}
           <CrayonCard variant="sun" padding={18} style={styles.insightCard}>
             <View style={styles.insightRow}>
-              <Mascot kind="heart" size="sm" />
+              <MaterialCommunityIcons name="heart-circle-outline" size={36} color={colors.secondaryDark} />
               <View style={{ flex: 1 }}>
                 <Text style={styles.insightTitle}>What this means</Text>
                 <Text style={styles.insightText}>{insight}</Text>
@@ -886,112 +866,146 @@ const styles = StyleSheet.create({
   },
 
   /* ── READY ───────────────────────────────────────────────────────────────── */
-  readyContainer: {
-    flex: 1,
-    backgroundColor: colors.cream,
+  readyContainer: { flex: 1, backgroundColor: colors.cream },
+
+  readyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: colors.primary,
   },
+  readyBackBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  readyHeaderTitle: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 17,
+    color: colors.white,
+  },
+
   readyHero: {
     backgroundColor: colors.primary,
-    paddingTop: 52,
-    paddingBottom: 32,
+    paddingTop: 20,
+    paddingBottom: 28,
+    paddingHorizontal: 20,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
-  readyHeroBg: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.primaryDeep,
-    opacity: 0.35,
+  readyHeroIcon: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   readyHeroTitle: {
-    fontSize: 28,
-    fontWeight: '900',
+    fontSize: 20,
+    fontWeight: '800',
     color: colors.white,
-    fontFamily: 'Poppins',
-    marginTop: 4,
+    fontFamily: 'Nunito',
+    textAlign: 'center',
   },
   readyHeroSub: {
     fontSize: 13,
-    color: 'rgba(255,255,255,0.75)',
-    fontFamily: 'Inter',
+    color: 'rgba(255,255,255,0.72)',
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    textAlign: 'center',
   },
-  readyScroll: {
-    flex: 1,
+
+  readyScroll: { flex: 1 },
+  readyScrollContent: { paddingHorizontal: 20, paddingTop: 20 },
+
+  readySectionLabel: {
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 13,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    color: colors.primary,
+    marginBottom: 12,
   },
-  readyScrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  readyCard: {
-    marginBottom: 14,
-  },
-  readyCardTitle: {
-    ...typography.h4,
+  activityList: {
+    backgroundColor: colors.white,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
     marginBottom: 16,
+    ...shadow.sm,
   },
   activityRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 12,
-    marginBottom: 14,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   activityCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     alignItems: 'center',
     justifyContent: 'center',
   },
   activityCircleNum: {
     fontSize: 14,
     fontWeight: '900',
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   activityRowLabel: {
-    ...typography.h4,
+    fontFamily: 'Nunito',
+    fontWeight: '800',
     fontSize: 14,
+    color: colors.textDark,
   },
   activityRowDesc: {
-    ...typography.caption,
+    fontFamily: 'Nunito',
+    fontWeight: '500',
+    fontSize: 12,
     color: colors.textMuted,
     marginTop: 2,
   },
+  durationPill: {
+    borderWidth: 1,
+    borderRadius: radius.full,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
   activityDuration: {
-    ...typography.caption,
-    color: colors.textMuted,
-    paddingTop: 2,
+    fontSize: 12,
+    fontWeight: '700',
+    fontFamily: 'Nunito',
   },
-  privacyRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 14,
-  },
-  privacyText: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.textMuted,
-    fontFamily: 'Inter',
-    lineHeight: 18,
-  },
-  tipsCard: {
-    marginBottom: 20,
-  },
-  tipsRow: {
-    flexDirection: 'row',
-    gap: 12,
-    alignItems: 'flex-start',
-  },
+
+  tipsCard: { marginBottom: 20 },
+  tipsRow: { flexDirection: 'row', gap: 12, alignItems: 'flex-start' },
   tipsTitle: {
-    ...typography.h4,
+    fontFamily: 'Nunito',
+    fontWeight: '800',
     fontSize: 14,
     color: colors.secondaryDark,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   tipsText: {
-    ...typography.body,
+    fontFamily: 'Nunito',
+    fontWeight: '600',
     fontSize: 13,
     color: colors.textBody,
-    lineHeight: 21,
+    lineHeight: 20,
   },
 
   /* ── PERMISSION DENIED ───────────────────────────────────────────────────── */
@@ -1002,13 +1016,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
   },
+  permIconWrap: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   permTitle: {
-    ...typography.h2,
-    marginTop: 16,
+    fontFamily: 'Nunito',
+    fontWeight: '800',
+    fontSize: 22,
+    color: colors.textDark,
+    marginTop: 12,
     textAlign: 'center',
   },
   permDesc: {
-    ...typography.body,
+    fontFamily: 'Nunito',
+    fontWeight: '600',
+    fontSize: 14,
     color: colors.textBody,
     textAlign: 'center',
     marginTop: 10,

@@ -63,13 +63,17 @@ const initBubbles = (): Bubble[] => {
   return out;
 };
 
+const pickTargetFromBubbles = (list: Bubble[]) =>
+  list[Math.floor(Math.random() * list.length)].emotion;
+
 interface Props {
   onFinish: (metrics: any) => void;
 }
 
 export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
-  const [bubbles, setBubbles] = useState<Bubble[]>(initBubbles);
-  const [target, setTarget] = useState(EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)]);
+  const initialBubblesRef = useRef<Bubble[]>(initBubbles());
+  const [bubbles, setBubbles] = useState<Bubble[]>(initialBubblesRef.current);
+  const [target, setTarget] = useState(() => pickTargetFromBubbles(initialBubblesRef.current));
   const [score, setScore] = useState(0);
   const [misses, setMisses] = useState(0);
   const [feedback, setFeedback] = useState<{ text: string; color: string } | null>(null);
@@ -88,6 +92,12 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
     return () => pulse.stop();
   }, []);
 
+  useEffect(() => {
+    if (!bubbles.some((bubble) => bubble.emotion.name === target.name)) {
+      setTarget(pickTargetFromBubbles(bubbles));
+    }
+  }, [bubbles, target.name]);
+
   const popBubble = useCallback((bubble: Bubble) => {
     if (done) return;
     const correct = bubble.emotion.name === target.name;
@@ -96,21 +106,23 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
       Animated.timing(bubble.scaleAnim, { toValue: correct ? 1.4 : 0.85, duration: 120, useNativeDriver: true }),
       Animated.timing(bubble.scaleAnim, { toValue: 0, duration: 180, useNativeDriver: true }),
     ]).start(() => {
-      setBubbles((prev) =>
-        prev.map((b) => {
+      setBubbles((prev) => {
+        const updated = prev.map((b) => {
           if (b.id !== bubble.id) return b;
           const newBubble = makeBubble(b.id, b.col, b.row);
           return newBubble;
-        })
-      );
+        });
+        if (correct) {
+          setTarget(pickTargetFromBubbles(updated));
+        }
+        return updated;
+      });
     });
 
     if (correct) {
       const next = score + 1;
       setScore(next);
-  setFeedback({ text: 'Pop!', color: colors.success });
-      const nextTarget = EMOTIONS[Math.floor(Math.random() * EMOTIONS.length)];
-      setTarget(nextTarget);
+      setFeedback({ text: 'Pop!', color: colors.success });
       if (next >= WIN_SCORE) {
         setDone(true);
         setTimeout(() => {
@@ -202,9 +214,9 @@ export const BubbleEmotionPopGame: React.FC<Props> = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#E8F4FD', alignItems: 'center' },
   header: { paddingTop: 16, paddingHorizontal: 20, width: '100%', alignItems: 'center' },
-  title: { fontSize: 26, fontWeight: '900', color: colors.primary, fontFamily: 'Poppins' },
+  title: { fontSize: 26, fontWeight: '900', color: colors.primary, fontFamily: 'Nunito' },
   scoreRow: { marginTop: 4, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  scoreText: { fontSize: 18, fontWeight: '800', color: colors.textDark, fontFamily: 'Poppins' },
+  scoreText: { fontSize: 18, fontWeight: '800', color: colors.textDark, fontFamily: 'Nunito' },
   targetBox: {
     marginTop: 16,
     backgroundColor: colors.white,
@@ -218,9 +230,9 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
   },
-  targetLabel: { fontSize: 13, color: colors.textBody, fontFamily: 'Inter', fontWeight: '600' },
+  targetLabel: { fontSize: 13, color: colors.textBody, fontFamily: 'Nunito', fontWeight: '600' },
   targetEmoji: { fontSize: 44, marginVertical: 4 },
-  targetName: { fontSize: 18, fontWeight: '800', color: colors.textDark, fontFamily: 'Poppins' },
+  targetName: { fontSize: 18, fontWeight: '800', color: colors.textDark, fontFamily: 'Nunito' },
   feedbackBadge: {
     position: 'absolute',
     top: '45%',
@@ -230,7 +242,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     zIndex: 99,
   },
-  feedbackText: { fontSize: 20, fontWeight: '800', color: colors.white, fontFamily: 'Poppins' },
+  feedbackText: { fontSize: 20, fontWeight: '800', color: colors.white, fontFamily: 'Nunito' },
   grid: {
     marginTop: 36,
     height: ROWS * (BUBBLE_SIZE + 16),
@@ -255,7 +267,7 @@ const styles = StyleSheet.create({
     borderRadius: BUBBLE_SIZE / 2,
   },
   bubbleEmoji: { fontSize: 28 },
-  bubbleName: { fontSize: 9, fontWeight: '700', color: colors.white, fontFamily: 'Inter', marginTop: 2 },
+  bubbleName: { fontSize: 9, fontWeight: '700', color: colors.white, fontFamily: 'Nunito', marginTop: 2 },
   winOverlay: {
     position: 'absolute',
     bottom: 60,
@@ -270,6 +282,6 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 12,
   },
-  winText: { fontSize: 32, fontWeight: '900', color: colors.primary, fontFamily: 'Poppins' },
-  winSub: { fontSize: 16, color: colors.textBody, fontFamily: 'Inter', marginTop: 6 },
+  winText: { fontSize: 32, fontWeight: '900', color: colors.primary, fontFamily: 'Nunito' },
+  winSub: { fontSize: 16, color: colors.textBody, fontFamily: 'Nunito', marginTop: 6 },
 });

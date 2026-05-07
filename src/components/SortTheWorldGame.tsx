@@ -133,13 +133,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '800',
     color: colors.textDark,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   instruction: {
     fontSize: 16,
     color: colors.textWarmBrown,
     marginTop: 8,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
   },
   dropZones: {
     flexDirection: 'row',
@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textDark,
     marginTop: 10,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   dragContainer: {
     flex: 1,
@@ -198,6 +198,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: colors.darkGrey,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
   },
 });

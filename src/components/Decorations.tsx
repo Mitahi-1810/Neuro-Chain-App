@@ -299,7 +299,7 @@ export const AvatarBubble: React.FC<AvatarBubbleProps> = ({
     ) : (
       <Text
         style={{
-          fontFamily: 'Poppins-ExtraBold',
+          fontFamily: 'Nunito-ExtraBold',
           fontSize: size * 0.42,
           color: colors.primary,
         }}

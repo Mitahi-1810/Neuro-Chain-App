@@ -24,7 +24,20 @@
 - (NSURL *)bundleURL
 {
 #if DEBUG
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@".expo/.virtual-metro-entry"];
+  RCTBundleURLProvider *bundleURLProvider = [RCTBundleURLProvider sharedSettings];
+  NSDictionary<NSString *, NSString *> *environment = [[NSProcessInfo processInfo] environment];
+  NSString *devServerHost = environment[@"EXPO_DEV_SERVER_HOST"];
+  NSString *devServerPort = environment[@"EXPO_DEV_SERVER_PORT"];
+
+  if (devServerHost.length > 0) {
+    if (devServerPort.length > 0) {
+      bundleURLProvider.jsLocation = [NSString stringWithFormat:@"%@:%@", devServerHost, devServerPort];
+    } else {
+      bundleURLProvider.jsLocation = devServerHost;
+    }
+  }
+
+  return [bundleURLProvider jsBundleURLForBundleRoot:@".expo/.virtual-metro-entry"];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif

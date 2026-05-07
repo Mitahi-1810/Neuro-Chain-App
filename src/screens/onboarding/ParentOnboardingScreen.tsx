@@ -191,7 +191,7 @@ const ParentOnboardingScreen: React.FC<{ navigation: any }> = () => {
               </Text>
 
               {[
-                { icon: 'clipboard-check-outline', color: colors.primary, title: 'Autism Screener (optional)', desc: 'If your child is 16–30 months old, you\'ll find the M-CHAT-R/F screener on the home screen. It takes about 5 minutes.' },
+                { icon: 'clipboard-check-outline', color: colors.primary, title: 'Autism Screener (optional)', desc: 'If your child is 16–47 months old, you\'ll find the M-CHAT-R/F screener on the home screen. It takes about 5 minutes.' },
                 { icon: 'gamepad-variant-outline', color: colors.secondary, title: 'Daily therapy games', desc: 'We\'ll build a personalised 3-game plan each day based on your child\'s concerns.' },
                 { icon: 'chart-line', color: colors.accent, title: 'Progress reports', desc: 'Track improvements over time with weekly charts and AI-generated insights (Basic & Premium).' },
                 { icon: 'doctor', color: '#A855F7', title: 'Specialist support', desc: 'Book telehealth consultations with verified developmental pediatricians and therapists.' },

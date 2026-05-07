@@ -212,9 +212,9 @@ export const CopyMyGrooveGame: React.FC<Props> = ({ onFinish }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F0F4FF', alignItems: 'center' },
   header: { paddingTop: 16, alignItems: 'center' },
-  title: { fontSize: 26, fontWeight: '900', color: colors.primary, fontFamily: 'Poppins' },
-  roundText: { fontSize: 14, color: colors.textBody, fontFamily: 'Inter', marginTop: 2 },
-  sequenceLen: { fontSize: 13, color: colors.textBody, fontFamily: 'Inter', marginTop: 2 },
+  title: { fontSize: 26, fontWeight: '900', color: colors.primary, fontFamily: 'Nunito' },
+  roundText: { fontSize: 14, color: colors.textBody, fontFamily: 'Nunito', marginTop: 2 },
+  sequenceLen: { fontSize: 13, color: colors.textBody, fontFamily: 'Nunito', marginTop: 2 },
   mascotArea: { marginTop: 16, alignItems: 'center', gap: 10 },
   mascotEmoji: { fontSize: 60 },
   phaseTag: {
@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     borderWidth: 1.5,
   },
-  phaseText: { fontSize: 16, fontWeight: '700', fontFamily: 'Poppins' },
+  phaseText: { fontSize: 16, fontWeight: '700', fontFamily: 'Nunito' },
   sequencePreview: {
     flexDirection: 'row',
     gap: 8,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   seqDotText: { fontSize: 16 },
-  seqDotNum: { fontSize: 14, fontWeight: '800', color: '#AAA', fontFamily: 'Poppins' },
+  seqDotNum: { fontSize: 14, fontWeight: '800', color: '#AAA', fontFamily: 'Nunito' },
   movesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -263,7 +263,7 @@ const styles = StyleSheet.create({
   },
   moveBtnDisabled: { opacity: 0.6 },
   moveBtnEmoji: { fontSize: 44 },
-  moveBtnLabel: { fontSize: 14, fontWeight: '800', color: '#FFF', fontFamily: 'Poppins', marginTop: 4 },
+  moveBtnLabel: { fontSize: 14, fontWeight: '800', color: '#FFF', fontFamily: 'Nunito', marginTop: 4 },
   doneOverlay: {
     position: 'absolute',
     bottom: 50,
@@ -279,6 +279,6 @@ const styles = StyleSheet.create({
     elevation: 12,
   },
   doneEmoji: { fontSize: 52 },
-  doneTitle: { fontSize: 28, fontWeight: '900', color: colors.primary, fontFamily: 'Poppins', marginTop: 8 },
-  doneSub: { fontSize: 15, color: colors.textBody, fontFamily: 'Inter', marginTop: 4 },
+  doneTitle: { fontSize: 28, fontWeight: '900', color: colors.primary, fontFamily: 'Nunito', marginTop: 8 },
+  doneSub: { fontSize: 15, color: colors.textBody, fontFamily: 'Nunito', marginTop: 4 },
 });

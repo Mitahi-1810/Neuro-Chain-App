@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useAuthStore, useChildStore } from '../../store/store';
@@ -37,14 +38,36 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
   const { children, activeChild, setActiveChild, addChild } = useChildStore();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+  const sortedChildren = useMemo(
+    () => [...children].sort((a, b) => (a.created_at < b.created_at ? 1 : -1)),
+    [children],
+  );
+
+  const getAge = (dob?: string) => {
+    if (!dob) return null;
+    const birth = new Date(dob);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const hasHadBirthday =
+      today.getMonth() > birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() >= birth.getDate());
+    if (!hasHadBirthday) age -= 1;
+    return Math.max(age, 0);
+  };
+
   const handleLogout = async () => {
     await logout();
   };
 
   const handleSaveChild = async (payload: any) => {
+    if (!user?.id) {
+      Alert.alert('Sign in required', 'Please sign in to save a child profile.');
+      return;
+    }
     const newChild = {
       id: Date.now().toString(),
-      parent_id: user?.id || 'local-parent',
+      parent_id: user.id,
       first_name: payload.first_name,
       date_of_birth: payload.date_of_birth,
       gender: payload.gender,
@@ -138,15 +161,75 @@ const ProfileScreen: React.FC<any> = ({ navigation }) => {
                 label={user?.full_name || "Profile Information"}
               />
               <SettingRow
-                icon="account-child-outline"
-                label="Children Profiles"
-                onPress={() => setIsModalVisible(true)}
-              />
-              <SettingRow
                 icon="lock-outline"
                 label="Security & Password"
                 hideBorder={true}
               />
+            </View>
+          </View>
+
+          {/* Children Profiles */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('profile_children_section') || 'My children'}</Text>
+            <View style={styles.card}>
+              {sortedChildren.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <MaterialCommunityIcons name="account-child-outline" size={24} color={designColors.outline} />
+                  <View style={styles.emptyTextWrap}>
+                    <Text style={styles.emptyTitle}>{t('profile_no_children_title') || 'No children added yet'}</Text>
+                    <Text style={styles.emptyDesc}>
+                      {t('profile_no_children_desc') || 'Add your child to start their personalized therapy plan.'}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                sortedChildren.map((child, index) => {
+                  const age = getAge(child.date_of_birth);
+                  const isActive = activeChild?.id === child.id;
+                  return (
+                    <TouchableOpacity
+                      key={child.id}
+                      style={[styles.childRow, index !== sortedChildren.length - 1 && styles.rowBorder]}
+                      onPress={() => setActiveChild(child)}
+                      activeOpacity={0.85}
+                    >
+                      <View style={styles.childAvatar}>
+                        <MaterialCommunityIcons name="face-man-profile" size={20} color={designColors.primary} />
+                      </View>
+                      <View style={styles.childInfo}>
+                        <Text style={styles.childName}>{child.first_name}</Text>
+                        <Text style={styles.childMeta}>
+                          {age !== null
+                            ? (t('profile_years_old') || '{age} years old').replace('{age}', String(age))
+                            : 'Age not set'}
+                        </Text>
+                      </View>
+                      {isActive && (
+                        <View style={styles.activePill}>
+                          <Text style={styles.activePillText}>{t('profile_active_pill') || 'Active'}</Text>
+                        </View>
+                      )}
+                      {!isActive && (
+                        <MaterialCommunityIcons
+                          name="chevron-right"
+                          size={24}
+                          color={designColors.outlineVariant}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+              <TouchableOpacity
+                style={styles.addChildRow}
+                onPress={() => setIsModalVisible(true)}
+                activeOpacity={0.85}
+              >
+                <View style={[styles.iconContainer, { backgroundColor: designColors.primaryFixed }]}> 
+                  <MaterialCommunityIcons name="plus" size={20} color={designColors.primary} />
+                </View>
+                <Text style={styles.addChildText}>{t('profile_add_child_btn') || 'Add a child'}</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -345,6 +428,84 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '800',
     color: designColors.onErrorContainer,
+  },
+  emptyState: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  emptyTextWrap: {
+    flex: 1,
+  },
+  emptyTitle: {
+    fontFamily: 'Nunito',
+    fontSize: 14,
+    fontWeight: '800',
+    color: designColors.onSurface,
+    marginBottom: 4,
+  },
+  emptyDesc: {
+    fontFamily: 'Nunito',
+    fontSize: 12,
+    color: designColors.outline,
+    lineHeight: 16,
+  },
+  childRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  childAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: designColors.primaryFixed,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  childInfo: {
+    flex: 1,
+  },
+  childName: {
+    fontFamily: 'Nunito',
+    fontSize: 14,
+    fontWeight: '800',
+    color: designColors.onSurface,
+  },
+  childMeta: {
+    fontFamily: 'Nunito',
+    fontSize: 12,
+    color: designColors.outline,
+    marginTop: 2,
+  },
+  activePill: {
+    backgroundColor: designColors.secondaryFixed,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  activePillText: {
+    fontFamily: 'Nunito',
+    fontSize: 11,
+    fontWeight: '700',
+    color: designColors.secondary,
+    letterSpacing: 0.3,
+  },
+  addChildRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: designColors.surfaceHighest,
+    gap: 16,
+  },
+  addChildText: {
+    fontFamily: 'Nunito',
+    fontSize: 14,
+    fontWeight: '800',
+    color: designColors.primary,
   },
 });
 

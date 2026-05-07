@@ -94,8 +94,8 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
             : navigation.navigate('GameRunner', { gameId: game.id })
         }
       >
-        <View style={[styles.thumb, { backgroundColor: meta.tint }]}> 
-          <IconSymbol name={meta.icon} size={36} color={meta.color} />
+        <View style={[styles.thumb, { backgroundColor: meta.tint }]}>
+          <IconSymbol name={meta.icon} size={28} color={meta.color} />
           <View style={[styles.tierBadge, { backgroundColor: badge.bg }]}>
             <Text style={[styles.tierText, { color: badge.text }]}>{badge.label}</Text>
           </View>
@@ -160,13 +160,14 @@ const GamesGalleryScreen: React.FC<any> = ({ navigation }) => {
         </View>
       </View>
 
-      <PillTabs
-        options={filterOptions}
-        selected={filter}
-        onSelect={setFilter}
-        variant="sun"
-        style={styles.filterBar}
-      />
+      <View style={styles.filterBar}>
+        <PillTabs
+          options={filterOptions}
+          selected={filter}
+          onSelect={setFilter}
+          variant="sun"
+        />
+      </View>
 
       <ScrollView
         contentContainerStyle={styles.list}
@@ -228,8 +229,11 @@ const styles = StyleSheet.create({
   },
 
   filterBar: {
-    paddingVertical: 8,
-    paddingBottom: 14,
+    paddingTop: 4,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginBottom: 2,
   },
 
   list: {
@@ -240,7 +244,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: radius.xl,
-    marginBottom: 14,
+    marginBottom: 10,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
@@ -249,7 +253,7 @@ const styles = StyleSheet.create({
   cardLocked: { opacity: 0.85 },
 
   thumb: {
-    height: 110,
+    height: 80,
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative',
@@ -297,7 +301,9 @@ const styles = StyleSheet.create({
   },
 
   cardBody: {
-    padding: 16,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 12,
   },
   skillRow: {
     flexDirection: 'row',
@@ -328,8 +334,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 14,
-    paddingTop: 12,
+    marginTop: 8,
+    paddingTop: 8,
     borderTopWidth: 1,
     borderTopColor: colors.border,
   },
@@ -346,9 +352,9 @@ const styles = StyleSheet.create({
   playPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    gap: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
     borderRadius: radius.full,
   },
   playPillText: {

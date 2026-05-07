@@ -181,13 +181,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '800',
     color: colors.primary,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   timeText: {
     fontSize: 24,
     fontWeight: '800',
     color: colors.danger,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   entityContainer: {
     justifyContent: 'center',

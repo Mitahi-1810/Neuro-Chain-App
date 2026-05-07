@@ -8,7 +8,7 @@ import { colors } from './colors';
 export const typography = {
   // Hero / Display — landing/welcome
   hero: {
-    fontFamily: 'Poppins-ExtraBold',
+    fontFamily: 'Nunito-ExtraBold',
     fontSize: 40,
     fontWeight: '800' as const,
     color: colors.textDark,
@@ -17,7 +17,7 @@ export const typography = {
   },
   // Screen Title (h1)
   h1: {
-    fontFamily: 'Poppins-ExtraBold',
+    fontFamily: 'Nunito-ExtraBold',
     fontSize: 30,
     fontWeight: '800' as const,
     color: colors.textDark,
@@ -26,7 +26,7 @@ export const typography = {
   },
   // Section Heading (h2)
   h2: {
-    fontFamily: 'Poppins-ExtraBold',
+    fontFamily: 'Nunito-ExtraBold',
     fontSize: 22,
     fontWeight: '800' as const,
     color: colors.textDark,
@@ -35,7 +35,7 @@ export const typography = {
   },
   // Card Title (h3)
   h3: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 17,
     fontWeight: '700' as const,
     color: colors.textDark,
@@ -43,7 +43,7 @@ export const typography = {
   },
   // Subheading
   h4: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 15,
     fontWeight: '700' as const,
     color: colors.textDark,
@@ -51,7 +51,7 @@ export const typography = {
   },
   // Body Large
   bodyLg: {
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontSize: 16,
     fontWeight: '400' as const,
     color: colors.textBody,
@@ -59,7 +59,7 @@ export const typography = {
   },
   // Body
   body: {
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontSize: 14,
     fontWeight: '400' as const,
     color: colors.textBody,
@@ -67,7 +67,7 @@ export const typography = {
   },
   // Label
   label: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 13,
     fontWeight: '700' as const,
     color: colors.textBody,
@@ -75,7 +75,7 @@ export const typography = {
   },
   // Caption / Muted
   caption: {
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     fontSize: 12,
     fontWeight: '400' as const,
     color: colors.textMuted,
@@ -83,7 +83,7 @@ export const typography = {
   },
   // Badge / Tag
   badge: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 11,
     fontWeight: '700' as const,
     letterSpacing: 0.4,
@@ -91,7 +91,7 @@ export const typography = {
   },
   // Eyebrow (tiny screaming caps)
   eyebrow: {
-    fontFamily: 'Inter-Bold',
+    fontFamily: 'Nunito-Bold',
     fontSize: 11,
     fontWeight: '700' as const,
     letterSpacing: 1.2,
@@ -100,7 +100,7 @@ export const typography = {
   },
   // CTA / Button Text
   btnText: {
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Nunito-Bold',
     fontWeight: '700' as const,
     letterSpacing: 0.2,
   },

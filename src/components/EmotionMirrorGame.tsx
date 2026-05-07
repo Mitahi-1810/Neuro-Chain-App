@@ -134,7 +134,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: colors.primary,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   mirrorFrame: {
     width: width * 0.8,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textDark,
     textAlign: 'center',
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
     paddingHorizontal: 10,
   },
   optionsGrid: {
@@ -198,6 +198,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: colors.textDark,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
   },
 });

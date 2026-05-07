@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
   iconRight: { marginLeft: 8 },
   text: {
     fontWeight: '700',
-    fontFamily: 'Poppins-Bold',
+    fontFamily: 'Nunito-Bold',
     letterSpacing: 0.2,
   },
 });

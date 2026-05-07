@@ -51,10 +51,10 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const tier = user?.tier_level || "FREE";
   const tierLabel =
     tier === "PREMIUM"
-      ? "Premium Tier"
+      ? t("home_tier_label", { tier: t("tier_premium") })
       : tier === "BASIC"
-        ? "Basic Tier"
-        : "Free Tier";
+        ? t("home_tier_label", { tier: t("tier_basic") })
+        : t("home_tier_label", { tier: t("tier_free") });
 
   const todaysSessions = useMemo(
     () => getTodaysSessions(),
@@ -79,46 +79,55 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
   const focusSkill =
     nextGame?.target_skill ||
     dailyPlan[0]?.target_skill ||
-    "Logic & Spatial Reasoning";
+    t("home_default_focus_skill");
   const focusLabel = nextGame
     ? `${nextGame.target_skill} • ${nextGame.duration_minutes} min`
-    : "Daily focus";
+    : t("home_daily_focus");
   const points = streakData.total_games_played * 12;
+  const actionItems = useMemo(
+    () => [
+      {
+        key: "questionnaire",
+  title: t("home_weekly_questionnaire"),
+  subtitle: t("home_weekly_questionnaire_desc"),
+        icon: "clipboard-text-outline" as const,
+        iconColor: "#C2410C",
+        bg: "#FFEDD5",
+        onPress: () => navigation.navigate("AutismScreener"),
+      },
+      {
+        key: "screening",
+  title: t("home_ai_screening"),
+  subtitle: t("home_ai_screening_desc"),
+        icon: "brain" as const,
+        iconColor: "#0F766E",
+        bg: "#CCFBF1",
+  badge: t("home_new_badge"),
+        onPress: () =>
+          navigation.navigate("VideoScreeningSetup", {
+            riskLevel: "MODERATE",
+            riskScore: 0,
+          }),
+      },
+      {
+        key: "consult",
+  title: t("home_consultation"),
+  subtitle: t("home_consultation_desc"),
+        icon: "video-outline" as const,
+        iconColor: designColors.primary,
+        bg: "#E8E6FF",
+        onPress: () => navigation.navigate("TelehealthBooking"),
+      },
+    ],
+    [navigation, t]
+  );
 
-  const actionItems = [
-    {
-      key: "questionnaire",
-      title: "Weekly Questionnaire",
-      subtitle: "Update your behavioral milestones",
-      icon: "clipboard-text-outline" as const,
-      iconColor: "#C2410C",
-      bg: "#FFEDD5",
-      onPress: () => navigation.navigate("AutismScreener"),
-    },
-    {
-      key: "screening",
-      title: "AI Screening",
-      subtitle: "Fast-track cognitive assessment",
-      icon: "brain" as const,
-      iconColor: "#0F766E",
-      bg: "#CCFBF1",
-      badge: "New",
-      onPress: () =>
-        navigation.navigate("VideoScreeningSetup", {
-          riskLevel: "MODERATE",
-          riskScore: 0,
-        }),
-    },
-    {
-      key: "consult",
-      title: "Consultation",
-      subtitle: "Talk to a child specialist",
-      icon: "video-outline" as const,
-      iconColor: designColors.primary,
-      bg: "#E8E6FF",
-      onPress: () => navigation.navigate("TelehealthBooking"),
-    },
-  ];
+  const greeting = useMemo(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) return t("home_greeting_morning");
+    if (hour < 17) return t("home_greeting_afternoon");
+    return t("home_greeting_evening");
+  }, [t]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -128,64 +137,51 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
       >
         <View style={styles.headerCard}>
           <View style={styles.headerTopRow}>
-            <View style={styles.profileRow}>
-              <View style={styles.avatarShell}>
-                <AvatarBubble
-                  initial={
-                    activeChild?.first_name?.charAt(0) ||
-                    user?.full_name?.charAt(0) ||
-                    "?"
-                  }
-                  size={44}
-                  bg={designColors.surfaceLowest}
-                />
-              </View>
-              <View>
-                <Text style={styles.headerTitle}>NeuroChain 3.0</Text>
-                <Text style={styles.headerSubtitle}>
-                  Welcome back,{" "}
-                  {activeChild?.first_name ||
-                    user?.full_name?.split(" ")[0] ||
-                    "Parent"}
-                  !
-                </Text>
-              </View>
+            {/* Avatar */}
+            <View style={styles.avatarShell}>
+              <AvatarBubble
+                initial={
+                  activeChild?.first_name?.charAt(0) ||
+                  user?.full_name?.charAt(0) ||
+                  "?"
+                }
+                size={40}
+                bg={designColors.surfaceLowest}
+              />
             </View>
+
+            {/* App name + greeting */}
+            <View style={styles.headerTextWrap}>
+              <Text style={styles.headerAppName}>NeuroChain</Text>
+              <Text style={styles.headerSubtitle} numberOfLines={1}>
+                {greeting},{" "}
+                {activeChild?.first_name ||
+                  user?.full_name?.split(" ")[0] ||
+                  t("profile_default_parent")}!
+              </Text>
+            </View>
+
+            {/* Actions — single row */}
             <View style={styles.headerActions}>
               <TouchableOpacity
-                style={styles.languageButton}
-                activeOpacity={0.7}
+                style={styles.langPill}
+                activeOpacity={0.8}
                 onPress={() => setLocale(locale === "en" ? "bn" : "en")}
               >
-                <MaterialCommunityIcons
-                  name="translate"
-                  size={18}
-                  color="#7B74E0"
-                />
-                <Text style={styles.languageButtonText}>
+                <MaterialCommunityIcons name="translate" size={13} color="#7B74E0" />
+                <Text style={styles.langPillText}>
                   {locale === "en" ? "EN" : "বাং"}
                 </Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.headerIconButton}
-                activeOpacity={0.9}
-              >
-                <MaterialCommunityIcons
-                  name="bell-outline"
-                  size={20}
-                  color="#FFF"
-                />
+              <TouchableOpacity style={styles.headerIconButton} activeOpacity={0.85}>
+                <MaterialCommunityIcons name="bell-outline" size={18} color="#FFF" />
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.headerIconButton}
-                activeOpacity={0.9}
+                activeOpacity={0.85}
                 onPress={() => navigation.navigate("Profile")}
               >
-                <MaterialCommunityIcons
-                  name="cog-outline"
-                  size={20}
-                  color="#FFF"
-                />
+                <MaterialCommunityIcons name="cog-outline" size={18} color="#FFF" />
               </TouchableOpacity>
             </View>
           </View>
@@ -204,29 +200,37 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             <View style={styles.headerDivider} />
             <View style={styles.headerStatItem}>
               <Text style={styles.headerStatValue}>{points}</Text>
-              <Text style={styles.headerStatLabel}>NeuroPoints</Text>
+              <Text style={styles.headerStatLabel}>
+                {t("home_neuropoints_label")}
+              </Text>
             </View>
             <View style={styles.headerDivider} />
             <View style={styles.headerStatItem}>
               <Text style={styles.headerStatValue}>
                 {streakData.current_streak}
               </Text>
-              <Text style={styles.headerStatLabel}>Day Streak</Text>
+              <Text style={styles.headerStatLabel}>
+                {t("home_day_streak")}
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.body}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Today's Plan</Text>
+            <Text style={styles.sectionTitle}>
+              {t("home_todays_plan_section")}
+            </Text>
             <TouchableOpacity onPress={() => navigation.navigate("Games")}>
-              <Text style={styles.sectionLink}>See All</Text>
+              <Text style={styles.sectionLink}>{t("home_see_all")}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.planCard}>
             <View style={styles.planRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.planEyebrow}>Current Focus</Text>
+                <Text style={styles.planEyebrow}>
+                  {t("home_current_focus")}
+                </Text>
                 <Text style={styles.planTitle}>{focusSkill}</Text>
               </View>
               <View style={styles.planChip}>
@@ -247,11 +251,13 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                 size={18}
                 color={designColors.onSurfaceVariant}
               />
-              <Text style={styles.planMetaText}>Next session in 2 hours</Text>
+              <Text style={styles.planMetaText}>
+                {t("home_next_session")}
+              </Text>
             </View>
           </View>
 
-          <Text style={styles.sectionTitle}>Action Hub</Text>
+          <Text style={styles.sectionTitle}>{t("home_action_hub")}</Text>
           <View style={styles.actionCard}>
             {actionItems.map((item, index) => (
               <View key={item.key}>
@@ -291,13 +297,15 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>Boost Skills</Text>
+          <Text style={styles.sectionTitle}>
+            {t("home_boost_skills")}
+          </Text>
           <View style={styles.boostCard}>
             <View style={styles.boostOverlay} />
             <View style={styles.boostContent}>
               <View>
                 <Text style={styles.boostTitle}>
-                  {nextGame?.name || "Memory Matrix"}
+                  {nextGame?.name || t("home_default_game_name")}
                 </Text>
                 <Text style={styles.boostSubtitle}>{focusLabel}</Text>
               </View>
@@ -310,7 +318,7 @@ const ParentHomeScreen: React.FC<Props> = ({ navigation }) => {
                     : navigation.navigate("Games")
                 }
               >
-                <Text style={styles.boostButtonText}>PLAY</Text>
+                <Text style={styles.boostButtonText}>{t("home_play_label")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -338,63 +346,67 @@ const styles = StyleSheet.create({
   },
   headerTopRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    gap: 10,
   },
-  profileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
+  headerTextWrap: {
+    flex: 1,
+    minWidth: 0,
   },
   avatarShell: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: designColors.surfaceLowest,
     borderWidth: 2,
     borderColor: designColors.secondaryContainer,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
-  headerTitle: {
-    fontFamily: "Nunito",
-    fontWeight: "800",
-    fontSize: 22,
-    color: "#FFF",
+  headerAppName: {
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700",
+    fontSize: 10,
+    letterSpacing: 1.4,
+    textTransform: "uppercase",
+    color: "rgba(255,255,255,0.65)",
   },
   headerSubtitle: {
-    fontFamily: "Nunito",
-    fontWeight: "600",
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700",
     fontSize: 13,
-    color: "rgba(255,255,255,0.8)",
-    marginTop: 2,
+    color: "#FFF",
+    marginTop: 1,
   },
   headerActions: {
     flexDirection: "row",
-    gap: 10,
+    alignItems: "center",
+    gap: 6,
+    flexShrink: 0,
+  },
+  langPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 14,
+    backgroundColor: "#FFF",
+  },
+  langPillText: {
+    fontFamily: "Nunito-Bold",
+    fontWeight: "700",
+    fontSize: 11,
+    color: "#7B74E0",
   },
   headerIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: "rgba(255,255,255,0.2)",
     alignItems: "center",
     justifyContent: "center",
-  },
-  languageButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: "#FFF",
-  },
-  languageButtonText: {
-    fontFamily: "Poppins",
-    fontWeight: "700",
-    fontSize: 12,
-    color: "#7B74E0",
   },
   headerStats: {
     marginTop: 16,

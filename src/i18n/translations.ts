@@ -21,7 +21,7 @@ export const translations = {
     welcome_sign_in: 'Sign in',
     welcome_disclaimer_full: 'NeuroChain offers screening tools and educational play. It is not a clinical diagnosis.',
     welcome_headline: 'Early Support Starts Here',
-    welcome_subheadline: 'Autism screening and daily therapy for your child.',
+  welcome_subheadline: 'Early Diagnosis, Better Care',
     welcome_feature_games_title: 'Personalized Therapy Games',
     welcome_feature_games_desc: 'Engaging activities designed for autism support',
     welcome_feature_track_title: 'Track Progress',
@@ -145,12 +145,12 @@ export const translations = {
     profile_privacy_sub: 'Vision AI runs on-device only',
     profile_help_label: 'Help & support',
     profile_logout_btn: 'Log out',
-    profile_version_text: 'NeuroChain · v3.0',
+    profile_version_text: 'NeuroChain',
 
     // ─── Parent Home Screen ───────────────────────────────────────────────────
-    home_greeting_morning: 'Good morning',
-    home_greeting_afternoon: 'Good afternoon',
-    home_greeting_evening: 'Good evening',
+  home_greeting_morning: 'Morning',
+  home_greeting_afternoon: 'Afternoon',
+  home_greeting_evening: 'Evening',
     home_tier_plan: '{tier} plan',
     home_day_streak_chip: '{count} day streak',
     home_hero_eyebrow_free: 'first step',
@@ -282,7 +282,7 @@ export const translations = {
     tier_premium: 'Premium',
 
     // ─── Parent Home Screen (extra) ───────────────────────────────────────────
-    home_weekly_questionnaire: 'Weekly Questionnaire',
+  home_weekly_questionnaire: 'Standard Questionnaire',
     home_weekly_questionnaire_desc: 'Update your behavioral milestones',
     home_ai_screening: 'AI Screening',
     home_ai_screening_desc: 'Fast-track cognitive assessment',
@@ -296,6 +296,10 @@ export const translations = {
     home_action_hub: 'Action Hub',
     home_boost_skills: 'Boost Skills',
     home_play_label: 'PLAY',
+  home_neuropoints_label: 'NeuroPoints',
+  home_daily_focus: 'Daily focus',
+  home_default_focus_skill: 'Logic & Spatial Reasoning',
+  home_default_game_name: 'Memory Matrix',
 
     // ─── Reports Screen (extra) ───────────────────────────────────────────────
     reports_unlock_title: 'Unlock progress reports',
@@ -426,7 +430,7 @@ export const translations = {
     onboarding_ready_title: "You're all set!",
     onboarding_ready_subtitle: "Here's what happens next in NeuroChain:",
     onboarding_ready_screener_title: 'Autism Screener (optional)',
-    onboarding_ready_screener_desc: "If your child is 16–30 months old, you'll find the M-CHAT-R/F screener on the home screen. It takes about 5 minutes.",
+  onboarding_ready_screener_desc: "If your child is 16–47 months old, you'll find the M-CHAT-R/F screener on the home screen. It takes about 5 minutes.",
     onboarding_ready_games_title: 'Daily therapy games',
     onboarding_ready_games_desc: "We'll build a personalised 3-game plan each day based on your child's concerns.",
     onboarding_ready_reports_title: 'Progress reports',
@@ -450,8 +454,8 @@ export const translations = {
     screener_preparing: 'Preparing your screener',
     screener_checking: 'Checking eligibility…',
     screener_locked_title: 'Screening locked',
-    screener_locked_too_young: 'Your child is under 16 months. The M-CHAT-R/F is designed for children 16–30 months.',
-    screener_locked_too_old: 'Your child is over 30 months. The M-CHAT-R/F screener is designed for children aged 16–30 months.',
+  screener_locked_too_young: 'Your child is under 16 months. The M-CHAT-R/F is designed for children 16–47 months.',
+  screener_locked_too_old: 'Your child is over 47 months. The M-CHAT-R/F screener is designed for children aged 16–47 months.',
     screener_book_specialist: 'Book a specialist',
     screener_title: 'Autism Screener',
     screener_question_label: 'Question {n}',
@@ -592,7 +596,7 @@ export const translations = {
 
     // ─── Older Child Info Screen ──────────────────────────────────────────────
     older_child_title: 'Screening for older children',
-    older_child_body_1: 'The M-CHAT-R/F is validated for children aged 16–30 months. For older children, different assessment tools are more appropriate.',
+  older_child_body_1: 'The M-CHAT-R/F is validated for children aged 16–47 months. For older children, different assessment tools are more appropriate.',
     older_child_body_2: 'We recommend speaking with a developmental pediatrician who can choose the right assessment for your child\'s age and presentation.',
     older_child_book_btn: 'Book a specialist',
     older_child_home_btn: 'Return to home',
@@ -767,7 +771,7 @@ export const translations = {
     welcome_sign_in: 'লগইন',
     welcome_disclaimer_full: 'NeuroChain স্ক্রিনিং টুল ও শেখার কার্যক্রম দেয়। এটি ক্লিনিক্যাল রোগ নির্ণয় নয়।',
     welcome_headline: 'প্রাথমিক সহায়তা শুরু হোক এখানেই',
-    welcome_subheadline: 'আপনার শিশুর জন্য অটিজম স্ক্রিনিং, দৈনিক থেরাপি ও বিশেষজ্ঞ সহায়তা।',
+  welcome_subheadline: 'প্রারম্ভিক নির্ণয়, উন্নত যত্ন',
     welcome_feature_games_title: 'শিশুভিত্তিক থেরাপি গেম',
     welcome_feature_games_desc: 'অটিজম সহায়তার জন্য আনন্দময়, লক্ষ্যভিত্তিক কার্যক্রম',
     welcome_feature_track_title: 'অগ্রগতি দেখুন',
@@ -891,12 +895,12 @@ export const translations = {
     profile_privacy_sub: 'ভিশন এআই শুধু আপনার ফোনেই চলে',
     profile_help_label: 'সাহায্য ও সাপোর্ট',
     profile_logout_btn: 'লগ আউট',
-    profile_version_text: 'NeuroChain · v3.0',
+  profile_version_text: 'NeuroChain · v1.0',
 
     // ─── Parent Home Screen ───────────────────────────────────────────────────
-    home_greeting_morning: 'শুভ সকাল',
-    home_greeting_afternoon: 'শুভ দুপুর',
-    home_greeting_evening: 'শুভ সন্ধ্যা',
+  home_greeting_morning: 'সকাল',
+  home_greeting_afternoon: 'দুপুর',
+  home_greeting_evening: 'সন্ধ্যা',
     home_tier_plan: '{tier} প্ল্যান',
     home_day_streak_chip: 'টানা {count} দিন',
     home_hero_eyebrow_free: 'প্রথম পদক্ষেপ',
@@ -1029,7 +1033,7 @@ export const translations = {
     tier_premium: 'প্রিমিয়াম',
 
     // ─── Parent Home Screen (extra) ───────────────────────────────────────────
-    home_weekly_questionnaire: 'সাপ্তাহিক প্রশ্নাবলী',
+  home_weekly_questionnaire: 'স্ট্যান্ডার্ড প্রশ্নাবলী',
     home_weekly_questionnaire_desc: 'শিশুর আচরণগত মাইলফলক আপডেট করুন',
     home_ai_screening: 'এআই স্ক্রিনিং',
     home_ai_screening_desc: 'দ্রুত আচরণগত মূল্যায়ন',
@@ -1043,6 +1047,10 @@ export const translations = {
     home_action_hub: 'অ্যাকশন হাব',
     home_boost_skills: 'দক্ষতা বাড়ান',
     home_play_label: 'খেলুন',
+  home_neuropoints_label: 'নিউরোপয়েন্টস',
+  home_daily_focus: 'দৈনিক ফোকাস',
+  home_default_focus_skill: 'লজিক ও স্পেশাল রিজনিং',
+  home_default_game_name: 'মেমরি ম্যাট্রিক্স',
 
     // ─── Reports Screen (extra) ───────────────────────────────────────────────
     reports_unlock_title: 'অগ্রগতি রিপোর্ট আনলক করুন',
@@ -1173,7 +1181,7 @@ export const translations = {
     onboarding_ready_title: 'সব প্রস্তুত!',
     onboarding_ready_subtitle: 'NeuroChain-এ এরপর যা পাবেন:',
     onboarding_ready_screener_title: 'অটিজম স্ক্রিনার (ঐচ্ছিক)',
-    onboarding_ready_screener_desc: 'আপনার শিশু ১৬–৩০ মাস বয়সী হলে হোম স্ক্রিনে M-CHAT-R/F স্ক্রিনার পাবেন। সময় লাগে প্রায় ৫ মিনিট।',
+  onboarding_ready_screener_desc: 'আপনার শিশু ১৬–৪৭ মাস বয়সী হলে হোম স্ক্রিনে M-CHAT-R/F স্ক্রিনার পাবেন। সময় লাগে প্রায় ৫ মিনিট।',
     onboarding_ready_games_title: 'দৈনিক থেরাপি গেম',
     onboarding_ready_games_desc: 'আপনার শিশুর প্রয়োজন অনুযায়ী প্রতিদিন ৩টি গেমের ব্যক্তিগত পরিকল্পনা সাজানো হবে।',
     onboarding_ready_reports_title: 'অগ্রগতি রিপোর্ট',
@@ -1197,8 +1205,8 @@ export const translations = {
     screener_preparing: 'স্ক্রিনিং প্রস্তুত হচ্ছে',
     screener_checking: 'বয়স যাচাই করা হচ্ছে…',
     screener_locked_title: 'স্ক্রিনিং এখন পাওয়া যাচ্ছে না',
-    screener_locked_too_young: 'আপনার শিশু ১৬ মাসের কম বয়সী। M-CHAT-R/F ১৬–৩০ মাস বয়সী শিশুদের জন্য তৈরি।',
-    screener_locked_too_old: 'আপনার শিশু ৩০ মাসের বেশি বয়সী। M-CHAT-R/F স্ক্রিনার ১৬–৩০ মাস বয়সী শিশুদের জন্য তৈরি।',
+  screener_locked_too_young: 'আপনার শিশু ১৬ মাসের কম বয়সী। M-CHAT-R/F ১৬–৪৭ মাস বয়সী শিশুদের জন্য তৈরি।',
+  screener_locked_too_old: 'আপনার শিশু ৪৭ মাসের বেশি বয়সী। M-CHAT-R/F স্ক্রিনার ১৬–৪৭ মাস বয়সী শিশুদের জন্য তৈরি।',
     screener_book_specialist: 'বিশেষজ্ঞ বুক করুন',
     screener_title: 'অটিজম স্ক্রিনার',
     screener_question_label: 'প্রশ্ন {n}',
@@ -1339,7 +1347,7 @@ export const translations = {
 
     // ─── Older Child Info Screen ──────────────────────────────────────────────
     older_child_title: 'বড় শিশুদের জন্য স্ক্রিনিং',
-    older_child_body_1: 'M-CHAT-R/F ১৬–৩০ মাস বয়সী শিশুদের জন্য যাচাইকৃত। বড় শিশুদের ক্ষেত্রে অন্য মূল্যায়ন টুল বেশি উপযুক্ত হতে পারে।',
+  older_child_body_1: 'M-CHAT-R/F ১৬–৪৭ মাস বয়সী শিশুদের জন্য যাচাইকৃত। বড় শিশুদের ক্ষেত্রে অন্য মূল্যায়ন টুল বেশি উপযুক্ত হতে পারে।',
     older_child_body_2: 'আপনার শিশুর বয়স ও আচরণ অনুযায়ী সঠিক মূল্যায়ন বেছে নিতে শিশু বিকাশ বিশেষজ্ঞের সঙ্গে কথা বলুন।',
     older_child_book_btn: 'বিশেষজ্ঞ বুক করুন',
     older_child_home_btn: 'হোমে ফিরুন',

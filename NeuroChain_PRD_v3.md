@@ -1,10 +1,10 @@
-**NEUROCHAIN 3.0**
+**NEUROCHAIN 1.0**
 
 *Autism-Focused Pediatric Digital Health Platform*
 
 Product Requirements Document \| AI Builder Edition
 
-*Version 3.0 \| Confidential*
+*Version 1.0 \| Confidential*
 
 +-----------------------------------------------------------------------+
 | **AI BUILDER DIRECTIVE**                                              |
@@ -1928,7 +1928,7 @@ payment gateway (Stripe or SSLCommerz) --- never Apple/Google IAP.
 **10. Final Execution Directives**
 
 This document constitutes the complete and authoritative specification
-for the NeuroChain 3.0 build. The AI builder must adhere to every
+for the NeuroChain 1.0 build. The AI builder must adhere to every
 directive in this document exactly as written.
 
 +-----------------------------------------------------------------------+
@@ -1967,4 +1967,4 @@ directive in this document exactly as written.
 
 *--- End of Document ---*
 
-NeuroChain 3.0 \| Version 3.0 \| Confidential
+NeuroChain 1.0 \| Version 1.0 \| Confidential

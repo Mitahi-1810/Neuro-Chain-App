@@ -203,6 +203,18 @@ pnpm ios
 pnpm web
 ```
 
+### iOS dev server connection fixes
+If you see “Could not connect to development server” on iOS:
+
+- Ensure Metro is running (try `pnpm start:dev-client` or `pnpm start:lan`).
+- For physical devices, set the dev server host so the app uses your machine’s LAN IP.
+  - Create `ios/.xcode.env.local` and add:
+    - `export EXPO_DEV_SERVER_HOST=YOUR_LAN_IP`
+    - `export EXPO_DEV_SERVER_PORT=8081`
+  - Rebuild and run the app from Xcode.
+
+The iOS app now respects `EXPO_DEV_SERVER_HOST`/`EXPO_DEV_SERVER_PORT` in debug builds.
+
 ### Environment Variables
 ```bash
 # .env (to be created)

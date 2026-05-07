@@ -194,8 +194,32 @@ export const useAuthStore = create<AuthState>((set) => ({
   initializeAuth: async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) {
-      set({
-        user: {
+      const restoredUser = {
+        id: session.user.id,
+        email: session.user.email || '',
+        full_name: session.user.user_metadata?.full_name || 'User',
+        role: session.user.user_metadata?.role || 'PARENT',
+        tier_level: session.user.user_metadata?.tier_level || 'FREE',
+        created_at: session.user.created_at,
+        updated_at: session.user.updated_at || new Date().toISOString(),
+      };
+      set({ user: restoredUser });
+
+      const { error: upsertError } = await supabase.from('users').upsert({
+        id: restoredUser.id,
+        email: restoredUser.email,
+        full_name: restoredUser.full_name,
+        role: restoredUser.role,
+        tier_level: restoredUser.tier_level,
+        created_at: restoredUser.created_at,
+        updated_at: restoredUser.updated_at,
+      });
+      if (upsertError) console.error('Failed to upsert user on restore:', upsertError);
+    }
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        const nextUser = {
           id: session.user.id,
           email: session.user.email || '',
           full_name: session.user.user_metadata?.full_name || 'User',
@@ -203,22 +227,19 @@ export const useAuthStore = create<AuthState>((set) => ({
           tier_level: session.user.user_metadata?.tier_level || 'FREE',
           created_at: session.user.created_at,
           updated_at: session.user.updated_at || new Date().toISOString(),
-        },
-      });
-    }
+        };
+        set({ user: nextUser });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        set({
-          user: {
-            id: session.user.id,
-            email: session.user.email || '',
-            full_name: session.user.user_metadata?.full_name || 'User',
-            role: session.user.user_metadata?.role || 'PARENT',
-            tier_level: session.user.user_metadata?.tier_level || 'FREE',
-            created_at: session.user.created_at,
-            updated_at: session.user.updated_at || new Date().toISOString(),
-          },
+        supabase.from('users').upsert({
+          id: nextUser.id,
+          email: nextUser.email,
+          full_name: nextUser.full_name,
+          role: nextUser.role,
+          tier_level: nextUser.tier_level,
+          created_at: nextUser.created_at,
+          updated_at: nextUser.updated_at,
+        }).then(({ error }) => {
+          if (error) console.error('Failed to upsert user on auth change:', error);
         });
       } else {
         set({ user: null });

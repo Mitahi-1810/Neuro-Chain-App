@@ -87,7 +87,7 @@ const StoreScreen: React.FC<any> = ({ navigation }) => {
           >
             <MaterialCommunityIcons name="arrow-left" size={24} color="#FFF" />
           </TouchableOpacity>
-          <Text style={styles.topBarTitle}>NeuroGrow</Text>
+          <Text style={styles.topBarTitle}>NeuroStore</Text>
         </View>
         <View style={styles.xpPill}>
           <MaterialCommunityIcons

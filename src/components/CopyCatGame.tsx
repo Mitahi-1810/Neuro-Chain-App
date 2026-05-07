@@ -169,18 +169,18 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: '800',
     color: colors.textDark,
-    fontFamily: 'Poppins',
+    fontFamily: 'Nunito',
   },
   subtitle: {
     fontSize: 16,
     color: colors.textWarmBrown,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     marginTop: 8,
   },
   round: {
     fontSize: 14,
     color: colors.darkGrey,
-    fontFamily: 'Inter',
+    fontFamily: 'Nunito',
     marginVertical: 20,
   },
   grid: {
