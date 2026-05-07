@@ -64,57 +64,65 @@ interface UploadedFile {
 }
 
 async function uploadVideo(videoUri: string): Promise<UploadedFile> {
-  const fileInfo = await FileSystem.getInfoAsync(videoUri);
+  const fileInfo = await FileSystem.getInfoAsync(videoUri, { size: true });
   if (!fileInfo.exists) {
     throw new Error(
       "Selected video file was not found. Please reselect the video.",
     );
   }
-  if (fileInfo.size && fileInfo.size > 20 * 1024 * 1024) {
+  const fileSize = (fileInfo as any).size as number | undefined;
+  if (fileSize && fileSize > 20 * 1024 * 1024) {
     throw new Error(
       "Video is too large for direct upload. Please trim to under 20MB and retry.",
     );
   }
 
-  const base64Video = await FileSystem.readAsStringAsync(videoUri, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
-
-  const boundary = `----gemini-boundary-${Date.now()}`;
-  const metadataJson = JSON.stringify({
-    file: {
-      displayName: "screening.mp4",
-      mimeType: "video/mp4",
-    },
-  });
-
-  const body =
-    `--${boundary}\r\n` +
-    "Content-Type: application/json; charset=UTF-8\r\n\r\n" +
-    `${metadataJson}\r\n` +
-    `--${boundary}\r\n` +
-    "Content-Type: video/mp4\r\n" +
-    "Content-Transfer-Encoding: base64\r\n\r\n" +
-    `${base64Video}\r\n` +
-    `--${boundary}--`;
-
-  const res = await fetch(
-    `${GEMINI_BASE}/upload/v1beta/files?uploadType=multipart&key=${GEMINI_API_KEY}`,
+  // Step 1: start a resumable upload session (sends only JSON metadata)
+  const initRes = await fetch(
+    `${GEMINI_BASE}/upload/v1beta/files?uploadType=resumable&key=${GEMINI_API_KEY}`,
     {
       method: "POST",
       headers: {
-        "Content-Type": `multipart/related; boundary=${boundary}`,
+        "Content-Type": "application/json",
+        "X-Goog-Upload-Protocol": "resumable",
+        "X-Goog-Upload-Command": "start",
+        ...(fileSize
+          ? { "X-Goog-Upload-Header-Content-Length": String(fileSize) }
+          : {}),
+        "X-Goog-Upload-Header-Content-Type": "video/mp4",
       },
-      body,
+      body: JSON.stringify({ file: { displayName: "screening.mp4" } }),
     },
   );
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Upload failed (${res.status}): ${text}`);
+  if (!initRes.ok) {
+    const text = await initRes.text();
+    throw new Error(`Upload init failed (${initRes.status}): ${text}`);
   }
 
-  const data = await res.json();
+  const uploadUrl = initRes.headers.get("X-Goog-Upload-URL");
+  if (!uploadUrl) {
+    throw new Error("Gemini did not return an upload URL. Please retry.");
+  }
+
+  // Step 2: stream the raw file bytes — no base64, no JS string concatenation
+  const uploadResult = await FileSystem.uploadAsync(uploadUrl, videoUri, {
+    httpMethod: "POST",
+    uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+    headers: {
+      "X-Goog-Upload-Command": "upload, finalize",
+      "X-Goog-Upload-Offset": "0",
+      ...(fileSize ? { "Content-Length": String(fileSize) } : {}),
+    },
+  });
+
+  if (uploadResult.status < 200 || uploadResult.status >= 300) {
+    throw new Error(
+      `Upload failed (${uploadResult.status}): ${uploadResult.body}`,
+    );
+  }
+
+  const data = JSON.parse(uploadResult.body);
   const file = data.file ?? data;
   return { name: file.name, uri: file.uri };
 }

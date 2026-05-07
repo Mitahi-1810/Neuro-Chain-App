@@ -10,7 +10,6 @@
       "**/*"
     ],
     "ios": {
-      "supportsTabletMode": true,
       "bundleIdentifier": "com.neurochain.app"
     },
     "android": {
@@ -22,11 +21,13 @@
         {
           "cameraPermission": "Allow NeuroChain to access your camera for therapy games."
         }
-      ]
-    ]
-  },
-  "extra": {
-    "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyAf_36axM1H1yIFlT5mTFyqTm3PHtBpGIE",
-    "EXPO_PUBLIC_GEMINI_MODEL": "gemini-2.0-flash"
+      ],
+      "@react-native-community/datetimepicker",
+      "expo-font"
+    ],
+    "extra": {
+      "EXPO_PUBLIC_GEMINI_API_KEY": "AIzaSyAf_36axM1H1yIFlT5mTFyqTm3PHtBpGIE",
+      "EXPO_PUBLIC_GEMINI_MODEL": "gemini-2.0-flash"
+    }
   }
 }
