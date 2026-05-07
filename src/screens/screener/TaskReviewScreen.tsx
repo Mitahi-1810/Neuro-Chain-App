@@ -31,12 +31,13 @@ import { CrayonCard } from "../../components/CrayonCard";
 import { TASKS } from "../../data/taskDefinitions";
 import {
   TaskAnalysisResult,
+  PipelineStage,
   processTaskVideo,
 } from "../../services/geminiVideoAnalysis";
 import { screeningSession } from "../../store/screeningSession";
 import { useChildStore } from "../../store/store";
 
-type AnalysisState = "uploading" | "analysing" | "done" | "failed";
+type AnalysisState = PipelineStage | "done" | "failed";
 
 interface Props {
   navigation: any;
@@ -80,18 +81,28 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
 
   // Fire analysis as soon as screen mounts — parent reviews video while it runs
   const runAnalysis = useCallback(async () => {
-    if (!videoUri || !activeChild) return;
+    console.log("[TaskReview] runAnalysis — videoUri:", !!videoUri, "activeChild:", !!activeChild);
+    if (!videoUri) {
+      setAnalysisState("failed");
+      setErrorText("No video file found. Please retake this task.");
+      return;
+    }
+    if (!activeChild) {
+      setAnalysisState("failed");
+      setErrorText("No child profile selected. Please go back and select a child.");
+      return;
+    }
     setAnalysisState("uploading");
     setErrorText(null);
     try {
       const res = await withTimeout(
-        processTaskVideo(videoUri, task, activeChild),
-        180000,
+        processTaskVideo(videoUri, task, activeChild, setAnalysisState),
+        300000,
       );
       setResult(res as TaskAnalysisResult);
       setAnalysisState("done");
     } catch (e) {
-      console.warn("Gemini analysis failed:", e);
+      console.warn("[TaskReview] Gemini analysis failed:", e);
       setAnalysisState("failed");
       setErrorText(
         e instanceof Error ? e.message : "Upload failed. Please try again.",
@@ -101,16 +112,9 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
 
   useEffect(() => {
     if (hasFiredAnalysis.current) return;
-    if (!videoUri) {
-      setAnalysisState("failed");
-      setErrorText("No video file found. Please retake this task.");
-      return;
-    }
-    if (!activeChild) return;
-
     hasFiredAnalysis.current = true;
     runAnalysis();
-  }, [videoUri, activeChild, runAnalysis]);
+  }, [runAnalysis]);
 
   useEffect(
     () => () => {
@@ -142,7 +146,8 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
   }, [taskIndex, navigation]);
 
   const stateLabel = {
-    uploading: "Uploading to server & analysing…",
+    uploading: "Uploading video…",
+    processing: "Waiting for Gemini to process…",
     analysing: "Analysing behaviour…",
     done: "Analysis complete",
     failed: "Analysis unavailable",
@@ -150,6 +155,7 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
 
   const stateIcon = {
     uploading: <ActivityIndicator size="small" color={task.accentColor} />,
+    processing: <ActivityIndicator size="small" color={task.accentColor} />,
     analysing: <ActivityIndicator size="small" color={task.accentColor} />,
     done: (
       <MaterialCommunityIcons
@@ -226,8 +232,12 @@ const TaskReviewScreen: React.FC<Props> = ({ navigation, route }) => {
           )}
           {analysisState === "uploading" && (
             <Text style={styles.uploadNote}>
-              Video is being sent to the server for analysis. This usually
-              finishes while you review.
+              Sending video to Gemini — this depends on your connection speed.
+            </Text>
+          )}
+          {analysisState === "processing" && (
+            <Text style={styles.uploadNote}>
+              Upload done. Gemini is processing the video, almost there…
             </Text>
           )}
         </CrayonCard>
